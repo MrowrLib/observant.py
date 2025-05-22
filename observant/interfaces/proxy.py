@@ -144,3 +144,53 @@ class IObservableProxy(Generic[T], ABC):
             An observable containing the computed value.
         """
         ...
+
+    @abstractmethod
+    def add_validator(
+        self,
+        attr: str,
+        validator: Callable[[Any], str | None],
+    ) -> None:
+        """
+        Add a validator function for a field.
+
+        Args:
+            attr: The field name to validate.
+            validator: A function that takes the field value and returns an error message
+                       if invalid, or None if valid.
+        """
+        ...
+
+    @abstractmethod
+    def is_valid(self) -> IObservable[bool]:
+        """
+        Get an observable that indicates whether all fields are valid.
+
+        Returns:
+            An observable that emits True if all fields are valid, False otherwise.
+        """
+        ...
+
+    @abstractmethod
+    def validation_errors(self) -> IObservableDict[str, list[str]]:
+        """
+        Get an observable dictionary of validation errors.
+
+        Returns:
+            An observable dictionary mapping field names to lists of error messages.
+        """
+        ...
+
+    @abstractmethod
+    def validation_for(self, attr: str) -> IObservable[list[str]]:
+        """
+        Get an observable list of validation errors for a specific field.
+
+        Args:
+            attr: The field name to get validation errors for.
+
+        Returns:
+            An observable that emits a list of error messages for the field.
+            An empty list means the field is valid.
+        """
+        ...

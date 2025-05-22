@@ -36,6 +36,12 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self._computeds: dict[str, Observable[Any]] = {}
         self._dirty_fields: set[str] = set()
 
+        # Validation related fields
+        self._validators: dict[str, list[Callable[[Any], str | None]]] = {}
+        self._validation_errors_dict = ObservableDict[str, list[str]]({})
+        self._validation_for_cache: dict[str, Observable[list[str]]] = {}
+        self._is_valid_obs = Observable[bool](True)
+
     @override
     def observable(
         self,
@@ -57,6 +63,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
                 obs.on_change(lambda v: setattr(self._obj, attr, v))
             # Register dirty tracking callback
             obs.on_change(lambda _: self._dirty_fields.add(attr))
+            # Register validation callback
+            obs.on_change(lambda v: self._validate_field(attr, v))
             self._scalars[key] = obs
 
         return self._scalars[key]
@@ -83,6 +91,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
                 obs.on_change(lambda _: setattr(self._obj, attr, obs.copy()))
             # Register dirty tracking callback
             obs.on_change(lambda _: self._dirty_fields.add(attr))
+            # Register validation callback
+            obs.on_change(lambda _: self._validate_field(attr, obs.copy()))
             self._lists[key] = obs
 
         return self._lists[key]
@@ -109,6 +119,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
                 obs.on_change(lambda _: setattr(self._obj, attr, obs.copy()))
             # Register dirty tracking callback
             obs.on_change(lambda _: self._dirty_fields.add(attr))
+            # Register validation callback
+            obs.on_change(lambda _: self._validate_field(attr, obs.copy()))
             self._dicts[key] = obs
 
         return self._dicts[key]
@@ -249,3 +261,140 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             raise KeyError(f"Computed property '{name}' not found")
 
         return self._computeds[name]
+
+    @override
+    def add_validator(
+        self,
+        attr: str,
+        validator: Callable[[Any], str | None],
+    ) -> None:
+        """
+        Add a validator function for a field.
+
+        Args:
+            attr: The field name to validate.
+            validator: A function that takes the field value and returns an error message
+                       if invalid, or None if valid.
+        """
+        if attr not in self._validators:
+            self._validators[attr] = []
+
+        self._validators[attr].append(validator)
+
+        # Validate the current value if it exists
+        self._validate_field_if_exists(attr)
+
+    def _validate_field_if_exists(self, attr: str) -> None:
+        """
+        Validate a field if it exists in any of the observable collections.
+        """
+        # Check in scalars
+        for key in self._scalars:
+            if key.attr == attr:
+                value = self._scalars[key].get()
+                self._validate_field(attr, value)
+                return
+
+        # Check in lists
+        for key in self._lists:
+            if key.attr == attr:
+                value = self._lists[key].copy()
+                self._validate_field(attr, value)
+                return
+
+        # Check in dicts
+        for key in self._dicts:
+            if key.attr == attr:
+                value = self._dicts[key].copy()
+                self._validate_field(attr, value)
+                return
+
+        # If we get here, the field doesn't exist in any observable collection yet
+        # Try to get it directly from the object
+        try:
+            value = getattr(self._obj, attr)
+            self._validate_field(attr, value)
+        except (AttributeError, TypeError):
+            # If we can't get the value, we can't validate it yet
+            pass
+
+    def _validate_field(self, attr: str, value: Any) -> None:
+        """
+        Validate a field value against all its validators.
+
+        Args:
+            attr: The field name.
+            value: The value to validate.
+        """
+        if attr not in self._validators:
+            # No validators for this field, it's always valid
+            if attr in self._validation_errors_dict:
+                del self._validation_errors_dict[attr]
+            return
+
+        errors: list[str] = []
+
+        for validator in self._validators[attr]:
+            try:
+                result = validator(value)
+                if result is not None:
+                    errors.append(result)
+            except Exception as e:
+                errors.append(f"Validation error: {str(e)}")
+
+        if errors:
+            self._validation_errors_dict[attr] = errors
+        elif attr in self._validation_errors_dict:
+            del self._validation_errors_dict[attr]
+
+        # Update the is_valid observable
+        self._is_valid_obs.set(len(self._validation_errors_dict) == 0)
+
+    @override
+    def is_valid(self) -> IObservable[bool]:
+        """
+        Get an observable that indicates whether all fields are valid.
+
+        Returns:
+            An observable that emits True if all fields are valid, False otherwise.
+        """
+        return self._is_valid_obs
+
+    @override
+    def validation_errors(self) -> IObservableDict[str, list[str]]:
+        """
+        Get an observable dictionary of validation errors.
+
+        Returns:
+            An observable dictionary mapping field names to lists of error messages.
+        """
+        return self._validation_errors_dict
+
+    @override
+    def validation_for(self, attr: str) -> IObservable[list[str]]:
+        """
+        Get an observable list of validation errors for a specific field.
+
+        Args:
+            attr: The field name to get validation errors for.
+
+        Returns:
+            An observable that emits a list of error messages for the field.
+            An empty list means the field is valid.
+        """
+        if attr not in self._validation_for_cache:
+            # Create a computed observable that depends on the validation errors dict
+            initial_value = self._validation_errors_dict.get(attr) or []
+            obs = Observable[list[str]](initial_value)
+
+            # Update the observable when the validation errors dict changes
+            def update_validation(_: Any) -> None:
+                new_value = self._validation_errors_dict.get(attr) or []
+                current = obs.get()
+                if new_value != current:
+                    obs.set(new_value)
+
+            self._validation_errors_dict.on_change(update_validation)
+            self._validation_for_cache[attr] = obs
+
+        return self._validation_for_cache[attr]
