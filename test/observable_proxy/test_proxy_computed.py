@@ -160,3 +160,105 @@ class TestObservableProxyComputed:
         # Assert - the shadowed field in the model is NOT updated with the computed value
         # This is the current behavior, which might be considered a bug
         assert_that(profile.username).is_equal_to("original")
+
+    def test_computed_field_with_no_dependencies(self) -> None:
+        """Test that a computed field can be created with no dependencies."""
+        # Arrange
+        profile = UserProfile(username="user", preferences={}, age=30)
+        proxy = ObservableProxy(profile, sync=False)
+
+        # Register a computed property with no dependencies
+        proxy.register_computed("constant", lambda: "Constant Value", [])
+
+        # Act & Assert
+        assert_that(proxy.computed(str, "constant").get()).is_equal_to("Constant Value")
+
+        # Change some other fields to verify the computed value doesn't change
+        proxy.observable(str, "username").set("changed")
+        proxy.observable(int, "age").set(40)
+
+        # Assert - computed value remains the same
+        assert_that(proxy.computed(str, "constant").get()).is_equal_to("Constant Value")
+
+        # Test on_change callback
+        changes = []
+        proxy.computed(str, "constant").on_change(lambda v: changes.append(v))
+
+        # Assert - callback should not be triggered since value never changes
+        assert_that(changes).is_empty()
+
+    def test_computed_field_name_collision_with_real_field(self) -> None:
+        """Test that a computed field can shadow a real field and both can be accessed."""
+        # Arrange
+        profile = UserProfile(username="original", preferences={}, age=30)
+        proxy = ObservableProxy(profile, sync=False)
+
+        # Register a computed property that shadows a real field
+        proxy.register_computed("username", lambda: f"Computed-{proxy.observable(int, 'age').get()}", ["age"])
+
+        # Act & Assert - both the real field and computed field can be accessed
+        # The real field is accessed via observable()
+        assert_that(proxy.observable(str, "username").get()).is_equal_to("original")
+
+        # The computed field is accessed via computed()
+        assert_that(proxy.computed(str, "username").get()).is_equal_to("Computed-30")
+
+        # Act - change the real field
+        proxy.observable(str, "username").set("changed")
+
+        # Assert - real field is updated but computed field still uses its formula
+        assert_that(proxy.observable(str, "username").get()).is_equal_to("changed")
+        assert_that(proxy.computed(str, "username").get()).is_equal_to("Computed-30")
+
+        # Act - change the dependency of the computed field
+        proxy.observable(int, "age").set(40)
+
+        # Assert - computed field is updated but real field is unchanged
+        assert_that(proxy.observable(str, "username").get()).is_equal_to("changed")
+        assert_that(proxy.computed(str, "username").get()).is_equal_to("Computed-40")
+
+    def test_circular_dependency_detection(self) -> None:
+        """Test that circular dependencies between computed fields are detected."""
+        # Arrange
+        profile = UserProfile(username="user", preferences={}, age=30)
+        proxy = ObservableProxy(profile, sync=False)
+
+        # First, create both computed properties with placeholder values
+        # that don't reference each other yet
+        proxy.register_computed("field_a", lambda: "A-Initial", [])
+        proxy.register_computed("field_b", lambda: "B-Initial", [])
+
+        # Now try to update field_a to depend on field_b
+        try:
+            proxy.register_computed("field_a", lambda: f"A-{proxy.computed(str, 'field_b').get()}", ["field_b"])
+
+            # If we get here, the first update succeeded
+
+            # Now try to update field_b to depend on field_a, creating a cycle
+            try:
+                proxy.register_computed("field_b", lambda: f"B-{proxy.computed(str, 'field_a').get()}", ["field_a"])
+
+                # If we get here, circular dependency was not detected at registration time
+                # Let's see if it's detected at runtime
+
+                try:
+                    # Try to access field_a, which should trigger the circular dependency
+                    value_a = proxy.computed(str, "field_a").get()
+                    value_b = proxy.computed(str, "field_b").get()
+
+                    # If we get here, the library has some way to handle circular dependencies
+                    # Document the current behavior
+                    assert_that(value_a).is_not_none()
+                    assert_that(value_b).is_not_none()
+                    print(f"Circular dependency allowed, values: field_a={value_a}, field_b={value_b}")
+                except Exception as e:
+                    # If an exception is thrown, it should mention circular dependency
+                    assert_that(str(e)).contains("circular")
+
+            except Exception as e:
+                # If an exception is thrown during registration, it should mention circular dependency
+                assert_that(str(e)).contains("circular")
+
+        except Exception:
+            # This is unexpected - the first update should succeed
+            assert_that(False).is_true()

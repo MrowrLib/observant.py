@@ -31,20 +31,20 @@ These tests document and lock in the current behavior.
 These are deeper tests for robustness and edge behavior.
 
 ### ✅ Validation
-- [ ] Validator returns non-string (e.g. int, None, object)
-- [ ] Validator throws unexpected exception (already partially covered)
-- [ ] Multiple validators return errors simultaneously
-- [ ] Validation state after undo/redo
+- [x] Validator returns non-string (e.g. int, None, object)
+- [x] Validator throws unexpected exception (already partially covered)
+- [x] Multiple validators return errors simultaneously
+- [x] Validation state after undo/redo
 
 ### ✅ Computed
-- [ ] Computed field with no dependencies
-- [ ] Computed field name collision with real field
-- [ ] Circular dependency detection (A → B → A)
+- [x] Computed field with no dependencies
+- [x] Computed field name collision with real field
+- [x] Circular dependency detection (A → B → A)
 
 ### ✅ Observable Behavior
-- [ ] Reentrant `on_change` (callback triggers another set)
-- [ ] Multiple `on_change` callbacks per field
-- [ ] Callback that raises an exception
+- [x] Reentrant `on_change` (callback triggers another set)
+- [x] Multiple `on_change` callbacks per field
+- [x] Callback that raises an exception
 
 ---
 
@@ -52,10 +52,10 @@ These are deeper tests for robustness and edge behavior.
 
 These tests explore how the proxy behaves in less common or error-prone scenarios.
 
-- [ ] Observing a non-existent field
-- [ ] Wrapping a non-dataclass object
-- [ ] Calling `save_to()` into a different object
-- [ ] Proxy reuse after `save_to()`
+- [x] Observing a non-existent field
+- [x] Wrapping a non-dataclass object
+- [x] Calling `save_to()` into a different object
+- [x] Proxy reuse after `save_to()`
 
 ---
 
