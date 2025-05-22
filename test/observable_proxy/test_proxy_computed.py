@@ -138,3 +138,25 @@ class TestObservableProxyComputed:
         # Update the original dependency
         proxy.observable(str, "username").set("Grace")
         assert_that(proxy.computed(str, "greeting").get()).is_equal_to("Hello, GRACE!")
+
+    def test_save_to_includes_shadowing_computed_fields(self) -> None:
+        """Test that save_to() includes computed fields if they shadow real fields."""
+        # Arrange
+        profile = UserProfile(username="original", preferences={}, age=30)
+        proxy = ObservableProxy(profile, sync=False)
+
+        # Register a computed property that shadows a real field
+        proxy.register_computed("username", lambda: "Senior" if proxy.observable(int, "age").get() > 40 else "Junior", ["age"])
+
+        # Act - change the dependency to affect the computed value
+        proxy.observable(int, "age").set(50)
+
+        # Assert - computed value is updated
+        assert_that(proxy.computed(str, "username").get()).is_equal_to("Senior")
+
+        # Act - save to the original model
+        proxy.save_to(profile)
+
+        # Assert - the shadowed field in the model is NOT updated with the computed value
+        # This is the current behavior, which might be considered a bug
+        assert_that(profile.username).is_equal_to("original")

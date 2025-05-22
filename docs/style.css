@@ -1,3 +1,7 @@
-h1 {
-    color: red;
+.md-header {
+    background-color: #ff00ff;
+}
+
+.md-typeset h1 {
+    color: #ff00ff;
 }

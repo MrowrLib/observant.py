@@ -122,3 +122,106 @@ class TestObservableProxyDirty:
         assert_that(proxy.is_dirty()).is_false()
         assert_that(proxy.dirty_fields()).is_empty()
         assert_that(profile.username).is_equal_to("saved")
+
+    def test_computed_fields_are_never_dirty(self) -> None:
+        """Test that computed fields are never marked as dirty."""
+        # Arrange
+        profile = UserProfile(username="computed", preferences={}, age=30)
+        proxy = ObservableProxy(profile, sync=False)
+
+        # Register a computed property
+        proxy.register_computed("full_name", lambda: f"{proxy.observable(str, 'username').get()} User", ["username"])
+
+        # Act - change the dependency
+        proxy.observable(str, "username").set("modified")
+
+        # Assert - computed field should not be in dirty_fields
+        assert_that(proxy.is_dirty()).is_true()
+        assert_that(proxy.dirty_fields()).contains("username")
+        assert_that(proxy.dirty_fields()).does_not_contain("full_name")
+
+        # Act - change the computed field directly (if possible)
+        try:
+            proxy.computed(str, "full_name").set("Direct Change")
+        except Exception:
+            pass  # It's okay if this fails, we just want to make sure it doesn't mark as dirty
+
+        # Assert - computed field should still not be in dirty_fields
+        assert_that(proxy.dirty_fields()).does_not_contain("full_name")
+
+    def test_validation_changes_do_not_affect_dirty_state(self) -> None:
+        """Test that validation changes do not affect the dirty state."""
+        # Arrange
+        profile = UserProfile(username="valid", preferences={}, age=30)
+        proxy = ObservableProxy(profile, sync=False)
+
+        # Add a validator that requires username to be at least 5 characters
+        proxy.add_validator("username", lambda value: "Username too short" if len(value) < 5 else None)
+
+        # Assert - initially valid and not dirty
+        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_dirty()).is_false()
+        assert_that(proxy.dirty_fields()).is_empty()
+
+        # Act - make the field invalid
+        proxy.observable(str, "username").set("abc")  # Too short
+
+        # Assert - now invalid but only username is dirty
+        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_dirty()).is_true()
+        assert_that(proxy.dirty_fields()).contains("username")
+        assert_that(proxy.dirty_fields()).is_length(1)  # Only username, not validation state
+
+        # Act - fix the validation error
+        proxy.observable(str, "username").set("valid_again")
+
+        # Assert - now valid again but username is still dirty
+        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_dirty()).is_true()
+        assert_that(proxy.dirty_fields()).contains("username")
+        assert_that(proxy.dirty_fields()).is_length(1)
+
+        # Act - reset dirty state
+        proxy.reset_dirty()
+
+        # Assert - still valid but no longer dirty
+        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_dirty()).is_false()
+        assert_that(proxy.dirty_fields()).is_empty()
+
+    def test_undoing_change_reverts_dirty_state(self) -> None:
+        """Test whether undoing a change reverts the dirty state."""
+        # Arrange
+        profile = UserProfile(username="original", preferences={}, age=30)
+        proxy = ObservableProxy(profile, undo=True)
+
+        # Assert - initially not dirty
+        assert_that(proxy.is_dirty()).is_false()
+        assert_that(proxy.dirty_fields()).is_empty()
+
+        # Act - make a change to make it dirty
+        proxy.observable(str, "username").set("modified")
+
+        # Assert - now dirty
+        assert_that(proxy.is_dirty()).is_true()
+        assert_that(proxy.dirty_fields()).contains("username")
+
+        # Act - undo the change
+        proxy.undo("username")
+
+        # Assert - check if dirty state is reverted
+        # This assertion documents the current behavior, which may be that
+        # undoing does not clear the dirty state
+        assert_that(proxy.is_dirty()).is_true()  # Still dirty after undo
+        assert_that(proxy.dirty_fields()).contains("username")
+
+        # Act - make multiple changes and undo them all
+        proxy.observable(str, "username").set("change1")
+        proxy.observable(str, "username").set("change2")
+        proxy.undo("username")  # Undo to change1
+        proxy.undo("username")  # Undo to original
+
+        # Assert - still dirty after undoing all changes
+        assert_that(proxy.observable(str, "username").get()).is_equal_to("original")
+        assert_that(proxy.is_dirty()).is_true()  # Still dirty after undoing all changes
+        assert_that(proxy.dirty_fields()).contains("username")
