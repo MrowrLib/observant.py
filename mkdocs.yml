@@ -1,4 +1,13 @@
 site_name: Observant.py
 site_url: https://mrowrlib.github.io/observant.py
+
 theme:
   name: material
+
+plugins:
+- search
+- mkdocstrings
+
+nav:
+- index.md
+- Code Reference: reference.md

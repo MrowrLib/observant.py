@@ -29,7 +29,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self,
         obj: T,
         *,
-        sync: bool,
+        sync: bool = False,
+        undo: bool = True,  # Enable undo by default
         undo_max: int | None = None,
         undo_debounce_ms: int | None = None,
     ) -> None:
@@ -37,11 +38,16 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         Args:
             obj: The object to proxy.
             sync: If True, observables will sync back to the model immediately. If False, changes must be saved explicitly.
+            undo: If True, enables undo/redo functionality for all fields.
             undo_max: Maximum number of undo steps to store. None means unlimited.
             undo_debounce_ms: Time window in milliseconds to group changes. None means no debouncing.
         """
         self._obj = obj
         self._sync_default = sync
+
+        # Print a warning if sync and undo are both enabled
+        if sync and undo:
+            print("Warning: sync=True with undo=True may cause unexpected model mutations during undo/redo.")
 
         self._scalars: dict[ProxyFieldKey, Observable[Any]] = {}
         self._lists: dict[ProxyFieldKey, ObservableList[Any]] = {}
@@ -56,7 +62,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self._is_valid_obs = Observable[bool](True)
 
         # Undo/redo related fields
-        self._default_undo_config = UndoConfig(undo_max=undo_max, undo_debounce_ms=undo_debounce_ms)
+        self._default_undo_config = UndoConfig(enabled=undo, undo_max=undo_max, undo_debounce_ms=undo_debounce_ms)
         self._field_undo_configs: dict[str, UndoConfig] = {}
         self._undo_stacks: dict[str, list[Callable[[], None]]] = {}
         self._redo_stacks: dict[str, list[Callable[[], None]]] = {}
@@ -485,6 +491,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self,
         attr: str,
         *,
+        enabled: bool | None = None,
         undo_max: int | None = None,
         undo_debounce_ms: int | None = None,
     ) -> None:
@@ -493,6 +500,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         Args:
             attr: The field name to configure.
+            enabled: Whether undo/redo functionality is enabled for this field.
             undo_max: Maximum number of undo steps to store. None means unlimited.
             undo_debounce_ms: Time window in milliseconds to group changes. None means no debouncing.
         """
@@ -500,6 +508,12 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         config = self._field_undo_configs.get(attr, UndoConfig())
 
         # Update the config with the provided values
+        if enabled is not None:
+            config.enabled = enabled
+        elif attr not in self._field_undo_configs:
+            # If this is a new config and enabled wasn't specified, inherit from default
+            config.enabled = self._default_undo_config.enabled
+
         if undo_max is not None:
             config.undo_max = undo_max
         if undo_debounce_ms is not None:
@@ -523,7 +537,23 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         Returns:
             The undo configuration for the field, or the default if not set.
         """
-        return self._field_undo_configs.get(attr, self._default_undo_config)
+        config = self._field_undo_configs.get(attr, self._default_undo_config)
+
+        # If undo_max is None, use the default from UndoConfig
+        if config.undo_max is None:
+            from observant.types.undo_config import UndoConfig as DefaultUndoConfig
+
+            config.undo_max = DefaultUndoConfig.undo_max
+
+        # Make sure the enabled flag is set correctly
+        # If this is a field-specific config, check if it has an explicit enabled flag
+        if attr in self._field_undo_configs:
+            # If the field has a specific config but no explicit enabled flag,
+            # inherit from the default config
+            if not hasattr(config, "enabled") or config.enabled is None:
+                config.enabled = self._default_undo_config.enabled
+
+        return config
 
     # _track_scalar_change has been removed - UndoableObservable now handles this
 
@@ -822,9 +852,10 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             print(f"DEBUG: _add_to_undo_stack - Added undo function to stack for {attr}, stack size: {len(self._undo_stacks[attr])}")
 
             # Enforce the max size
-            if config.undo_max is not None and len(self._undo_stacks[attr]) > config.undo_max:
-                self._undo_stacks[attr].pop(0)
-                print(f"DEBUG: _add_to_undo_stack - Enforced max size for {attr}, removed oldest undo function")
+            if config.undo_max is not None:
+                while len(self._undo_stacks[attr]) > config.undo_max:
+                    self._undo_stacks[attr].pop(0)
+                    print(f"DEBUG: _add_to_undo_stack - Enforced max size for {attr}, removed oldest undo function")
 
             # Set the pending group
             self._pending_undo_groups[attr] = redo_func
@@ -869,6 +900,14 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         print(f"DEBUG: undo - undo_func: {undo_func}")
         undo_func()
         print(f"DEBUG: undo - Completed for {attr}")
+
+        # If sync is enabled for this field, update the model
+        for key in self._scalars:
+            if key.attr == attr and key.sync:
+                value = self._scalars[key].get()
+                setattr(self._obj, attr, value)
+                print(f"DEBUG: undo - Synced {attr} to model with value {value}")
+                break
 
     @override
     def redo(self, attr: str) -> None:
@@ -994,6 +1033,14 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         print(f"DEBUG: redo - Completed for {attr}")
 
+        # If sync is enabled for this field, update the model
+        for key in self._scalars:
+            if key.attr == attr and key.sync:
+                value = self._scalars[key].get()
+                setattr(self._obj, attr, value)
+                print(f"DEBUG: redo - Synced {attr} to model with value {value}")
+                break
+
     @override
     def can_undo(self, attr: str) -> bool:
         """
@@ -1033,6 +1080,12 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         print(f"DEBUG: track_scalar_change called for {attr} with old={old_value}, new={new_value}")
         if old_value == new_value:
             print("DEBUG: values are the same, skipping")
+            return
+
+        # Check if undo is enabled for this field
+        config = self._get_undo_config(attr)
+        if not config.enabled:
+            print(f"DEBUG: undo is disabled for {attr}, skipping")
             return
 
         # Get the observable for this field

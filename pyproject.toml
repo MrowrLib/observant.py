@@ -1,7 +1,5 @@
 [project]
-dependencies = [
-    "mkdocs-material>=9.6.14",
-]
+dependencies = []
 description = "Add your description here"
 name = "observant"
 readme = "README.md"
@@ -11,6 +9,8 @@ version = "0.1.0"
 [dependency-groups]
 dev = [
   "assertpy>=1.1",
+  "mkdocs-material>=9.6.14",
+  "mkdocstrings[python]>=0.29.1",
   "pytest>=8.3.5",
   "pytest-sugar>=1.0.0",
 ]
