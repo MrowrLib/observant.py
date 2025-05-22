@@ -94,7 +94,7 @@ class TestObservableProxy:
         proxy = ObservableProxy(profile, sync=False)
 
         # Act
-        prefs = proxy.observable_dict("preferences")
+        prefs = proxy.observable_dict((str, str), "preferences")
         prefs["language"] = "en"
 
         # Assert
@@ -139,7 +139,7 @@ class TestObservableProxy:
         proxy = ObservableProxy(zoo, sync=True)
 
         # Act
-        proxy.observable_dict("metadata")["season"] = "autumn"
+        proxy.observable_dict((str, str), "metadata")["season"] = "autumn"
 
         # Assert
         assert_that(zoo.metadata).contains_key("season")
@@ -236,7 +236,7 @@ class TestObservableProxy:
         proxy = ObservableProxy(zoo, sync=False)
 
         # Act
-        meta = proxy.observable_dict("metadata")
+        meta = proxy.observable_dict((str, str), "metadata")
         meta["habitat"] = "savannah"
 
         # Assert
@@ -254,7 +254,7 @@ class TestObservableProxy:
         proxy = ObservableProxy(zoo, sync=True)
 
         # Act
-        proxy.observable_dict("metadata")["ticket_price"] = "$15"
+        proxy.observable_dict((str, str), "metadata")["ticket_price"] = "$15"
 
         # Assert
         assert_that(zoo.metadata["ticket_price"]).is_equal_to("$15")

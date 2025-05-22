@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from observant.interfaces.dict import IObservableDict
 from observant.interfaces.list import IObservableList
 from observant.interfaces.observable import IObservable
 
 T = TypeVar("T")
+TKey = TypeVar("TKey")
+TValue = TypeVar("TValue")
 
 
 class IObservableProxy(Generic[T], ABC):
@@ -43,10 +45,11 @@ class IObservableProxy(Generic[T], ABC):
     @abstractmethod
     def observable_dict(
         self,
+        typ: tuple[type[TKey], type[TValue]],
         attr: str,
         *,
         sync: bool | None = None,
-    ) -> IObservableDict[Any, Any]:
+    ) -> IObservableDict[TKey, TValue]:
         """
         Get or create an ObservableDict for a dict field.
         """

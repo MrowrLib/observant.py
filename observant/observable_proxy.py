@@ -11,6 +11,8 @@ from observant.types.proxy_field_key import ProxyFieldKey
 
 T = TypeVar("T")
 TValue = TypeVar("TValue")
+TDictKey = TypeVar("TDictKey")
+TDictValue = TypeVar("TDictValue")
 
 
 class ObservableProxy(Generic[T], IObservableProxy[T]):
@@ -79,10 +81,11 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
     def observable_dict(
         self,
+        typ: tuple[type[TDictKey], type[TDictValue]],
         attr: str,
         *,
         sync: bool | None = None,
-    ) -> IObservableDict[Any, Any]:
+    ) -> IObservableDict[TDictKey, TDictValue]:
         """
         Get or create an ObservableDict for a dict field.
         """
