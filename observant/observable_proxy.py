@@ -1,4 +1,4 @@
-from typing import Any, Generic, TypeVar, cast, override
+from typing import Any, Callable, Generic, TypeVar, cast, override
 
 from observant.interfaces.dict import IObservableDict
 from observant.interfaces.list import IObservableList
@@ -33,6 +33,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self._scalars: dict[ProxyFieldKey, Observable[Any]] = {}
         self._lists: dict[ProxyFieldKey, ObservableList[Any]] = {}
         self._dicts: dict[ProxyFieldKey, ObservableDict[Any, Any]] = {}
+        self._computeds: dict[str, Observable[Any]] = {}
         self._dirty_fields: set[str] = set()
 
     @override
@@ -178,3 +179,73 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         Reset the dirty state of all fields.
         """
         self._dirty_fields.clear()
+
+    @override
+    def register_computed(
+        self,
+        name: str,
+        compute: Callable[[], TValue],
+        dependencies: list[str],
+    ) -> None:
+        """
+        Register a computed property that depends on other observables.
+
+        Args:
+            name: The name of the computed property.
+            compute: A function that returns the computed value.
+            dependencies: List of field names that this computed property depends on.
+        """
+        # Create an observable for the computed property
+        initial_value = compute()
+        obs = Observable(initial_value)
+        self._computeds[name] = obs
+
+        # Register callbacks for each dependency
+        for dep in dependencies:
+            # For scalar dependencies
+            def update_computed(_: Any) -> None:
+                new_value = compute()
+                current = obs.get()
+                if new_value != current:
+                    obs.set(new_value)
+
+            # Try to find the dependency in scalars, lists, or dicts
+            for sync in [True, False]:
+                key = ProxyFieldKey(dep, sync)
+
+                if key in self._scalars:
+                    self._scalars[key].on_change(update_computed)
+                    break
+
+                if key in self._lists:
+                    self._lists[key].on_change(update_computed)
+                    break
+
+                if key in self._dicts:
+                    self._dicts[key].on_change(update_computed)
+                    break
+
+            # Check if the dependency is another computed property
+            if dep in self._computeds:
+                self._computeds[dep].on_change(update_computed)
+
+    @override
+    def computed(
+        self,
+        typ: type[TValue],
+        name: str,
+    ) -> IObservable[TValue]:
+        """
+        Get a computed property by name.
+
+        Args:
+            typ: The type of the computed property.
+            name: The name of the computed property.
+
+        Returns:
+            An observable containing the computed value.
+        """
+        if name not in self._computeds:
+            raise KeyError(f"Computed property '{name}' not found")
+
+        return self._computeds[name]

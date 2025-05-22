@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, TypeVar
+from typing import Any, Callable, Generic, TypeVar
 
 from observant.interfaces.dict import IObservableDict
 from observant.interfaces.list import IObservableList
@@ -107,5 +107,40 @@ class IObservableProxy(Generic[T], ABC):
     def reset_dirty(self) -> None:
         """
         Reset the dirty state of all fields.
+        """
+        ...
+
+    @abstractmethod
+    def register_computed(
+        self,
+        name: str,
+        compute: Callable[[], T],
+        dependencies: list[str],
+    ) -> None:
+        """
+        Register a computed property that depends on other observables.
+
+        Args:
+            name: The name of the computed property.
+            compute: A function that returns the computed value.
+            dependencies: List of field names that this computed property depends on.
+        """
+        ...
+
+    @abstractmethod
+    def computed(
+        self,
+        typ: type[T],
+        name: str,
+    ) -> IObservable[T]:
+        """
+        Get a computed property by name.
+
+        Args:
+            typ: The type of the computed property.
+            name: The name of the computed property.
+
+        Returns:
+            An observable containing the computed value.
         """
         ...
