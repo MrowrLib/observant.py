@@ -4,22 +4,22 @@ from typing import Any, Callable, Generic, Iterator, TypeVar, cast, overload, ov
 
 from observant.observable import ObservableCollectionChangeType
 
-TValue = TypeVar("TValue")
+T = TypeVar("T")
 
 
 @dataclass(frozen=True)
-class ObservableListChange(Generic[TValue]):
+class ObservableListChange(Generic[T]):
     """Information about a change to an ObservableList."""
 
     type: ObservableCollectionChangeType
     index: int | None = None  # Index where the change occurred, if applicable
-    item: TValue | None = None  # Item that was added or removed, if applicable
-    items: list[TValue] | None = (
+    item: T | None = None  # Item that was added or removed, if applicable
+    items: list[T] | None = (
         None  # Multiple items that were added or removed, if applicable
     )
 
 
-class IObservableList(Generic[TValue], ABC):
+class IObservableList(Generic[T], ABC):
     """Interface for observable lists with specific event types."""
 
     @abstractmethod
@@ -28,12 +28,12 @@ class IObservableList(Generic[TValue], ABC):
         ...
 
     @abstractmethod
-    def __getitem__(self, index: int | slice) -> TValue | list[TValue]:
+    def __getitem__(self, index: int | slice) -> T | list[T]:
         """Get an item or slice of items from the list."""
         ...
 
     @abstractmethod
-    def __setitem__(self, index: int | slice, value: TValue | list[TValue]) -> None:
+    def __setitem__(self, index: int | slice, value: T | list[T]) -> None:
         """Set an item or slice of items in the list."""
         ...
 
@@ -43,37 +43,37 @@ class IObservableList(Generic[TValue], ABC):
         ...
 
     @abstractmethod
-    def __iter__(self) -> Iterator[TValue]:
+    def __iter__(self) -> Iterator[T]:
         """Return an iterator over the items in the list."""
         ...
 
     @abstractmethod
-    def __contains__(self, item: TValue) -> bool:
+    def __contains__(self, item: T) -> bool:
         """Check if an item is in the list."""
         ...
 
     @abstractmethod
-    def append(self, item: TValue) -> None:
+    def append(self, item: T) -> None:
         """Add an item to the end of the list."""
         ...
 
     @abstractmethod
-    def extend(self, items: list[TValue]) -> None:
+    def extend(self, items: list[T]) -> None:
         """Extend the list by appending all items from the iterable."""
         ...
 
     @abstractmethod
-    def insert(self, index: int, item: TValue) -> None:
+    def insert(self, index: int, item: T) -> None:
         """Insert an item at a given position."""
         ...
 
     @abstractmethod
-    def remove(self, item: TValue) -> None:
+    def remove(self, item: T) -> None:
         """Remove the first occurrence of an item from the list."""
         ...
 
     @abstractmethod
-    def pop(self, index: int = -1) -> TValue:
+    def pop(self, index: int = -1) -> T:
         """Remove and return an item at a given position."""
         ...
 
@@ -83,12 +83,12 @@ class IObservableList(Generic[TValue], ABC):
         ...
 
     @abstractmethod
-    def index(self, item: TValue, start: int = 0, end: int | None = None) -> int:
+    def index(self, item: T, start: int = 0, end: int | None = None) -> int:
         """Return the index of the first occurrence of an item."""
         ...
 
     @abstractmethod
-    def count(self, item: TValue) -> int:
+    def count(self, item: T) -> int:
         """Return the number of occurrences of an item in the list."""
         ...
 
@@ -96,13 +96,13 @@ class IObservableList(Generic[TValue], ABC):
     def sort(self, *, key: None = None, reverse: bool = False) -> None: ...
 
     @overload
-    def sort(self, *, key: Callable[[TValue], Any], reverse: bool = False) -> None: ...
+    def sort(self, *, key: Callable[[T], Any], reverse: bool = False) -> None: ...
 
     @abstractmethod
     def sort(
         self,
         *,
-        key: Callable[[TValue], Any] | None = None,
+        key: Callable[[T], Any] | None = None,
         reverse: bool = False,
     ) -> None: ...
 
@@ -112,37 +112,35 @@ class IObservableList(Generic[TValue], ABC):
         ...
 
     @abstractmethod
-    def copy(self) -> list[TValue]:
+    def copy(self) -> list[T]:
         """Return a shallow copy of the list."""
         ...
 
     @abstractmethod
-    def on_change(
-        self, callback: Callable[[ObservableListChange[TValue]], None]
-    ) -> None:
+    def on_change(self, callback: Callable[[ObservableListChange[T]], None]) -> None:
         """Register for all change events with detailed information."""
         ...
 
     @abstractmethod
-    def on_add(self, callback: Callable[[TValue, int], None]) -> None:
+    def on_add(self, callback: Callable[[T, int], None]) -> None:
         """Register for add events with item and index."""
         ...
 
     @abstractmethod
-    def on_remove(self, callback: Callable[[TValue, int], None]) -> None:
+    def on_remove(self, callback: Callable[[T, int], None]) -> None:
         """Register for remove events with item and index."""
         ...
 
     @abstractmethod
-    def on_clear(self, callback: Callable[[list[TValue]], None]) -> None:
+    def on_clear(self, callback: Callable[[list[T]], None]) -> None:
         """Register for clear events with the cleared items."""
         ...
 
 
-class ObservableListBase(Generic[TValue], IObservableList[TValue]):
+class ObservableListBase(Generic[T], IObservableList[T]):
     """Base implementation that can work with an external list or create its own."""
 
-    def __init__(self, items: list[TValue] | None = None, *, copy: bool = False):
+    def __init__(self, items: list[T] | None = None, *, copy: bool = False):
         """
         Initialize with optional external list reference.
 
@@ -150,15 +148,13 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
             items: Optional external list to observe. If None, creates a new list.
         """
         if copy:
-            self._items: list[TValue] = list(items) if items is not None else []
+            self._items: list[T] = list(items) if items is not None else []
         else:
-            self._items: list[TValue] = items if items is not None else []
-        self._change_callbacks: list[
-            Callable[[ObservableListChange[TValue]], None]
-        ] = []
-        self._add_callbacks: list[Callable[[TValue, int], None]] = []
-        self._remove_callbacks: list[Callable[[TValue, int], None]] = []
-        self._clear_callbacks: list[Callable[[list[TValue]], None]] = []
+            self._items: list[T] = items if items is not None else []
+        self._change_callbacks: list[Callable[[ObservableListChange[T]], None]] = []
+        self._add_callbacks: list[Callable[[T, int], None]] = []
+        self._remove_callbacks: list[Callable[[T, int], None]] = []
+        self._clear_callbacks: list[Callable[[list[T]], None]] = []
 
     @override
     def __len__(self) -> int:
@@ -166,12 +162,12 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         return len(self._items)
 
     @override
-    def __getitem__(self, index: int | slice) -> TValue | list[TValue]:
+    def __getitem__(self, index: int | slice) -> T | list[T]:
         """Get an item or slice of items from the list."""
         return self._items[index]
 
     @override
-    def __setitem__(self, index: int | slice, value: TValue | list[TValue]) -> None:
+    def __setitem__(self, index: int | slice, value: T | list[T]) -> None:
         """Set an item or slice of items in the list."""
         if isinstance(index, slice):
             # Remove old items
@@ -184,12 +180,12 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
                 # Explicitly cast to list[C] to help Pylance
                 self._items[index] = value
                 if value:
-                    typed_value: list[TValue] = cast(list[TValue], value)
+                    typed_value: list[T] = cast(list[T], value)
                     self._notify_add_items(typed_value, index.start)
             else:
                 # Handle single item assigned to slice
-                single_value: TValue = cast(TValue, value)
-                items_list: list[TValue] = [single_value]
+                single_value: T = cast(T, value)
+                items_list: list[T] = [single_value]
                 self._items[index] = items_list
                 self._notify_add_items(items_list, index.start)
         else:
@@ -198,9 +194,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
             self._notify_remove(old_item, index)
 
             # Add new item
-            new_value: TValue = cast(
-                TValue, value
-            )  # Cast to T since we know it's a single item
+            new_value: T = cast(T, value)  # Cast to T since we know it's a single item
             self._items[index] = new_value
             self._notify_add(new_value, index)
 
@@ -217,17 +211,17 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         del self._items[index]
 
     @override
-    def __iter__(self) -> Iterator[TValue]:
+    def __iter__(self) -> Iterator[T]:
         """Return an iterator over the items in the list."""
         return iter(self._items)
 
     @override
-    def __contains__(self, item: TValue) -> bool:
+    def __contains__(self, item: T) -> bool:
         """Check if an item is in the list."""
         return item in self._items
 
     @override
-    def append(self, item: TValue) -> None:
+    def append(self, item: T) -> None:
         """
         Add an item to the end of the list.
 
@@ -238,7 +232,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         self._notify_add(item, len(self._items) - 1)
 
     @override
-    def extend(self, items: list[TValue]) -> None:
+    def extend(self, items: list[T]) -> None:
         """
         Extend the list by appending all items from the iterable.
 
@@ -252,7 +246,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         self._notify_add_items(items, start_index)
 
     @override
-    def insert(self, index: int, item: TValue) -> None:
+    def insert(self, index: int, item: T) -> None:
         """
         Insert an item at a given position.
 
@@ -264,7 +258,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         self._notify_add(item, index)
 
     @override
-    def remove(self, item: TValue) -> None:
+    def remove(self, item: T) -> None:
         """
         Remove the first occurrence of an item from the list.
 
@@ -279,7 +273,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         self._notify_remove(item, index)
 
     @override
-    def pop(self, index: int = -1) -> TValue:
+    def pop(self, index: int = -1) -> T:
         """
         Remove and return an item at a given position.
 
@@ -304,7 +298,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         self._notify_clear(items)
 
     @override
-    def index(self, item: TValue, start: int = 0, end: int | None = None) -> int:
+    def index(self, item: T, start: int = 0, end: int | None = None) -> int:
         """
         Return the index of the first occurrence of an item.
 
@@ -324,7 +318,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         return self._items.index(item, start, end)
 
     @override
-    def count(self, item: TValue) -> int:
+    def count(self, item: T) -> int:
         """
         Return the number of occurrences of an item in the list.
 
@@ -340,7 +334,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
     def sort(
         self,
         *,
-        key: Callable[[TValue], Any] | None = None,
+        key: Callable[[T], Any] | None = None,
         reverse: bool = False,
     ) -> None:
         """
@@ -368,7 +362,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         # No notification needed as the items themselves haven't changed
 
     @override
-    def copy(self) -> list[TValue]:
+    def copy(self) -> list[T]:
         """
         Return a shallow copy of the list.
 
@@ -378,9 +372,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         return self._items.copy()
 
     @override
-    def on_change(
-        self, callback: Callable[[ObservableListChange[TValue]], None]
-    ) -> None:
+    def on_change(self, callback: Callable[[ObservableListChange[T]], None]) -> None:
         """
         Add a callback to be called when the list changes.
 
@@ -390,7 +382,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         self._change_callbacks.append(callback)
 
     @override
-    def on_add(self, callback: Callable[[TValue, int], None]) -> None:
+    def on_add(self, callback: Callable[[T, int], None]) -> None:
         """
         Register for add events with item and index.
 
@@ -400,7 +392,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         self._add_callbacks.append(callback)
 
     @override
-    def on_remove(self, callback: Callable[[TValue, int], None]) -> None:
+    def on_remove(self, callback: Callable[[T, int], None]) -> None:
         """
         Register for remove events with item and index.
 
@@ -410,7 +402,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         self._remove_callbacks.append(callback)
 
     @override
-    def on_clear(self, callback: Callable[[list[TValue]], None]) -> None:
+    def on_clear(self, callback: Callable[[list[T]], None]) -> None:
         """
         Register for clear events with the cleared items.
 
@@ -419,7 +411,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         """
         self._clear_callbacks.append(callback)
 
-    def _notify_add(self, item: TValue, index: int) -> None:
+    def _notify_add(self, item: T, index: int) -> None:
         """
         Notify all callbacks of an item being added.
 
@@ -438,7 +430,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         for callback in self._change_callbacks:
             callback(change)
 
-    def _notify_add_items(self, items: list[TValue], start_index: int) -> None:
+    def _notify_add_items(self, items: list[T], start_index: int) -> None:
         """
         Notify all callbacks of multiple items being added.
 
@@ -459,7 +451,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         for callback in self._change_callbacks:
             callback(change)
 
-    def _notify_remove(self, item: TValue, index: int) -> None:
+    def _notify_remove(self, item: T, index: int) -> None:
         """
         Notify all callbacks of an item being removed.
 
@@ -478,7 +470,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         for callback in self._change_callbacks:
             callback(change)
 
-    def _notify_remove_items(self, items: list[TValue], start_index: int) -> None:
+    def _notify_remove_items(self, items: list[T], start_index: int) -> None:
         """
         Notify all callbacks of multiple items being removed.
 
@@ -499,7 +491,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         for callback in self._change_callbacks:
             callback(change)
 
-    def _notify_clear(self, items: list[TValue]) -> None:
+    def _notify_clear(self, items: list[T]) -> None:
         """
         Notify all callbacks of the list being cleared.
 
@@ -518,12 +510,10 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
             callback(change)
 
 
-class ObservableList(ObservableListBase[TValue]):
+class ObservableList(ObservableListBase[T]):
     """A list that notifies observers when items are added or removed."""
 
-    def __init__(
-        self, initial_items: list[TValue] | None = None, *, copy: bool = False
-    ):
+    def __init__(self, initial_items: list[T] | None = None, *, copy: bool = False):
         """
         Initialize an ObservableList.
 

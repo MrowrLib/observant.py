@@ -7,7 +7,6 @@ from observant.observable_dict import ObservableDict
 from observant.observable_list import ObservableList
 
 T = TypeVar("T")
-TVal = TypeVar("TVal")
 
 
 @dataclass(frozen=True)
@@ -42,13 +41,13 @@ class ObservableProxy(Generic[T]):
 
     def observable(
         self,
-        typ: type[TVal],
+        typ: type[T],
         attr: str,
         *,
         sync: bool | None = None,
-    ) -> Observable[TVal]:
+    ) -> Observable[T]:
         """
-        Get or create an Observable[TVal] for a scalar field.
+        Get or create an Observable[T] for a scalar field.
         """
         sync = self._sync_default if sync is None else sync
         key = FieldKey(attr, sync)
@@ -64,20 +63,20 @@ class ObservableProxy(Generic[T]):
 
     def observable_list(
         self,
-        typ: type[TVal],
+        typ: type[T],
         attr: str,
         *,
         sync: bool | None = None,
-    ) -> ObservableList[TVal]:
+    ) -> ObservableList[T]:
         """
-        Get or create an ObservableList[TVal] for a list field.
+        Get or create an ObservableList[T] for a list field.
         """
         sync = self._sync_default if sync is None else sync
         key = FieldKey(attr, sync)
 
         if key not in self._lists:
             val_raw = getattr(self._obj, attr)
-            val: list[TVal] = cast(list[TVal], val_raw)
+            val: list[T] = cast(list[T], val_raw)
             obs = ObservableList(val, copy=not sync)
             if sync:
                 obs.on_change(lambda _: setattr(self._obj, attr, obs.copy()))
@@ -120,7 +119,7 @@ class ObservableProxy(Generic[T]):
         for attr, value in kwargs.items():
             self.observable(type(value), attr).set(value)
 
-    def load_dict(self, values: dict[str, TVal]) -> None:
+    def load_dict(self, values: dict[str, T]) -> None:
         """
         Set multiple scalar observable values from a dict.
         """
