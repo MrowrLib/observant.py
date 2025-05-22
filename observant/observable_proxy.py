@@ -916,6 +916,58 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             # Clear the pending undo group since we've used it
             self._pending_undo_groups[attr] = None
             print(f"DEBUG: redo - Cleared pending undo group for {attr}")
+        else:
+            # If we don't have an undo function from the pending group,
+            # we need to create one based on the current state
+            print("DEBUG: redo - No pending undo function, creating one")
+
+            # For scalar fields
+            for key, o in self._scalars.items():
+                if key.attr == attr:
+                    # Create an undo function that will restore the current value
+                    current_value = o.get()
+
+                    def new_undo_func() -> None:
+                        print(f"DEBUG: new_undo_func called for {attr}")
+                        o.set(current_value, notify=False)
+                        print(f"DEBUG: new_undo_func completed for {attr}")
+
+                    # Add it to the undo stack
+                    self._undo_stacks.setdefault(attr, []).append(new_undo_func)
+                    print(f"DEBUG: redo - Created and added new undo function for scalar {attr}")
+                    break
+
+            # For list fields
+            if obs_list is not None:
+                # Create an undo function that will restore the current list state
+                current_list = obs_list.copy()
+
+                def new_list_undo_func() -> None:
+                    print(f"DEBUG: new_list_undo_func called for {attr}")
+                    # Clear the list and add all items back
+                    obs_list.clear()
+                    obs_list.extend(current_list)
+                    print(f"DEBUG: new_list_undo_func completed for {attr}")
+
+                # Add it to the undo stack
+                self._undo_stacks.setdefault(attr, []).append(new_list_undo_func)
+                print(f"DEBUG: redo - Created and added new undo function for list {attr}")
+
+            # For dict fields
+            if obs_dict is not None:
+                # Create an undo function that will restore the current dict state
+                current_dict = obs_dict.copy()
+
+                def new_dict_undo_func() -> None:
+                    print(f"DEBUG: new_dict_undo_func called for {attr}")
+                    # Clear the dict and add all items back
+                    obs_dict.clear()
+                    obs_dict.update(current_dict)
+                    print(f"DEBUG: new_dict_undo_func completed for {attr}")
+
+                # Add it to the undo stack
+                self._undo_stacks.setdefault(attr, []).append(new_dict_undo_func)
+                print(f"DEBUG: redo - Created and added new undo function for dict {attr}")
 
         print(f"DEBUG: redo - Completed for {attr}")
 
