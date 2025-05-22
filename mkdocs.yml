@@ -4,6 +4,9 @@ site_url: https://mrowrlib.github.io/observant.py
 theme:
   name: material
 
+extra_css:
+- style.css
+
 plugins:
 - search
 - mkdocstrings

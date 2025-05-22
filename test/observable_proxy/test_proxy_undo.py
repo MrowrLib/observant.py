@@ -26,7 +26,7 @@ class TestObservableProxyUndo:
         """Test undoing a single change to a scalar field."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         proxy.observable(str, "username").set("modified")
@@ -39,7 +39,7 @@ class TestObservableProxyUndo:
         """Test undoing multiple changes to a scalar field."""
         # Arrange
         profile = UserProfile(username="first", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         proxy.observable(str, "username").set("second")
@@ -59,7 +59,7 @@ class TestObservableProxyUndo:
         """Test redoing a change after undoing it."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         proxy.observable(str, "username").set("modified")
@@ -73,7 +73,7 @@ class TestObservableProxyUndo:
         """Test that the redo stack is cleared when a new change is made."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         proxy.observable(str, "username").set("modified")
@@ -87,7 +87,7 @@ class TestObservableProxyUndo:
         """Test that changes within the debounce window are grouped into a single undo step."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False, undo_debounce_ms=500)
+        proxy = ObservableProxy(profile, undo=True, undo_debounce_ms=500)
 
         # Act
         proxy.observable(str, "username").set("change1")
@@ -102,7 +102,7 @@ class TestObservableProxyUndo:
         """Test that changes after the debounce window create a new undo step."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False, undo_debounce_ms=100)
+        proxy = ObservableProxy(profile, undo=True, undo_debounce_ms=100)
 
         # Act
         proxy.observable(str, "username").set("change1")
@@ -125,7 +125,7 @@ class TestObservableProxyUndo:
         """Test undoing an append operation on a list field."""
         # Arrange
         library = Library(title="Test", books=["Book1"])
-        proxy = ObservableProxy(library, sync=False)
+        proxy = ObservableProxy(library, undo=True)
 
         # Act
         proxy.observable_list(str, "books").append("Book2")
@@ -138,7 +138,7 @@ class TestObservableProxyUndo:
         """Test undoing a remove operation on a list field."""
         # Arrange
         library = Library(title="Test", books=["Book1", "Book2"])
-        proxy = ObservableProxy(library, sync=False)
+        proxy = ObservableProxy(library, undo=True)
 
         # Act
         proxy.observable_list(str, "books").pop(1)  # Remove "Book2"
@@ -151,7 +151,7 @@ class TestObservableProxyUndo:
         """Test undoing a clear operation on a list field."""
         # Arrange
         library = Library(title="Test", books=["Book1", "Book2"])
-        proxy = ObservableProxy(library, sync=False)
+        proxy = ObservableProxy(library, undo=True)
 
         # Act
         proxy.observable_list(str, "books").clear()
@@ -164,7 +164,7 @@ class TestObservableProxyUndo:
         """Test redoing a list operation after undoing it."""
         # Arrange
         library = Library(title="Test", books=["Book1"])
-        proxy = ObservableProxy(library, sync=False)
+        proxy = ObservableProxy(library, undo=True)
 
         # Act
         proxy.observable_list(str, "books").append("Book2")
@@ -178,7 +178,7 @@ class TestObservableProxyUndo:
         """Test undoing a set key operation on a dict field."""
         # Arrange
         profile = UserProfile(username="user", preferences={"theme": "dark"}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         proxy.observable_dict((str, str), "preferences")["language"] = "en"
@@ -191,7 +191,7 @@ class TestObservableProxyUndo:
         """Test undoing a delete key operation on a dict field."""
         # Arrange
         profile = UserProfile(username="user", preferences={"theme": "dark"}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         print("DEBUG: TEST - Before delete, preferences:", proxy.observable_dict((str, str), "preferences").copy())
@@ -216,7 +216,7 @@ class TestObservableProxyUndo:
         """Test redoing a dict operation after undoing it."""
         # Arrange
         profile = UserProfile(username="user", preferences={"theme": "dark"}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         proxy.observable_dict((str, str), "preferences")["language"] = "en"
@@ -231,7 +231,7 @@ class TestObservableProxyUndo:
         """Test that the undo stack respects the maximum size."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False, undo_max=2)
+        proxy = ObservableProxy(profile, undo=True, undo_max=2)
 
         # Act - make 3 changes
         proxy.observable(str, "username").set("change1")
@@ -250,7 +250,7 @@ class TestObservableProxyUndo:
         """Test the can_undo and can_redo flags."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Assert - initially no undo/redo
         assert_that(proxy.can_undo("username")).is_false()
@@ -281,7 +281,7 @@ class TestObservableProxyUndo:
         """Test that undoing after saving doesn't crash."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         proxy.observable(str, "username").set("modified")
@@ -295,7 +295,7 @@ class TestObservableProxyUndo:
         """Test that the global undo config is applied to all fields."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False, undo_max=1)
+        proxy = ObservableProxy(profile, undo=True, undo_max=1)
 
         # Act - make 2 changes to username
         proxy.observable(str, "username").set("change1")
@@ -319,7 +319,7 @@ class TestObservableProxyUndo:
         """Test setting undo config before field creation."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Set config before creating the observable
         proxy.set_undo_config("username", undo_max=1)
@@ -339,7 +339,7 @@ class TestObservableProxyUndo:
         """Test setting undo config after field creation."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Create the observable first
         proxy.observable(str, "username")
@@ -362,7 +362,7 @@ class TestObservableProxyUndo:
         """Test overriding undo config on observable creation."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False, undo_max=3)
+        proxy = ObservableProxy(profile, undo=True, undo_max=3)
 
         # Create observable with overridden config
         proxy.observable(str, "username", undo_max=1)
@@ -382,7 +382,7 @@ class TestObservableProxyUndo:
         """Test that undoing on an untracked field does nothing."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         proxy.undo("nonexistent")
@@ -394,7 +394,7 @@ class TestObservableProxyUndo:
         """Test that redoing on an untracked field does nothing."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         proxy.redo("nonexistent")
@@ -406,7 +406,7 @@ class TestObservableProxyUndo:
         """Test that undoing when the stack is empty does nothing."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Create observable but don't make changes
         proxy.observable(str, "username")
@@ -421,7 +421,7 @@ class TestObservableProxyUndo:
         """Test that redoing when the stack is empty does nothing."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Create observable but don't make changes
         proxy.observable(str, "username")

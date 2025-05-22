@@ -21,7 +21,7 @@ class TestObservableProxyUndoConfig:
         """Test that undo is disabled by default."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False)  # undo=False by default
+        proxy = ObservableProxy(profile)  # undo=False by default
 
         # Act
         proxy.observable(str, "username").set("modified")
@@ -33,7 +33,7 @@ class TestObservableProxyUndoConfig:
         """Test that undo can be enabled explicitly."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False, undo=True)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act
         proxy.observable(str, "username").set("modified")
@@ -64,7 +64,7 @@ class TestObservableProxyUndoConfig:
         """Test that undo config defaults are applied correctly."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False, undo=True)
+        proxy = ObservableProxy(profile, undo=True)
 
         # Act - make more changes than the default max
         for i in range(60):  # Default max is 50
@@ -83,7 +83,7 @@ class TestObservableProxyUndoConfig:
         """Test that custom undo config values are applied correctly."""
         # Arrange
         profile = UserProfile(username="original", preferences={}, age=30)
-        proxy = ObservableProxy(profile, sync=False, undo=True, undo_max=5)
+        proxy = ObservableProxy(profile, undo=True, undo_max=5)
 
         # Act - make more changes than the custom max
         for i in range(10):

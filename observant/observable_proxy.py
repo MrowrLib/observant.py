@@ -30,7 +30,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         obj: T,
         *,
         sync: bool = False,
-        undo: bool = True,  # Enable undo by default
+        undo: bool = False,  # Undo is disabled by default
         undo_max: int | None = None,
         undo_debounce_ms: int | None = None,
     ) -> None:
@@ -550,7 +550,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         if attr in self._field_undo_configs:
             # If the field has a specific config but no explicit enabled flag,
             # inherit from the default config
-            if not hasattr(config, "enabled") or config.enabled is None:
+            if not hasattr(config, "enabled"):
                 config.enabled = self._default_undo_config.enabled
 
         return config
@@ -578,10 +578,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         # Create a flag to prevent recursive tracking
         tracking_enabled = [True]
 
-        # Create a tracking function that can be disabled
-        def track_change(change: Any) -> None:
-            if tracking_enabled[0]:
-                self._track_list_change(attr, change)
+        # We don't need a tracking function here since it's already registered
+        # when the observable_list is created
 
         # We don't need to add a new tracking callback here
         # The callback is already registered when the observable_list is created
@@ -684,10 +682,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         # Create a flag to prevent recursive tracking
         tracking_enabled = [True]
 
-        # Create a tracking function that can be disabled
-        def track_change(change: Any) -> None:
-            if tracking_enabled[0]:
-                self._track_dict_change(attr, change)
+        # We don't need a tracking function here since it's already registered
+        # when the observable_dict is created
 
         # We don't need to add a new tracking callback here
         # The callback is already registered when the observable_dict is created
@@ -953,17 +949,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
                     print(f"DEBUG: redo - Found dict observable for {attr}")
                     break
 
-        # Create a class to simulate a change object for list/dict operations
-        class SimulatedChange:
-            def __init__(self) -> None:
-                self.type = None
-                self.index = None
-                self.item = None
-                self.key = None
-                self.value = None
-                self.old_value = None
-                self.items = None
-                self.old_items = None
+        # We don't need to simulate change objects anymore
 
         # Execute the redo function
         print(f"DEBUG: redo - Executing redo function for {attr}")
