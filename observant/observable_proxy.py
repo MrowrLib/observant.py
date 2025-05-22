@@ -627,7 +627,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             return
 
         # Add to the undo stack
-        self._add_to_undo_stack(attr, undo_func, redo_func)
+        self._add_to_undo_stack(attr, undo_func, redo_func, from_undo=True)
 
     def _track_dict_change(self, attr: str, change: Any) -> None:
         """
@@ -743,9 +743,9 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             return
 
         # Add to the undo stack
-        self._add_to_undo_stack(attr, undo_func, redo_func)
+        self._add_to_undo_stack(attr, undo_func, redo_func, from_undo=True)
 
-    def _add_to_undo_stack(self, attr: str, undo_func: Callable[[], None], redo_func: Callable[[], None]) -> None:
+    def _add_to_undo_stack(self, attr: str, undo_func: Callable[[], None], redo_func: Callable[[], None], from_undo: bool = False) -> None:
         """
         Add an undo/redo pair to the undo stack for a field.
 
@@ -753,8 +753,9 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             attr: The field name.
             undo_func: The function to call to undo the change.
             redo_func: The function to call to redo the change.
+            from_undo: Whether this is being called from the undo method.
         """
-        print(f"DEBUG: _add_to_undo_stack called for {attr}")
+        print(f"DEBUG: _add_to_undo_stack called for {attr}, from_undo={from_undo}")
 
         # Initialize stacks if they don't exist
         if attr not in self._undo_stacks:
@@ -789,9 +790,10 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             # We're outside the debounce window or there's no pending group
             print(f"DEBUG: _add_to_undo_stack - Outside debounce window or no pending group for {attr}")
 
-            # Clear the redo stack when a new change is made
-            self._redo_stacks[attr].clear()
-            print(f"DEBUG: _add_to_undo_stack - Cleared redo stack for {attr}")
+            # Clear the redo stack when a new change is made, but not if we're undoing
+            if not from_undo:
+                self._redo_stacks[attr].clear()
+                print(f"DEBUG: _add_to_undo_stack - Cleared redo stack for {attr}")
 
             # Add the undo function to the stack
             self._undo_stacks[attr].append(undo_func)
