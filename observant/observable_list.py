@@ -2,16 +2,16 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Callable, Generic, Iterator, TypeVar, cast, overload, override
 
-from observant.observable import CollectionChangeType, ComparableOrPrimitive
+from observant.observable import ComparableOrPrimitive, ObservableCollectionChangeType
 
 TValue = TypeVar("TValue", bound=ComparableOrPrimitive)
 
 
 @dataclass
-class ListChange(Generic[TValue]):
+class ObservableListChange(Generic[TValue]):
     """Information about a change to an ObservableList."""
 
-    type: CollectionChangeType
+    type: ObservableCollectionChangeType
     index: int | None = None  # Index where the change occurred, if applicable
     item: TValue | None = None  # Item that was added or removed, if applicable
     items: list[TValue] | None = (
@@ -119,7 +119,9 @@ class IObservableList(Generic[TValue], ABC):
         ...
 
     @abstractmethod
-    def on_change(self, callback: Callable[[ListChange[TValue]], None]) -> None:
+    def on_change(
+        self, callback: Callable[[ObservableListChange[TValue]], None]
+    ) -> None:
         """Register for all change events with detailed information."""
         ...
 
@@ -153,7 +155,9 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
             self._items: list[TValue] = list(items) if items is not None else []
         else:
             self._items: list[TValue] = items if items is not None else []
-        self._change_callbacks: list[Callable[[ListChange[TValue]], None]] = []
+        self._change_callbacks: list[
+            Callable[[ObservableListChange[TValue]], None]
+        ] = []
         self._add_callbacks: list[Callable[[TValue, int], None]] = []
         self._remove_callbacks: list[Callable[[TValue, int], None]] = []
         self._clear_callbacks: list[Callable[[list[TValue]], None]] = []
@@ -376,7 +380,9 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
         return self._items.copy()
 
     @override
-    def on_change(self, callback: Callable[[ListChange[TValue]], None]) -> None:
+    def on_change(
+        self, callback: Callable[[ObservableListChange[TValue]], None]
+    ) -> None:
         """
         Add a callback to be called when the list changes.
 
@@ -428,7 +434,9 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
             callback(item, index)
 
         # Call general change callbacks
-        change = ListChange(type=CollectionChangeType.ADD, index=index, item=item)
+        change = ObservableListChange(
+            type=ObservableCollectionChangeType.ADD, index=index, item=item
+        )
         for callback in self._change_callbacks:
             callback(change)
 
@@ -447,8 +455,8 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
                 callback(item, index)
 
         # Call general change callbacks
-        change = ListChange(
-            type=CollectionChangeType.ADD, index=start_index, items=items
+        change = ObservableListChange(
+            type=ObservableCollectionChangeType.ADD, index=start_index, items=items
         )
         for callback in self._change_callbacks:
             callback(change)
@@ -466,7 +474,9 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
             callback(item, index)
 
         # Call general change callbacks
-        change = ListChange(type=CollectionChangeType.REMOVE, index=index, item=item)
+        change = ObservableListChange(
+            type=ObservableCollectionChangeType.REMOVE, index=index, item=item
+        )
         for callback in self._change_callbacks:
             callback(change)
 
@@ -485,8 +495,8 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
                 callback(item, index)
 
         # Call general change callbacks
-        change = ListChange(
-            type=CollectionChangeType.REMOVE, index=start_index, items=items
+        change = ObservableListChange(
+            type=ObservableCollectionChangeType.REMOVE, index=start_index, items=items
         )
         for callback in self._change_callbacks:
             callback(change)
@@ -503,7 +513,9 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
             callback(items)
 
         # Call general change callbacks
-        change = ListChange(type=CollectionChangeType.CLEAR, items=items)
+        change = ObservableListChange(
+            type=ObservableCollectionChangeType.CLEAR, items=items
+        )
         for callback in self._change_callbacks:
             callback(change)
 

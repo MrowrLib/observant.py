@@ -2,17 +2,17 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Callable, Generic, Iterator, TypeVar, cast, override
 
-from observant.observable import CollectionChangeType, ComparableOrPrimitive
+from observant.observable import ComparableOrPrimitive, ObservableCollectionChangeType
 
 TKey = TypeVar("TKey", bound=ComparableOrPrimitive)
 TValue = TypeVar("TValue", bound=ComparableOrPrimitive)
 
 
 @dataclass
-class DictChange(Generic[TKey, TValue]):
+class ObservableDictChange(Generic[TKey, TValue]):
     """Information about a change to an ObservableDict."""
 
-    type: CollectionChangeType
+    type: ObservableCollectionChangeType
     key: TKey | None = None  # Key where the change occurred, if applicable
     value: TValue | None = (
         None  # Value that was added, removed, or updated, if applicable
@@ -106,7 +106,9 @@ class IObservableDict(Generic[TKey, TValue], ABC):
         ...
 
     @abstractmethod
-    def on_change(self, callback: Callable[[DictChange[TKey, TValue]], None]) -> None:
+    def on_change(
+        self, callback: Callable[[ObservableDictChange[TKey, TValue]], None]
+    ) -> None:
         """Register for all change events with detailed information."""
         ...
 
@@ -147,7 +149,9 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
             self._items: dict[TKey, TValue] = dict(items) if items is not None else {}
         else:
             self._items = items if items is not None else {}
-        self._change_callbacks: list[Callable[[DictChange[TKey, TValue]], None]] = []
+        self._change_callbacks: list[
+            Callable[[ObservableDictChange[TKey, TValue]], None]
+        ] = []
         self._add_callbacks: list[Callable[[TKey, TValue], None]] = []
         self._remove_callbacks: list[Callable[[TKey, TValue], None]] = []
         self._update_callbacks: list[Callable[[TKey, TValue], None]] = []
@@ -341,7 +345,9 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
         return self._items.copy()
 
     @override
-    def on_change(self, callback: Callable[[DictChange[TKey, TValue]], None]) -> None:
+    def on_change(
+        self, callback: Callable[[ObservableDictChange[TKey, TValue]], None]
+    ) -> None:
         """
         Add a callback to be called when the dictionary changes.
 
@@ -406,8 +412,11 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
         items_dict = {key: value}
 
         # Call general change callbacks
-        change = DictChange(
-            type=CollectionChangeType.ADD, key=key, value=value, items=items_dict
+        change = ObservableDictChange(
+            type=ObservableCollectionChangeType.ADD,
+            key=key,
+            value=value,
+            items=items_dict,
         )
         for callback in self._change_callbacks:
             callback(change)
@@ -428,8 +437,11 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
         items_dict = {key: value}
 
         # Call general change callbacks
-        change = DictChange(
-            type=CollectionChangeType.REMOVE, key=key, value=value, items=items_dict
+        change = ObservableDictChange(
+            type=ObservableCollectionChangeType.REMOVE,
+            key=key,
+            value=value,
+            items=items_dict,
         )
         for callback in self._change_callbacks:
             callback(change)
@@ -450,8 +462,11 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
         items_dict = {key: value}
 
         # Call general change callbacks
-        change = DictChange(
-            type=CollectionChangeType.UPDATE, key=key, value=value, items=items_dict
+        change = ObservableDictChange(
+            type=ObservableCollectionChangeType.UPDATE,
+            key=key,
+            value=value,
+            items=items_dict,
         )
         for callback in self._change_callbacks:
             callback(change)
@@ -468,7 +483,9 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
             callback(items)
 
         # Call general change callbacks
-        change = DictChange(type=CollectionChangeType.CLEAR, items=items)
+        change = ObservableDictChange(
+            type=ObservableCollectionChangeType.CLEAR, items=items
+        )
         for callback in self._change_callbacks:
             callback(change)
 

@@ -1,11 +1,11 @@
 from assertpy import assert_that
 
 from observant import (
-    CollectionChangeType,
-    DictChange,
-    ListChange,
+    ObservableCollectionChangeType,
     ObservableDict,
+    ObservableDictChange,
     ObservableList,
+    ObservableListChange,
 )
 
 
@@ -29,7 +29,7 @@ class TestObservableList:
         """Test appending an item to an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]()
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -39,7 +39,7 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(1)
         assert_that(observable_list[0]).is_equal_to(42)
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.ADD)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.ADD)
         assert_that(changes[0].index).is_equal_to(0)
         assert_that(changes[0].item).is_equal_to(42)
 
@@ -47,7 +47,7 @@ class TestObservableList:
         """Test extending an ObservableList with multiple items."""
         # Arrange
         observable_list = ObservableList[int]()
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -57,7 +57,7 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(3)
         assert_that(list(observable_list)).is_equal_to([1, 2, 3])
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.ADD)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.ADD)
         assert_that(changes[0].index).is_equal_to(0)
         assert_that(changes[0].items).is_equal_to([1, 2, 3])
 
@@ -65,7 +65,7 @@ class TestObservableList:
         """Test inserting an item into an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]([1, 3])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -75,7 +75,7 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(3)
         assert_that(list(observable_list)).is_equal_to([1, 2, 3])
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.ADD)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.ADD)
         assert_that(changes[0].index).is_equal_to(1)
         assert_that(changes[0].item).is_equal_to(2)
 
@@ -83,7 +83,7 @@ class TestObservableList:
         """Test removing an item from an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]([1, 2, 3])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -93,7 +93,7 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(2)
         assert_that(list(observable_list)).is_equal_to([1, 3])
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.REMOVE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.REMOVE)
         assert_that(changes[0].index).is_equal_to(1)
         assert_that(changes[0].item).is_equal_to(2)
 
@@ -101,7 +101,7 @@ class TestObservableList:
         """Test popping an item from an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]([1, 2, 3])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -112,7 +112,7 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(2)
         assert_that(list(observable_list)).is_equal_to([1, 2])
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.REMOVE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.REMOVE)
         assert_that(changes[0].index).is_equal_to(-1)
         assert_that(changes[0].item).is_equal_to(3)
 
@@ -120,7 +120,7 @@ class TestObservableList:
         """Test popping an item from an ObservableList with a specific index."""
         # Arrange
         observable_list = ObservableList[int]([1, 2, 3])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -131,7 +131,7 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(2)
         assert_that(list(observable_list)).is_equal_to([1, 3])
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.REMOVE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.REMOVE)
         assert_that(changes[0].index).is_equal_to(1)
         assert_that(changes[0].item).is_equal_to(2)
 
@@ -139,7 +139,7 @@ class TestObservableList:
         """Test clearing an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]([1, 2, 3])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -149,14 +149,14 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(0)
         assert_that(list(observable_list)).is_empty()
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.CLEAR)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.CLEAR)
         assert_that(changes[0].items).is_equal_to([1, 2, 3])
 
     def test_setitem(self) -> None:
         """Test setting an item in an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]([1, 2, 3])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -166,10 +166,10 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(3)
         assert_that(list(observable_list)).is_equal_to([1, 42, 3])
         assert_that(changes).is_length(2)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.REMOVE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.REMOVE)
         assert_that(changes[0].index).is_equal_to(1)
         assert_that(changes[0].item).is_equal_to(2)
-        assert_that(changes[1].type).is_equal_to(CollectionChangeType.ADD)
+        assert_that(changes[1].type).is_equal_to(ObservableCollectionChangeType.ADD)
         assert_that(changes[1].index).is_equal_to(1)
         assert_that(changes[1].item).is_equal_to(42)
 
@@ -177,7 +177,7 @@ class TestObservableList:
         """Test setting a slice of items in an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]([1, 2, 3, 4, 5])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -187,10 +187,10 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(4)
         assert_that(list(observable_list)).is_equal_to([1, 42, 43, 5])
         assert_that(changes).is_length(2)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.REMOVE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.REMOVE)
         assert_that(changes[0].index).is_equal_to(1)
         assert_that(changes[0].items).is_equal_to([2, 3, 4])
-        assert_that(changes[1].type).is_equal_to(CollectionChangeType.ADD)
+        assert_that(changes[1].type).is_equal_to(ObservableCollectionChangeType.ADD)
         assert_that(changes[1].index).is_equal_to(1)
         assert_that(changes[1].items).is_equal_to([42, 43])
 
@@ -198,7 +198,7 @@ class TestObservableList:
         """Test deleting an item from an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]([1, 2, 3])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -208,7 +208,7 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(2)
         assert_that(list(observable_list)).is_equal_to([1, 3])
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.REMOVE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.REMOVE)
         assert_that(changes[0].index).is_equal_to(1)
         assert_that(changes[0].item).is_equal_to(2)
 
@@ -216,7 +216,7 @@ class TestObservableList:
         """Test deleting a slice of items from an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]([1, 2, 3, 4, 5])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -226,7 +226,7 @@ class TestObservableList:
         assert_that(len(observable_list)).is_equal_to(2)
         assert_that(list(observable_list)).is_equal_to([1, 5])
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.REMOVE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.REMOVE)
         assert_that(changes[0].index).is_equal_to(1)
         assert_that(changes[0].items).is_equal_to([2, 3, 4])
 
@@ -234,7 +234,7 @@ class TestObservableList:
         """Test sorting an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]([3, 1, 2])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -249,7 +249,7 @@ class TestObservableList:
         """Test reversing an ObservableList."""
         # Arrange
         observable_list = ObservableList[int]([1, 2, 3])
-        changes: list[ListChange[int]] = []
+        changes: list[ObservableListChange[int]] = []
         observable_list.on_change(lambda change: changes.append(change))
 
         # Act
@@ -281,7 +281,7 @@ class TestObservableDict:
         """Test adding an item to an ObservableDict using setitem."""
         # Arrange
         observable_dict = ObservableDict[str, int]()
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -291,7 +291,7 @@ class TestObservableDict:
         assert_that(len(observable_dict)).is_equal_to(1)
         assert_that(observable_dict["a"]).is_equal_to(1)
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.ADD)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.ADD)
         assert_that(changes[0].key).is_equal_to("a")
         assert_that(changes[0].value).is_equal_to(1)
 
@@ -299,7 +299,7 @@ class TestObservableDict:
         """Test updating an item in an ObservableDict using setitem."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -309,7 +309,7 @@ class TestObservableDict:
         assert_that(len(observable_dict)).is_equal_to(1)
         assert_that(observable_dict["a"]).is_equal_to(42)
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.UPDATE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.UPDATE)
         assert_that(changes[0].key).is_equal_to("a")
         assert_that(changes[0].value).is_equal_to(42)
 
@@ -317,7 +317,7 @@ class TestObservableDict:
         """Test deleting an item from an ObservableDict."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1, "b": 2})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -327,7 +327,7 @@ class TestObservableDict:
         assert_that(len(observable_dict)).is_equal_to(1)
         assert_that("a" in observable_dict).is_false()
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.REMOVE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.REMOVE)
         assert_that(changes[0].key).is_equal_to("a")
         assert_that(changes[0].value).is_equal_to(1)
 
@@ -335,7 +335,7 @@ class TestObservableDict:
         """Test getting an item from an ObservableDict."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -351,7 +351,7 @@ class TestObservableDict:
         """Test setdefault with an existing key."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -368,7 +368,7 @@ class TestObservableDict:
         """Test setdefault with a new key."""
         # Arrange
         observable_dict = ObservableDict[str, int]()
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -378,7 +378,7 @@ class TestObservableDict:
         assert_that(value).is_equal_to(42)
         assert_that(observable_dict["a"]).is_equal_to(42)
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.ADD)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.ADD)
         assert_that(changes[0].key).is_equal_to("a")
         assert_that(changes[0].value).is_equal_to(42)
 
@@ -386,7 +386,7 @@ class TestObservableDict:
         """Test popping an item from an ObservableDict."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1, "b": 2})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -397,7 +397,7 @@ class TestObservableDict:
         assert_that(len(observable_dict)).is_equal_to(1)
         assert_that("a" in observable_dict).is_false()
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.REMOVE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.REMOVE)
         assert_that(changes[0].key).is_equal_to("a")
         assert_that(changes[0].value).is_equal_to(1)
 
@@ -405,7 +405,7 @@ class TestObservableDict:
         """Test popping a non-existent item from an ObservableDict with a default value."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -420,7 +420,7 @@ class TestObservableDict:
         """Test popping an item from an ObservableDict using popitem."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -431,7 +431,7 @@ class TestObservableDict:
         assert_that(value).is_equal_to(1)
         assert_that(len(observable_dict)).is_equal_to(0)
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.REMOVE)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.REMOVE)
         assert_that(changes[0].key).is_equal_to("a")
         assert_that(changes[0].value).is_equal_to(1)
 
@@ -439,7 +439,7 @@ class TestObservableDict:
         """Test clearing an ObservableDict."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1, "b": 2})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -449,14 +449,14 @@ class TestObservableDict:
         assert_that(len(observable_dict)).is_equal_to(0)
         assert_that(dict(observable_dict.items())).is_empty()
         assert_that(changes).is_length(1)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.CLEAR)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.CLEAR)
         assert_that(changes[0].items).is_equal_to({"a": 1, "b": 2})
 
     def test_update(self) -> None:
         """Test updating an ObservableDict with another dictionary."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1, "b": 2})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -468,16 +468,16 @@ class TestObservableDict:
             {"a": 1, "b": 42, "c": 3}
         )
         assert_that(changes).is_length(2)
-        assert_that(changes[0].type).is_equal_to(CollectionChangeType.ADD)
+        assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.ADD)
         assert_that(changes[0].items).is_equal_to({"c": 3})
-        assert_that(changes[1].type).is_equal_to(CollectionChangeType.UPDATE)
+        assert_that(changes[1].type).is_equal_to(ObservableCollectionChangeType.UPDATE)
         assert_that(changes[1].items).is_equal_to({"b": 42})
 
     def test_keys(self) -> None:
         """Test getting the keys of an ObservableDict."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1, "b": 2})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -491,7 +491,7 @@ class TestObservableDict:
         """Test getting the values of an ObservableDict."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1, "b": 2})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -505,7 +505,7 @@ class TestObservableDict:
         """Test getting the items of an ObservableDict."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1, "b": 2})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act
@@ -519,7 +519,7 @@ class TestObservableDict:
         """Test copying an ObservableDict."""
         # Arrange
         observable_dict = ObservableDict[str, int]({"a": 1, "b": 2})
-        changes: list[DictChange[str, int]] = []
+        changes: list[ObservableDictChange[str, int]] = []
         observable_dict.on_change(lambda change: changes.append(change))
 
         # Act

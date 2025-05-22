@@ -23,7 +23,9 @@ T = TypeVar("T")
 @dataclass
 class Observable(Generic[T]):
     _value: T
-    _callbacks: list[Callable[[T], None]] = field(default_factory=list[Callable[[T], None]])
+    _callbacks: list[Callable[[T], None]] = field(
+        default_factory=list[Callable[[T], None]]
+    )
 
     def get(self) -> T:
         return self._value
@@ -43,7 +45,7 @@ class Observable(Generic[T]):
         self._callbacks.append(callback)
 
 
-class CollectionChangeType(Enum):
+class ObservableCollectionChangeType(Enum):
     """Type of change that occurred in a collection."""
 
     ADD = auto()
