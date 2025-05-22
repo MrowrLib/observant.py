@@ -8,6 +8,7 @@ from observant.interfaces.proxy import IObservableProxy
 from observant.observable import Observable
 from observant.observable_dict import ObservableDict
 from observant.observable_list import ObservableList
+from observant.types.collection_change_type import ObservableCollectionChangeType
 from observant.types.proxy_field_key import ProxyFieldKey
 from observant.types.undo_config import UndoConfig
 from observant.undoable_observable import UndoableObservable
@@ -552,13 +553,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             if tracking_enabled[0]:
                 self._track_list_change(attr, change)
 
-        # Replace the existing tracking callback with our new one
-        # First, find and remove any existing tracking callbacks
-        for key, o in self._lists.items():
-            if key.attr == attr:
-                # Remove existing tracking callbacks and add our new one
-                o.on_change(track_change)
-                break
+        # We don't need to add a new tracking callback here
+        # The callback is already registered when the observable_list is created
 
         # Helper function to temporarily disable tracking
         def with_tracking_disabled(action: Callable[[], None]) -> None:
@@ -570,45 +566,9 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             tracking_enabled[0] = True
 
         # Create undo/redo functions based on the change type
-        if hasattr(change, "index") and hasattr(change, "item"):
-            # This is an append or insert
-            index = change.index
-            item = change.item
-
-            def undo_func() -> None:
-                def action() -> None:
-                    if index < len(obs):  # Check if index is valid
-                        obs.pop(index)
-
-                with_tracking_disabled(action)
-
-            def redo_func() -> None:
-                def action() -> None:
-                    obs.insert(index, item)
-
-                with_tracking_disabled(action)
-
-        elif hasattr(change, "index") and hasattr(change, "old_item"):
-            # This is a remove
-            index = change.index
-            old_item = change.old_item
-
-            def undo_func() -> None:
-                def action() -> None:
-                    obs.insert(index, old_item)
-
-                with_tracking_disabled(action)
-
-            def redo_func() -> None:
-                def action() -> None:
-                    if index < len(obs):  # Check if index is valid
-                        obs.pop(index)
-
-                with_tracking_disabled(action)
-
-        elif hasattr(change, "old_items"):
-            # This is a clear
-            old_items = change.old_items
+        if hasattr(change, "type") and change.type == ObservableCollectionChangeType.CLEAR:
+            # This is a clear operation
+            old_items = change.items
 
             def undo_func() -> None:
                 def action() -> None:
@@ -621,6 +581,46 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
                     obs.clear()
 
                 with_tracking_disabled(action)
+
+        elif hasattr(change, "index") and hasattr(change, "item"):
+            # This could be an append/insert or a remove operation
+            index = change.index
+            item = change.item
+
+            if change.type == ObservableCollectionChangeType.ADD:
+                # This is an append or insert
+                def undo_func() -> None:
+                    def action() -> None:
+                        if index is not None and index < len(obs):  # Check if index is valid
+                            obs.pop(index)
+
+                    with_tracking_disabled(action)
+
+                def redo_func() -> None:
+                    def action() -> None:
+                        if index is not None:
+                            obs.insert(index, item)
+                        else:
+                            obs.append(item)
+
+                    with_tracking_disabled(action)
+            else:
+                # This is a remove operation
+                def undo_func() -> None:
+                    def action() -> None:
+                        if index is not None:
+                            obs.insert(index, item)
+                        else:
+                            obs.append(item)
+
+                    with_tracking_disabled(action)
+
+                def redo_func() -> None:
+                    def action() -> None:
+                        if index is not None and index < len(obs):  # Check if index is valid
+                            obs.pop(index)
+
+                    with_tracking_disabled(action)
 
         else:
             # Unknown change type
@@ -655,13 +655,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             if tracking_enabled[0]:
                 self._track_dict_change(attr, change)
 
-        # Replace the existing tracking callback with our new one
-        # First, find and remove any existing tracking callbacks
-        for key, o in self._dicts.items():
-            if key.attr == attr:
-                # Remove existing tracking callbacks and add our new one
-                o.on_change(track_change)
-                break
+        # We don't need to add a new tracking callback here
+        # The callback is already registered when the observable_dict is created
 
         # Helper function to temporarily disable tracking
         def with_tracking_disabled(action: Callable[[], None]) -> None:
@@ -858,16 +853,69 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         Args:
             attr: The field name to redo changes for.
         """
+        print(f"DEBUG: redo called for {attr}")
         if attr not in self._redo_stacks or not self._redo_stacks[attr]:
+            print(f"DEBUG: redo - Nothing to redo for {attr}")
             return  # Nothing to redo
 
         # Pop the most recent redo function
         redo_func = self._redo_stacks[attr].pop()
+        print(f"DEBUG: redo - Popped redo function from stack for {attr}, remaining: {len(self._redo_stacks[attr])}")
 
-        # Execute it
+        # Get the undo function that will undo this redo operation
+        # This is the function that was popped from the undo stack when undo was called
+        undo_func = None
+        if attr in self._pending_undo_groups:
+            undo_func = self._pending_undo_groups[attr]
+            print(f"DEBUG: redo - Got pending undo function for {attr}: {undo_func is not None}")
+
+        # Find the observable for this field to manually track changes
+        # We need to do this because the redo function disables tracking
+        obs_list = None
+        obs_dict = None
+
+        # Check if this is a list field
+        for key, o in self._lists.items():
+            if key.attr == attr:
+                obs_list = o
+                print(f"DEBUG: redo - Found list observable for {attr}")
+                break
+
+        # Check if this is a dict field
+        if obs_list is None:
+            for key, o in self._dicts.items():
+                if key.attr == attr:
+                    obs_dict = o
+                    print(f"DEBUG: redo - Found dict observable for {attr}")
+                    break
+
+        # Create a class to simulate a change object for list/dict operations
+        class SimulatedChange:
+            def __init__(self) -> None:
+                self.type = None
+                self.index = None
+                self.item = None
+                self.key = None
+                self.value = None
+                self.old_value = None
+                self.items = None
+                self.old_items = None
+
+        # Execute the redo function
+        print(f"DEBUG: redo - Executing redo function for {attr}")
         redo_func()
+        print(f"DEBUG: redo - Redo function executed for {attr}")
 
-        # The change tracking will add the corresponding undo function back to the undo stack
+        # Add the undo function back to the undo stack
+        # This is necessary because the redo function disables tracking
+        if undo_func is not None:
+            self._undo_stacks.setdefault(attr, []).append(undo_func)
+            print(f"DEBUG: redo - Added undo function back to stack for {attr}, stack size: {len(self._undo_stacks[attr])}")
+            # Clear the pending undo group since we've used it
+            self._pending_undo_groups[attr] = None
+            print(f"DEBUG: redo - Cleared pending undo group for {attr}")
+
+        print(f"DEBUG: redo - Completed for {attr}")
 
     @override
     def can_undo(self, attr: str) -> bool:
@@ -924,14 +972,14 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         # Create undo/redo functions
         def undo_func() -> None:
             print(f"DEBUG: undo_func called for {attr}, setting value to {old_value}")
-            # Set the old value
-            obs.set(old_value)
+            # Set the old value without triggering callbacks to avoid recursive tracking
+            obs.set(old_value, notify=False)
             print(f"DEBUG: undo_func completed for {attr}")
 
         def redo_func() -> None:
             print(f"DEBUG: redo_func called for {attr}, setting value to {new_value}")
-            # Set the new value
-            obs.set(new_value)
+            # Set the new value without triggering callbacks to avoid recursive tracking
+            obs.set(new_value, notify=False)
             print(f"DEBUG: redo_func completed for {attr}")
 
         # Add to the undo stack

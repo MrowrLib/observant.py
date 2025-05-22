@@ -14,8 +14,8 @@ class UndoableObservable(Observable[T], Generic[T]):
         self._proxy = proxy
 
     @override
-    def set(self, value: T) -> None:
+    def set(self, value: T, notify: bool = True) -> None:
         old_value = self.get()
-        if old_value != value:
+        if old_value != value and notify:
             self._proxy.track_scalar_change(self._attr, old_value, value)
-        super().set(value)
+        super().set(value, notify=notify)
