@@ -22,12 +22,6 @@ class Observable(Generic[T], IObservable[T]):
         for callback in self._callbacks:
             callback(value)
 
-    def set_if_changed(self, value: T) -> None:
-        if self._value != value:
-            self._value = value
-            for callback in self._callbacks:
-                callback(value)
-
     def on_change(self, callback: Callable[[T], None]) -> None:
         self._callbacks.append(callback)
 

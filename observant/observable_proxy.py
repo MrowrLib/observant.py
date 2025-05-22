@@ -10,6 +10,7 @@ from observant.observable_list import ObservableList
 from observant.types.proxy_field_key import ProxyFieldKey
 
 T = TypeVar("T")
+TValue = TypeVar("TValue")
 
 
 class ObservableProxy(Generic[T], IObservableProxy[T]):
@@ -33,11 +34,11 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
     def observable(
         self,
-        typ: type[T],
+        typ: type[TValue],
         attr: str,
         *,
         sync: bool | None = None,
-    ) -> IObservable[T]:
+    ) -> IObservable[TValue]:
         """
         Get or create an Observable[T] for a scalar field.
         """
@@ -55,11 +56,11 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
     def observable_list(
         self,
-        typ: type[T],
+        typ: type[TValue],
         attr: str,
         *,
         sync: bool | None = None,
-    ) -> IObservableList[T]:
+    ) -> IObservableList[TValue]:
         """
         Get or create an ObservableList[T] for a list field.
         """
