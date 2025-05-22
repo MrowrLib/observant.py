@@ -2,11 +2,13 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Callable, Generic, TypeVar
 
+from observant.interfaces.observable import IObservable
+
 T = TypeVar("T")
 
 
 @dataclass
-class Observable(Generic[T]):
+class Observable(Generic[T], IObservable[T]):
     _value: T
     _callbacks: list[Callable[[T], None]] = field(
         default_factory=list[Callable[[T], None]]

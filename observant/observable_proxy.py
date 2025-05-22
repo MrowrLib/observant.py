@@ -1,26 +1,18 @@
-from abc import ABC
-from dataclasses import dataclass
 from typing import Any, Generic, TypeVar, cast
 
+from observant.interfaces.dict import IObservableDict
+from observant.interfaces.list import IObservableList
+from observant.interfaces.observable import IObservable
+from observant.interfaces.proxy import IObservableProxy
 from observant.observable import Observable
 from observant.observable_dict import ObservableDict
 from observant.observable_list import ObservableList
+from observant.types.proxy_field_key import ProxyFieldKey
 
 T = TypeVar("T")
 
 
-@dataclass(frozen=True)
-class FieldKey:
-    attr: str
-    sync: bool
-
-
-# TODO
-class IObservableProxy(Generic[T], ABC):
-    pass
-
-
-class ObservableProxy(Generic[T]):
+class ObservableProxy(Generic[T], IObservableProxy[T]):
     """
     Proxy for a data object that exposes its fields as Observable, ObservableList, or ObservableDict.
     Provides optional sync behavior to automatically write back to the source model.
@@ -35,9 +27,9 @@ class ObservableProxy(Generic[T]):
         self._obj = obj
         self._sync_default = sync
 
-        self._scalars: dict[FieldKey, Observable[Any]] = {}
-        self._lists: dict[FieldKey, ObservableList[Any]] = {}
-        self._dicts: dict[FieldKey, ObservableDict[Any, Any]] = {}
+        self._scalars: dict[ProxyFieldKey, Observable[Any]] = {}
+        self._lists: dict[ProxyFieldKey, ObservableList[Any]] = {}
+        self._dicts: dict[ProxyFieldKey, ObservableDict[Any, Any]] = {}
 
     def observable(
         self,
@@ -45,12 +37,12 @@ class ObservableProxy(Generic[T]):
         attr: str,
         *,
         sync: bool | None = None,
-    ) -> Observable[T]:
+    ) -> IObservable[T]:
         """
         Get or create an Observable[T] for a scalar field.
         """
         sync = self._sync_default if sync is None else sync
-        key = FieldKey(attr, sync)
+        key = ProxyFieldKey(attr, sync)
 
         if key not in self._scalars:
             val = getattr(self._obj, attr)
@@ -67,12 +59,12 @@ class ObservableProxy(Generic[T]):
         attr: str,
         *,
         sync: bool | None = None,
-    ) -> ObservableList[T]:
+    ) -> IObservableList[T]:
         """
         Get or create an ObservableList[T] for a list field.
         """
         sync = self._sync_default if sync is None else sync
-        key = FieldKey(attr, sync)
+        key = ProxyFieldKey(attr, sync)
 
         if key not in self._lists:
             val_raw = getattr(self._obj, attr)
@@ -89,12 +81,12 @@ class ObservableProxy(Generic[T]):
         attr: str,
         *,
         sync: bool | None = None,
-    ) -> ObservableDict[Any, Any]:
+    ) -> IObservableDict[Any, Any]:
         """
         Get or create an ObservableDict for a dict field.
         """
         sync = self._sync_default if sync is None else sync
-        key = FieldKey(attr, sync)
+        key = ProxyFieldKey(attr, sync)
 
         if key not in self._dicts:
             val_raw = getattr(self._obj, attr)
