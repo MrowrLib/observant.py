@@ -1,0 +1,14 @@
+[project]
+dependencies = []
+description = "Add your description here"
+name = "observant"
+readme = "README.md"
+requires-python = ">=3.13"
+version = "0.1.0"
+
+[dependency-groups]
+dev = [
+  "assertpy>=1.1",
+  "pytest>=8.3.5",
+  "pytest-sugar>=1.0.0",
+]
