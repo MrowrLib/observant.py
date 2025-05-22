@@ -1,7 +1,9 @@
-from .observable import Observable, ObservableCollectionChangeType
-from .observable_dict import IObservableDict, ObservableDict, ObservableDictChange
-from .observable_list import IObservableList, ObservableList, ObservableListChange
+from .interfaces import IObservable, IObservableDict, IObservableList, IObservableProxy
+from .observable import Observable
+from .observable_dict import ObservableDict
+from .observable_list import ObservableList
 from .observable_proxy import ObservableProxy
+from .types import ObservableCollectionChangeType, ObservableDictChange, ObservableListChange
 
 __all__ = [
     "Observable",
@@ -13,4 +15,6 @@ __all__ = [
     "ObservableListChange",
     "ObservableDictChange",
     "ObservableCollectionChangeType",
+    "IObservableProxy",
+    "IObservable",
 ]

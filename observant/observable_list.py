@@ -1,7 +1,7 @@
 from typing import Any, Callable, Generic, Iterator, TypeVar, cast, override
 
 from observant.interfaces.list import IObservableList, ObservableListChange
-from observant.observable import ObservableCollectionChangeType
+from observant.types.collection_change_type import ObservableCollectionChangeType
 
 T = TypeVar("T")
 
@@ -222,7 +222,7 @@ class ObservableListBase(Generic[T], IObservableList[T]):
             else:
                 self._items.sort(key=None, reverse=False)  # type: ignore
         else:
-            self._items.sort(key=key, reverse=reverse)  # type: ignore
+            self._items.sort(key=key, reverse=reverse)
 
     @override
     def reverse(self) -> None:
@@ -293,9 +293,7 @@ class ObservableListBase(Generic[T], IObservableList[T]):
             callback(item, index)
 
         # Call general change callbacks
-        change = ObservableListChange(
-            type=ObservableCollectionChangeType.ADD, index=index, item=item
-        )
+        change = ObservableListChange(type=ObservableCollectionChangeType.ADD, index=index, item=item)
         for callback in self._change_callbacks:
             callback(change)
 
@@ -314,9 +312,7 @@ class ObservableListBase(Generic[T], IObservableList[T]):
                 callback(item, index)
 
         # Call general change callbacks
-        change = ObservableListChange(
-            type=ObservableCollectionChangeType.ADD, index=start_index, items=items
-        )
+        change = ObservableListChange(type=ObservableCollectionChangeType.ADD, index=start_index, items=items)
         for callback in self._change_callbacks:
             callback(change)
 
@@ -333,9 +329,7 @@ class ObservableListBase(Generic[T], IObservableList[T]):
             callback(item, index)
 
         # Call general change callbacks
-        change = ObservableListChange(
-            type=ObservableCollectionChangeType.REMOVE, index=index, item=item
-        )
+        change = ObservableListChange(type=ObservableCollectionChangeType.REMOVE, index=index, item=item)
         for callback in self._change_callbacks:
             callback(change)
 
@@ -354,9 +348,7 @@ class ObservableListBase(Generic[T], IObservableList[T]):
                 callback(item, index)
 
         # Call general change callbacks
-        change = ObservableListChange(
-            type=ObservableCollectionChangeType.REMOVE, index=start_index, items=items
-        )
+        change = ObservableListChange(type=ObservableCollectionChangeType.REMOVE, index=start_index, items=items)
         for callback in self._change_callbacks:
             callback(change)
 
@@ -372,9 +364,7 @@ class ObservableListBase(Generic[T], IObservableList[T]):
             callback(items)
 
         # Call general change callbacks
-        change = ObservableListChange(
-            type=ObservableCollectionChangeType.CLEAR, items=items
-        )
+        change = ObservableListChange(type=ObservableCollectionChangeType.CLEAR, items=items)
         for callback in self._change_callbacks:
             callback(change)
 

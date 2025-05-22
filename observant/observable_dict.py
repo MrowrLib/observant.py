@@ -1,7 +1,7 @@
 from typing import Callable, Generic, Iterator, TypeVar, cast, override
 
 from observant.interfaces.dict import IObservableDict, ObservableDictChange
-from observant.observable import ObservableCollectionChangeType
+from observant.types.collection_change_type import ObservableCollectionChangeType
 
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
@@ -10,9 +10,7 @@ TValue = TypeVar("TValue")
 class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
     """Base implementation that can work with an external dict or create its own."""
 
-    def __init__(
-        self, items: dict[TKey, TValue] | None = None, *, copy: bool = False
-    ) -> None:
+    def __init__(self, items: dict[TKey, TValue] | None = None, *, copy: bool = False) -> None:
         """
         Initialize with optional external dict reference.
 
@@ -23,9 +21,7 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
             self._items: dict[TKey, TValue] = dict(items) if items is not None else {}
         else:
             self._items = items if items is not None else {}
-        self._change_callbacks: list[
-            Callable[[ObservableDictChange[TKey, TValue]], None]
-        ] = []
+        self._change_callbacks: list[Callable[[ObservableDictChange[TKey, TValue]], None]] = []
         self._add_callbacks: list[Callable[[TKey, TValue], None]] = []
         self._remove_callbacks: list[Callable[[TKey, TValue], None]] = []
         self._update_callbacks: list[Callable[[TKey, TValue], None]] = []
@@ -95,9 +91,7 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
             The value for the key, or the default value
         """
         if key not in self._items:
-            self._items[key] = cast(
-                TValue, default
-            )  # Cast to V since we know it's a value
+            self._items[key] = cast(TValue, default)  # Cast to V since we know it's a value
             self._notify_add(key, cast(TValue, default))
             return default
         return self._items[key]
@@ -219,9 +213,7 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
         return self._items.copy()
 
     @override
-    def on_change(
-        self, callback: Callable[[ObservableDictChange[TKey, TValue]], None]
-    ) -> None:
+    def on_change(self, callback: Callable[[ObservableDictChange[TKey, TValue]], None]) -> None:
         """
         Add a callback to be called when the dictionary changes.
 
@@ -357,9 +349,7 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
             callback(items)
 
         # Call general change callbacks
-        change = ObservableDictChange(
-            type=ObservableCollectionChangeType.CLEAR, items=items
-        )
+        change = ObservableDictChange(type=ObservableCollectionChangeType.CLEAR, items=items)
         for callback in self._change_callbacks:
             callback(change)
 
@@ -367,9 +357,7 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
 class ObservableDict(ObservableDictBase[TKey, TValue]):
     """A dictionary that notifies observers when items are added, removed, or updated."""
 
-    def __init__(
-        self, initial_items: dict[TKey, TValue] | None = None, *, copy: bool = False
-    ) -> None:
+    def __init__(self, initial_items: dict[TKey, TValue] | None = None, *, copy: bool = False) -> None:
         """
         Initialize an ObservableDict.
 

@@ -1,21 +1,32 @@
-from enum import Enum, auto
 from typing import Callable, Generic, TypeVar
 
 T = TypeVar("T")
 
 
 class IObservable(Generic[T]):
-    def get(self) -> T: ...
+    def get(self) -> T:
+        """
+        Get the current value of the observable.
 
-    def set(self, value: T) -> None: ...
+        Returns:
+            The current value.
+        """
+        ...
 
-    def on_change(self, callback: Callable[[T], None]) -> None: ...
+    def set(self, value: T) -> None:
+        """
+        Set a new value for the observable and notify all registered callbacks.
 
+        Args:
+            value: The new value to set.
+        """
+        ...
 
-class ObservableCollectionChangeType(Enum):
-    """Type of change that occurred in a collection."""
+    def on_change(self, callback: Callable[[T], None]) -> None:
+        """
+        Register a callback function to be called when the value changes.
 
-    ADD = auto()
-    REMOVE = auto()
-    CLEAR = auto()
-    UPDATE = auto()  # For dictionaries, when a value is updated
+        Args:
+            callback: A function that takes the new value as its argument.
+        """
+        ...

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from observant.interfaces.dict import IObservableDict
 from observant.interfaces.list import IObservableList
@@ -63,7 +63,7 @@ class IObservableProxy(Generic[T], ABC):
         ...
 
     @abstractmethod
-    def update(self, **kwargs: T) -> None:
+    def update(self, **kwargs: dict[str, Any]) -> None:
         """
         Set one or more scalar observable values.
         """

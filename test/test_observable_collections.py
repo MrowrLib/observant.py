@@ -360,9 +360,7 @@ class TestObservableDict:
         # Assert
         assert_that(value).is_equal_to(1)
         assert_that(observable_dict["a"]).is_equal_to(1)
-        assert_that(
-            changes
-        ).is_empty()  # No notifications for setdefault with existing key
+        assert_that(changes).is_empty()  # No notifications for setdefault with existing key
 
     def test_setdefault_new(self) -> None:
         """Test setdefault with a new key."""
@@ -464,9 +462,7 @@ class TestObservableDict:
 
         # Assert
         assert_that(len(observable_dict)).is_equal_to(3)
-        assert_that(dict(observable_dict.items())).is_equal_to(
-            {"a": 1, "b": 42, "c": 3}
-        )
+        assert_that(dict(observable_dict.items())).is_equal_to({"a": 1, "b": 42, "c": 3})
         assert_that(changes).is_length(2)
         assert_that(changes[0].type).is_equal_to(ObservableCollectionChangeType.ADD)
         assert_that(changes[0].items).is_equal_to({"c": 3})

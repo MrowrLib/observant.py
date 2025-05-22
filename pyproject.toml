@@ -12,3 +12,26 @@ dev = [
   "pytest>=8.3.5",
   "pytest-sugar>=1.0.0",
 ]
+
+[tool.pyright]
+exclude = ["**/__pycache__", "**/.venv", "**/venv", "**/.mypy_cache"]
+pythonVersion = "3.13"
+reportCallInDefaultInitializer = true
+reportImplicitOverride = true
+reportImplicitStringConcatenation = true
+reportImportCycles = true
+reportMissingSuperCall = false
+reportMissingTypeStubs = false
+reportPropertyTypeMismatch = true
+reportShadowedImports = true
+reportUninitializedInstanceVariable = true
+reportUnknownMemberType = false
+reportUnnecessaryTypeIgnoreComment = true
+reportUnusedCallResult = false
+strictDictionaryInference = true
+strictListInference = true
+strictSetInference = true
+typeCheckingMode = "strict"
+
+[tool.ruff]
+line-length = 180

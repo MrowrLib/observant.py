@@ -1,4 +1,4 @@
-from typing import Any, Generic, TypeVar, cast
+from typing import Any, Generic, TypeVar, cast, override
 
 from observant.interfaces.dict import IObservableDict
 from observant.interfaces.list import IObservableList
@@ -34,6 +34,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self._lists: dict[ProxyFieldKey, ObservableList[Any]] = {}
         self._dicts: dict[ProxyFieldKey, ObservableDict[Any, Any]] = {}
 
+    @override
     def observable(
         self,
         typ: type[TValue],
@@ -56,6 +57,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         return self._scalars[key]
 
+    @override
     def observable_list(
         self,
         typ: type[TValue],
@@ -79,6 +81,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         return self._lists[key]
 
+    @override
     def observable_dict(
         self,
         typ: tuple[type[TDictKey], type[TDictValue]],
@@ -102,19 +105,22 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         return self._dicts[key]
 
+    @override
     def get(self) -> T:
         """
         Get the original object being proxied.
         """
         return self._obj
 
-    def update(self, **kwargs: T) -> None:
+    @override
+    def update(self, **kwargs: dict[str, Any]) -> None:
         """
         Set one or more scalar observable values.
         """
         for attr, value in kwargs.items():
             self.observable(type(value), attr).set(value)
 
+    @override
     def load_dict(self, values: dict[str, T]) -> None:
         """
         Set multiple scalar observable values from a dict.
@@ -122,6 +128,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         for attr, value in values.items():
             self.observable(type(value), attr).set(value)
 
+    @override
     def save_to(self, obj: T) -> None:
         """
         Write all observable values back into the given object.
