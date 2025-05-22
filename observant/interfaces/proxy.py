@@ -63,14 +63,14 @@ class IObservableProxy(Generic[T], ABC):
         ...
 
     @abstractmethod
-    def update(self, **kwargs: dict[str, Any]) -> None:
+    def update(self, **kwargs: Any) -> None:
         """
         Set one or more scalar observable values.
         """
         ...
 
     @abstractmethod
-    def load_dict(self, values: dict[str, T]) -> None:
+    def load_dict(self, values: dict[str, Any]) -> None:
         """
         Set multiple scalar observable values from a dict.
         """
@@ -80,5 +80,32 @@ class IObservableProxy(Generic[T], ABC):
     def save_to(self, obj: T) -> None:
         """
         Write all observable values back into the given object.
+        """
+        ...
+
+    @abstractmethod
+    def is_dirty(self) -> bool:
+        """
+        Check if any fields have been modified since initialization or last reset.
+
+        Returns:
+            True if any fields have been modified, False otherwise.
+        """
+        ...
+
+    @abstractmethod
+    def dirty_fields(self) -> set[str]:
+        """
+        Get the set of field names that have been modified.
+
+        Returns:
+            A set of field names that have been modified.
+        """
+        ...
+
+    @abstractmethod
+    def reset_dirty(self) -> None:
+        """
+        Reset the dirty state of all fields.
         """
         ...

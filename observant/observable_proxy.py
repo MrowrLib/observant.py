@@ -33,6 +33,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self._scalars: dict[ProxyFieldKey, Observable[Any]] = {}
         self._lists: dict[ProxyFieldKey, ObservableList[Any]] = {}
         self._dicts: dict[ProxyFieldKey, ObservableDict[Any, Any]] = {}
+        self._dirty_fields: set[str] = set()
 
     @override
     def observable(
@@ -53,6 +54,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             obs = Observable(val)
             if sync:
                 obs.on_change(lambda v: setattr(self._obj, attr, v))
+            # Register dirty tracking callback
+            obs.on_change(lambda _: self._dirty_fields.add(attr))
             self._scalars[key] = obs
 
         return self._scalars[key]
@@ -77,6 +80,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             obs = ObservableList(val, copy=not sync)
             if sync:
                 obs.on_change(lambda _: setattr(self._obj, attr, obs.copy()))
+            # Register dirty tracking callback
+            obs.on_change(lambda _: self._dirty_fields.add(attr))
             self._lists[key] = obs
 
         return self._lists[key]
@@ -101,6 +106,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             obs = ObservableDict(val, copy=not sync)
             if sync:
                 obs.on_change(lambda _: setattr(self._obj, attr, obs.copy()))
+            # Register dirty tracking callback
+            obs.on_change(lambda _: self._dirty_fields.add(attr))
             self._dicts[key] = obs
 
         return self._dicts[key]
@@ -113,20 +120,20 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         return self._obj
 
     @override
-    def update(self, **kwargs: dict[str, Any]) -> None:
+    def update(self, **kwargs: Any) -> None:
         """
         Set one or more scalar observable values.
         """
         for attr, value in kwargs.items():
-            self.observable(type(value), attr).set(value)
+            self.observable(object, attr).set(value)
 
     @override
-    def load_dict(self, values: dict[str, T]) -> None:
+    def load_dict(self, values: dict[str, Any]) -> None:
         """
         Set multiple scalar observable values from a dict.
         """
         for attr, value in values.items():
-            self.observable(type(value), attr).set(value)
+            self.observable(object, attr).set(value)
 
     @override
     def save_to(self, obj: T) -> None:
@@ -141,3 +148,33 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         for key, obs in self._dicts.items():
             setattr(obj, key.attr, obs.copy())
+
+        # Reset dirty state after saving
+        self.reset_dirty()
+
+    @override
+    def is_dirty(self) -> bool:
+        """
+        Check if any fields have been modified since initialization or last reset.
+
+        Returns:
+            True if any fields have been modified, False otherwise.
+        """
+        return bool(self._dirty_fields)
+
+    @override
+    def dirty_fields(self) -> set[str]:
+        """
+        Get the set of field names that have been modified.
+
+        Returns:
+            A set of field names that have been modified.
+        """
+        return set(self._dirty_fields)
+
+    @override
+    def reset_dirty(self) -> None:
+        """
+        Reset the dirty state of all fields.
+        """
+        self._dirty_fields.clear()
