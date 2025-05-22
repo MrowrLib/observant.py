@@ -4,6 +4,7 @@ from .observable_dict import ObservableDict
 from .observable_list import ObservableList
 from .observable_proxy import ObservableProxy
 from .types import ObservableCollectionChangeType, ObservableDictChange, ObservableListChange
+from .undoable_observable import UndoableObservable
 
 __all__ = [
     "Observable",
@@ -17,4 +18,5 @@ __all__ = [
     "ObservableCollectionChangeType",
     "IObservableProxy",
     "IObservable",
+    "UndoableObservable",
 ]

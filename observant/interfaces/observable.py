@@ -13,12 +13,13 @@ class IObservable(Generic[T]):
         """
         ...
 
-    def set(self, value: T) -> None:
+    def set(self, value: T, notify: bool = True) -> None:
         """
         Set a new value for the observable and notify all registered callbacks.
 
         Args:
             value: The new value to set.
+            notify: Whether to notify the callbacks after setting the value.
         """
         ...
 

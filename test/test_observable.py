@@ -103,3 +103,22 @@ class TestObservable:
         assert_that(observable.get()).is_equal_to([4, 5, 6])
         assert_that(callback_values).is_length(1)
         assert_that(callback_values[0]).is_equal_to([4, 5, 6])
+
+    def test_set_with_notify_false(self) -> None:
+        """Test setting the value with notify=False doesn't trigger callbacks."""
+        # Arrange
+        observable = Observable[int](42)
+        callback_values: list[int] = []
+        observable.on_change(lambda value: callback_values.append(value))
+
+        # Act
+        observable.set(99, notify=False)
+
+        # Assert
+        assert_that(observable.get()).is_equal_to(99)  # Value should be updated
+        assert_that(callback_values).is_empty()  # But no callbacks should be triggered
+
+        # Verify callbacks still work with default notify=True
+        observable.set(100)
+        assert_that(callback_values).is_length(1)
+        assert_that(callback_values[0]).is_equal_to(100)

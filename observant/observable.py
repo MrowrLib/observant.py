@@ -34,15 +34,21 @@ class Observable(Generic[T], IObservable[T]):
         return self._value
 
     @override
-    def set(self, value: T) -> None:
+    def set(self, value: T, notify: bool = True) -> None:
         """
         Set a new value for the observable and notify all registered callbacks.
 
         Args:
             value: The new value to set.
+            notify: Whether to notify the callbacks after setting the value.
         """
         print(f"DEBUG: Observable.set called with value {value}")
         self._value = value
+
+        if not notify or not self._on_change_enabled:
+            print("DEBUG: Observable.set - on_change is disabled, skipping callbacks")
+            return
+
         print(f"DEBUG: Observable.set - Notifying {len(self._callbacks)} callbacks")
         for i, callback in enumerate(self._callbacks):
             print(f"DEBUG: Observable.set - Calling callback {i}")

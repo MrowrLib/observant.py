@@ -258,3 +258,15 @@ class IObservableProxy(Generic[T], ABC):
             True if there are changes that can be redone, False otherwise.
         """
         ...
+
+    @abstractmethod
+    def track_scalar_change(self, attr: str, old_value: Any, new_value: Any) -> None:
+        """
+        Track a scalar change for undo/redo functionality.
+
+        Args:
+            attr: The field name that changed.
+            old_value: The old value before the change.
+            new_value: The new value after the change.
+        """
+        ...

@@ -10,6 +10,7 @@ from observant.observable_dict import ObservableDict
 from observant.observable_list import ObservableList
 from observant.types.proxy_field_key import ProxyFieldKey
 from observant.types.undo_config import UndoConfig
+from observant.undoable_observable import UndoableObservable
 
 T = TypeVar("T")
 TValue = TypeVar("TValue")
@@ -60,6 +61,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self._redo_stacks: dict[str, list[Callable[[], None]]] = {}
         self._last_change_times: dict[str, float] = {}
         self._pending_undo_groups: dict[str, Callable[[], None] | None] = {}
+        self._initial_values: dict[str, Any] = {}  # Store initial values for undo
 
     @override
     def observable(
@@ -88,21 +90,32 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         if undo_max is not None or undo_debounce_ms is not None:
             self.set_undo_config(attr, undo_max=undo_max, undo_debounce_ms=undo_debounce_ms)
 
+        # Get the initial value
+        val = getattr(self._obj, attr)
+
         if key not in self._scalars:
-            val = getattr(self._obj, attr)
-            obs = Observable(val)
+            # Create observable with callbacks disabled to prevent premature tracking
+            # obs = Observable(val, on_change_enabled=False)
+            obs = UndoableObservable(val, attr, self, on_change_enabled=False)
 
             # Store the observable first so it can be found by _track_scalar_change
             self._scalars[key] = obs
 
             if sync:
-                obs.on_change(lambda v: setattr(self._obj, attr, v))  # type: ignore
+                obs.on_change(lambda v: setattr(self._obj, attr, v))
             # Register dirty tracking callback
-            obs.on_change(lambda _: self._dirty_fields.add(attr))  # type: ignore
+            obs.on_change(lambda _: self._dirty_fields.add(attr))
             # Register validation callback
-            obs.on_change(lambda v: self._validate_field(attr, v))  # type: ignore
-            # Register undo tracking callback
-            obs.on_change(lambda v: self._track_scalar_change(attr, v))  # type: ignore
+            obs.on_change(lambda v: self._validate_field(attr, v))
+            # Undo tracking is now handled by UndoableObservable
+
+            # Initial value tracking is now handled by UndoableObservable
+
+            # Now enable callbacks for future changes
+            obs.enable()
+        else:
+            # Get the existing observable
+            obs = self._scalars[key]
 
         return self._scalars[key]
 
@@ -511,84 +524,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         return self._field_undo_configs.get(attr, self._default_undo_config)
 
-    def _track_scalar_change(self, attr: str, new_value: Any) -> None:
-        """
-        Track a change to a scalar field for undo/redo.
-
-        Args:
-            attr: The field name.
-            new_value: The new value.
-        """
-        print(f"DEBUG: _track_scalar_change called for {attr} with new value {new_value}")
-
-        # Get the observable for this field
-        obs = None
-        for key, o in self._scalars.items():
-            if key.attr == attr:
-                obs = o
-                break
-
-        if obs is None:
-            print(f"DEBUG: _track_scalar_change - Field {attr} not found")
-            return  # Field not found
-
-        # Store the old value (before the change)
-        old_value = obs.get()  # This is the value before the change
-        print(f"DEBUG: _track_scalar_change - old_value={old_value}, new_value={new_value}")
-
-        # Skip if the values are the same
-        if old_value == new_value:
-            print("DEBUG: _track_scalar_change - Values are the same, skipping")
-            return
-
-        # Create a flag to prevent recursive tracking
-        tracking_enabled = [True]
-        print(f"DEBUG: _track_scalar_change - Created tracking_enabled flag: {tracking_enabled}")
-
-        # Create a tracking function that can be disabled
-        def track_change(val: Any) -> None:
-            print(f"DEBUG: track_change callback called with val={val}, tracking_enabled={tracking_enabled[0]}")
-            if tracking_enabled[0]:
-                print("DEBUG: track_change - Calling _track_scalar_change")
-                self._track_scalar_change(attr, val)
-            else:
-                print("DEBUG: track_change - Tracking disabled, not calling _track_scalar_change")
-
-        # Replace the existing tracking callback with our new one
-        # First, find and remove any existing tracking callbacks
-        for key, o in self._scalars.items():
-            if key.attr == attr:
-                print(f"DEBUG: _track_scalar_change - Adding track_change callback to {attr}")
-                # Remove existing tracking callbacks
-                o.on_change(track_change)
-                break
-
-        # Create an undo function that restores the old value
-        def undo_func() -> None:
-            print(f"DEBUG: undo_func called for {attr}, setting value to {old_value}")
-            # Disable tracking during this operation
-            tracking_enabled[0] = False
-            # Set the old value
-            obs.set(old_value)
-            # Re-enable tracking
-            tracking_enabled[0] = True
-            print(f"DEBUG: undo_func completed for {attr}")
-
-        # Create a redo function that applies the new value
-        def redo_func() -> None:
-            print(f"DEBUG: redo_func called for {attr}, setting value to {new_value}")
-            # Disable tracking during this operation
-            tracking_enabled[0] = False
-            # Set the new value
-            obs.set(new_value)
-            # Re-enable tracking
-            tracking_enabled[0] = True
-            print(f"DEBUG: redo_func completed for {attr}")
-
-        # Add to the undo stack
-        print(f"DEBUG: _track_scalar_change - Calling _add_to_undo_stack for {attr}")
-        self._add_to_undo_stack(attr, undo_func, redo_func)
-        print(f"DEBUG: _track_scalar_change - Completed for {attr}")
+    # _track_scalar_change has been removed - UndoableObservable now handles this
 
     def _track_list_change(self, attr: str, change: Any) -> None:
         """
@@ -958,3 +894,47 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             True if there are changes that can be redone, False otherwise.
         """
         return attr in self._redo_stacks and bool(self._redo_stacks[attr])
+
+    @override
+    def track_scalar_change(self, attr: str, old_value: Any, new_value: Any) -> None:
+        """
+        Track a scalar change for undo/redo functionality.
+
+        Args:
+            attr: The field name that changed.
+            old_value: The old value before the change.
+            new_value: The new value after the change.
+        """
+        print(f"DEBUG: track_scalar_change called for {attr} with old={old_value}, new={new_value}")
+        if old_value == new_value:
+            print("DEBUG: values are the same, skipping")
+            return
+
+        # Get the observable for this field
+        obs = None
+        for key, o in self._scalars.items():
+            if key.attr == attr:
+                obs = o
+                break
+
+        if obs is None:
+            print(f"DEBUG: track_scalar_change - Field {attr} not found")
+            return  # Field not found
+
+        # Create undo/redo functions
+        def undo_func() -> None:
+            print(f"DEBUG: undo_func called for {attr}, setting value to {old_value}")
+            # Set the old value
+            obs.set(old_value)
+            print(f"DEBUG: undo_func completed for {attr}")
+
+        def redo_func() -> None:
+            print(f"DEBUG: redo_func called for {attr}, setting value to {new_value}")
+            # Set the new value
+            obs.set(new_value)
+            print(f"DEBUG: redo_func completed for {attr}")
+
+        # Add to the undo stack
+        print(f"DEBUG: track_scalar_change - Calling _add_to_undo_stack for {attr}")
+        self._add_to_undo_stack(attr, undo_func, redo_func)
+        print(f"DEBUG: track_scalar_change - Completed for {attr}")
