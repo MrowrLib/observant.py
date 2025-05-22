@@ -1,5 +1,7 @@
 [project]
-dependencies = []
+dependencies = [
+    "mkdocs-material>=9.6.14",
+]
 description = "Add your description here"
 name = "observant"
 readme = "README.md"

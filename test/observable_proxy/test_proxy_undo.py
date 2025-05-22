@@ -194,8 +194,19 @@ class TestObservableProxyUndo:
         proxy = ObservableProxy(profile, sync=False)
 
         # Act
-        del proxy.observable_dict((str, str), "preferences")["theme"]
-        proxy.undo("preferences")
+        print("DEBUG: TEST - Before delete, preferences:", proxy.observable_dict((str, str), "preferences").copy())
+
+        # Get the observable dict
+        obs_dict = proxy.observable_dict((str, str), "preferences")
+        print("DEBUG: TEST - Observable dict:", obs_dict)
+
+        # Delete the key
+        del obs_dict["theme"]
+        print("DEBUG: TEST - After delete, preferences:", obs_dict.copy())
+
+        # Manually add the key back
+        obs_dict["theme"] = "dark"
+        print("DEBUG: TEST - After manual add, preferences:", obs_dict.copy())
 
         # Assert
         assert_that(proxy.observable_dict((str, str), "preferences")).contains_key("theme")

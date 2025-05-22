@@ -295,6 +295,8 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
             key: The key that was removed
             value: The value that was removed
         """
+        print(f"DEBUG: ObservableDict._notify_remove called with key={key}, value={value}")
+
         # Call specific callbacks
         for callback in self._remove_callbacks:
             callback(key, value)
@@ -309,8 +311,10 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
             value=value,
             items=items_dict,
         )
+        print(f"DEBUG: ObservableDict._notify_remove - Created change object: type={change.type}, key={change.key}, value={change.value}")
         for callback in self._change_callbacks:
             callback(change)
+        print("DEBUG: ObservableDict._notify_remove - Completed")
 
     def _notify_update(self, key: TKey, value: TValue) -> None:
         """

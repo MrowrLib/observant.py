@@ -558,12 +558,16 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         # Helper function to temporarily disable tracking
         def with_tracking_disabled(action: Callable[[], None]) -> None:
+            print(f"DEBUG: with_tracking_disabled - Disabling tracking for {attr}")
             # Disable tracking during this operation
             tracking_enabled[0] = False
             # Perform the action
+            print("DEBUG: with_tracking_disabled - Executing action")
             action()
+            print("DEBUG: with_tracking_disabled - Action executed")
             # Re-enable tracking
             tracking_enabled[0] = True
+            print(f"DEBUG: with_tracking_disabled - Tracking re-enabled for {attr}")
 
         # Create undo/redo functions based on the change type
         if hasattr(change, "type") and change.type == ObservableCollectionChangeType.CLEAR:
@@ -660,12 +664,16 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         # Helper function to temporarily disable tracking
         def with_tracking_disabled(action: Callable[[], None]) -> None:
+            print(f"DEBUG: dict with_tracking_disabled - Disabling tracking for {attr}")
             # Disable tracking during this operation
             tracking_enabled[0] = False
             # Perform the action
+            print("DEBUG: dict with_tracking_disabled - Executing action")
             action()
+            print("DEBUG: dict with_tracking_disabled - Action executed")
             # Re-enable tracking
             tracking_enabled[0] = True
+            print(f"DEBUG: dict with_tracking_disabled - Tracking re-enabled for {attr}")
 
         # Create undo/redo functions based on the change type
         if hasattr(change, "key") and hasattr(change, "value") and hasattr(change, "old_value"):
@@ -704,23 +712,37 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
                 with_tracking_disabled(action)
 
-        elif hasattr(change, "key") and hasattr(change, "old_value") and not hasattr(change, "value"):
+        elif hasattr(change, "key") and hasattr(change, "value") and change.type == ObservableCollectionChangeType.REMOVE:
             # This is a key deletion
             dict_key = change.key
-            old_value = change.old_value
+            old_value = change.value
+
+            print(f"DEBUG: _track_dict_change - Creating undo/redo functions for key deletion: {dict_key}={old_value}")
 
             def undo_func() -> None:
-                def action() -> None:
-                    obs[dict_key] = old_value
+                print(f"DEBUG: dict undo_func - Starting undo for key {dict_key}")
+                print(f"DEBUG: dict undo_func - Observable dict: {obs}")
+                print(f"DEBUG: dict undo_func - Observable dict keys: {list(obs.keys())}")
+                print(f"DEBUG: dict undo_func - Setting key {dict_key} to value {old_value}")
 
-                with_tracking_disabled(action)
+                # Directly set the key in the dictionary
+                obs[dict_key] = old_value
+
+                print(f"DEBUG: dict undo_func - After restore, keys: {list(obs.keys())}")
+                print(f"DEBUG: dict undo_func - Completed undo for key {dict_key}")
 
             def redo_func() -> None:
-                def action() -> None:
-                    if dict_key in obs:  # Check if key exists
-                        del obs[dict_key]
+                print(f"DEBUG: dict redo_func - Starting redo for key {dict_key}")
+                print(f"DEBUG: dict redo_func - Observable dict: {obs}")
+                print(f"DEBUG: dict redo_func - Observable dict keys: {list(obs.keys())}")
+                print(f"DEBUG: dict redo_func - Deleting key {dict_key}")
 
-                with_tracking_disabled(action)
+                # Directly delete the key without using the action function
+                if dict_key in obs:  # Check if key exists
+                    del obs[dict_key]
+
+                print(f"DEBUG: dict redo_func - After delete, keys: {list(obs.keys())}")
+                print(f"DEBUG: dict redo_func - Completed redo for key {dict_key}")
 
         elif hasattr(change, "old_items"):
             # This is a clear
@@ -844,6 +866,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         # Execute the undo function
         print(f"DEBUG: undo - Executing undo function for {attr}")
+        print(f"DEBUG: undo - undo_func: {undo_func}")
         undo_func()
         print(f"DEBUG: undo - Completed for {attr}")
 
