@@ -8,7 +8,7 @@ TKey = TypeVar("TKey", bound=ComparableOrPrimitive)
 TValue = TypeVar("TValue", bound=ComparableOrPrimitive)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ObservableDictChange(Generic[TKey, TValue]):
     """Information about a change to an ObservableDict."""
 

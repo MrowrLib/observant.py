@@ -4,10 +4,11 @@ from typing import Callable, Generic, Iterator, TypeVar, cast, overload, overrid
 
 from observant.observable import ComparableOrPrimitive, ObservableCollectionChangeType
 
-TValue = TypeVar("TValue", bound=ComparableOrPrimitive)
+TValue = TypeVar("TValue")
+# TValue = TypeVar("TValue", bound=ComparableOrPrimitive)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ObservableListChange(Generic[TValue]):
     """Information about a change to an ObservableList."""
 
@@ -186,8 +187,8 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
                 # Explicitly cast to list[C] to help Pylance
                 self._items[index] = value
                 if value:
-                    # Use the explicitly typed value
-                    self._notify_add_items(value, index.start)
+                    typed_value: list[TValue] = cast(list[TValue], value)
+                    self._notify_add_items(typed_value, index.start)
             else:
                 # Handle single item assigned to slice
                 single_value: TValue = cast(TValue, value)

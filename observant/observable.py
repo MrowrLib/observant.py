@@ -10,6 +10,7 @@ class SupportsLessThan(Protocol[H]):
     def __lt__(self, other: H) -> bool: ...
 
 
+# TODO: try without this, just use Any in sort?
 class Comparable(SupportsLessThan["Comparable"], Protocol):
     pass
 

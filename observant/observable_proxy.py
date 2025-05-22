@@ -1,3 +1,4 @@
+from abc import ABC
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar, cast
 
@@ -13,6 +14,11 @@ TVal = TypeVar("TVal", bound=ComparableOrPrimitive)
 class FieldKey:
     attr: str
     sync: bool
+
+
+# TODO
+class IObservableProxy(Generic[T], ABC):
+    pass
 
 
 class ObservableProxy(Generic[T]):
