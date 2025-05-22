@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Callable, Generic, Iterator, TypeVar, cast, overload, override
+from typing import Any, Callable, Generic, Iterator, TypeVar, cast, overload, override
 
-from observant.observable import ComparableOrPrimitive, ObservableCollectionChangeType
+from observant.observable import ObservableCollectionChangeType
 
 TValue = TypeVar("TValue")
-# TValue = TypeVar("TValue", bound=ComparableOrPrimitive)
 
 
 @dataclass(frozen=True)
@@ -97,15 +96,13 @@ class IObservableList(Generic[TValue], ABC):
     def sort(self, *, key: None = None, reverse: bool = False) -> None: ...
 
     @overload
-    def sort(
-        self, *, key: Callable[[TValue], ComparableOrPrimitive], reverse: bool = False
-    ) -> None: ...
+    def sort(self, *, key: Callable[[TValue], Any], reverse: bool = False) -> None: ...
 
     @abstractmethod
     def sort(
         self,
         *,
-        key: Callable[[TValue], ComparableOrPrimitive] | None = None,
+        key: Callable[[TValue], Any] | None = None,
         reverse: bool = False,
     ) -> None: ...
 
@@ -343,7 +340,7 @@ class ObservableListBase(Generic[TValue], IObservableList[TValue]):
     def sort(
         self,
         *,
-        key: Callable[[TValue], ComparableOrPrimitive] | None = None,
+        key: Callable[[TValue], Any] | None = None,
         reverse: bool = False,
     ) -> None:
         """

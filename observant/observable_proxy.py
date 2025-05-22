@@ -2,12 +2,12 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar, cast
 
-from observant.observable import ComparableOrPrimitive, Observable
+from observant.observable import Observable
 from observant.observable_dict import ObservableDict
 from observant.observable_list import ObservableList
 
 T = TypeVar("T")
-TVal = TypeVar("TVal", bound=ComparableOrPrimitive)
+TVal = TypeVar("TVal")
 
 
 @dataclass(frozen=True)
@@ -113,7 +113,7 @@ class ObservableProxy(Generic[T]):
         """
         return self._obj
 
-    def update(self, **kwargs: ComparableOrPrimitive) -> None:
+    def update(self, **kwargs: T) -> None:
         """
         Set one or more scalar observable values.
         """

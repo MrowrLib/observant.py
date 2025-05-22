@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Callable, Generic, Iterator, TypeVar, cast, override
 
-from observant.observable import ComparableOrPrimitive, ObservableCollectionChangeType
+from observant.observable import ObservableCollectionChangeType
 
-TKey = TypeVar("TKey", bound=ComparableOrPrimitive)
-TValue = TypeVar("TValue", bound=ComparableOrPrimitive)
+TKey = TypeVar("TKey")
+TValue = TypeVar("TValue")
 
 
 @dataclass(frozen=True)

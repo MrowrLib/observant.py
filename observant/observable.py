@@ -1,21 +1,21 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Callable, Generic, Protocol, TypeVar, runtime_checkable
+from typing import Callable, Generic, TypeVar
 
-H = TypeVar("H", contravariant=True)
-
-
-@runtime_checkable
-class SupportsLessThan(Protocol[H]):
-    def __lt__(self, other: H) -> bool: ...
+# H = TypeVar("H", contravariant=True)
 
 
-# TODO: try without this, just use Any in sort?
-class Comparable(SupportsLessThan["Comparable"], Protocol):
-    pass
+# @runtime_checkable
+# class SupportsLessThan(Protocol[H]):
+#     def __lt__(self, other: H) -> bool: ...
 
 
-ComparableOrPrimitive = Comparable | str | int | float | bool | None
+# # TODO: try without this, just use Any in sort?
+# class Comparable(SupportsLessThan["Comparable"], Protocol):
+#     pass
+
+
+# ComparableOrPrimitive = Comparable | str | int | float | bool | None
 
 
 T = TypeVar("T")
