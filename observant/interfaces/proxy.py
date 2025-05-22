@@ -194,3 +194,67 @@ class IObservableProxy(Generic[T], ABC):
             An empty list means the field is valid.
         """
         ...
+
+    @abstractmethod
+    def set_undo_config(
+        self,
+        attr: str,
+        *,
+        undo_max: int | None = None,
+        undo_debounce_ms: int | None = None,
+    ) -> None:
+        """
+        Set the undo configuration for a specific field.
+
+        Args:
+            attr: The field name to configure.
+            undo_max: Maximum number of undo steps to store. None means unlimited.
+            undo_debounce_ms: Time window in milliseconds to group changes. None means no debouncing.
+        """
+        ...
+
+    @abstractmethod
+    def undo(self, attr: str) -> None:
+        """
+        Undo the most recent change to a field.
+
+        Args:
+            attr: The field name to undo changes for.
+        """
+        ...
+
+    @abstractmethod
+    def redo(self, attr: str) -> None:
+        """
+        Redo the most recently undone change to a field.
+
+        Args:
+            attr: The field name to redo changes for.
+        """
+        ...
+
+    @abstractmethod
+    def can_undo(self, attr: str) -> bool:
+        """
+        Check if there are changes that can be undone for a field.
+
+        Args:
+            attr: The field name to check.
+
+        Returns:
+            True if there are changes that can be undone, False otherwise.
+        """
+        ...
+
+    @abstractmethod
+    def can_redo(self, attr: str) -> bool:
+        """
+        Check if there are changes that can be redone for a field.
+
+        Args:
+            attr: The field name to check.
+
+        Returns:
+            True if there are changes that can be redone, False otherwise.
+        """
+        ...

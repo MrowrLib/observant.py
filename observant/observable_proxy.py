@@ -1,3 +1,4 @@
+import time
 from typing import Any, Callable, Generic, TypeVar, cast, override
 
 from observant.interfaces.dict import IObservableDict
@@ -8,6 +9,7 @@ from observant.observable import Observable
 from observant.observable_dict import ObservableDict
 from observant.observable_list import ObservableList
 from observant.types.proxy_field_key import ProxyFieldKey
+from observant.types.undo_config import UndoConfig
 
 T = TypeVar("T")
 TValue = TypeVar("TValue")
@@ -21,11 +23,20 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
     Provides optional sync behavior to automatically write back to the source model.
     """
 
-    def __init__(self, obj: T, *, sync: bool) -> None:
+    def __init__(
+        self,
+        obj: T,
+        *,
+        sync: bool,
+        undo_max: int | None = None,
+        undo_debounce_ms: int | None = None,
+    ) -> None:
         """
         Args:
             obj: The object to proxy.
             sync: If True, observables will sync back to the model immediately. If False, changes must be saved explicitly.
+            undo_max: Maximum number of undo steps to store. None means unlimited.
+            undo_debounce_ms: Time window in milliseconds to group changes. None means no debouncing.
         """
         self._obj = obj
         self._sync_default = sync
@@ -42,6 +53,14 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self._validation_for_cache: dict[str, Observable[list[str]]] = {}
         self._is_valid_obs = Observable[bool](True)
 
+        # Undo/redo related fields
+        self._default_undo_config = UndoConfig(undo_max=undo_max, undo_debounce_ms=undo_debounce_ms)
+        self._field_undo_configs: dict[str, UndoConfig] = {}
+        self._undo_stacks: dict[str, list[Callable[[], None]]] = {}
+        self._redo_stacks: dict[str, list[Callable[[], None]]] = {}
+        self._last_change_times: dict[str, float] = {}
+        self._pending_undo_groups: dict[str, Callable[[], None] | None] = {}
+
     @override
     def observable(
         self,
@@ -49,23 +68,41 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         attr: str,
         *,
         sync: bool | None = None,
+        undo_max: int | None = None,
+        undo_debounce_ms: int | None = None,
     ) -> IObservable[TValue]:
         """
         Get or create an Observable[T] for a scalar field.
+
+        Args:
+            typ: The type of the field.
+            attr: The field name.
+            sync: Whether to sync changes back to the model immediately.
+            undo_max: Maximum number of undo steps to store. None means use the default.
+            undo_debounce_ms: Time window in milliseconds to group changes. None means use the default.
         """
         sync = self._sync_default if sync is None else sync
         key = ProxyFieldKey(attr, sync)
 
+        # Set up undo config if provided
+        if undo_max is not None or undo_debounce_ms is not None:
+            self.set_undo_config(attr, undo_max=undo_max, undo_debounce_ms=undo_debounce_ms)
+
         if key not in self._scalars:
             val = getattr(self._obj, attr)
             obs = Observable(val)
-            if sync:
-                obs.on_change(lambda v: setattr(self._obj, attr, v))
-            # Register dirty tracking callback
-            obs.on_change(lambda _: self._dirty_fields.add(attr))
-            # Register validation callback
-            obs.on_change(lambda v: self._validate_field(attr, v))
+
+            # Store the observable first so it can be found by _track_scalar_change
             self._scalars[key] = obs
+
+            if sync:
+                obs.on_change(lambda v: setattr(self._obj, attr, v))  # type: ignore
+            # Register dirty tracking callback
+            obs.on_change(lambda _: self._dirty_fields.add(attr))  # type: ignore
+            # Register validation callback
+            obs.on_change(lambda v: self._validate_field(attr, v))  # type: ignore
+            # Register undo tracking callback
+            obs.on_change(lambda v: self._track_scalar_change(attr, v))  # type: ignore
 
         return self._scalars[key]
 
@@ -76,12 +113,25 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         attr: str,
         *,
         sync: bool | None = None,
+        undo_max: int | None = None,
+        undo_debounce_ms: int | None = None,
     ) -> IObservableList[TValue]:
         """
         Get or create an ObservableList[T] for a list field.
+
+        Args:
+            typ: The type of the list elements.
+            attr: The field name.
+            sync: Whether to sync changes back to the model immediately.
+            undo_max: Maximum number of undo steps to store. None means use the default.
+            undo_debounce_ms: Time window in milliseconds to group changes. None means use the default.
         """
         sync = self._sync_default if sync is None else sync
         key = ProxyFieldKey(attr, sync)
+
+        # Set up undo config if provided
+        if undo_max is not None or undo_debounce_ms is not None:
+            self.set_undo_config(attr, undo_max=undo_max, undo_debounce_ms=undo_debounce_ms)
 
         if key not in self._lists:
             val_raw = getattr(self._obj, attr)
@@ -93,6 +143,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             obs.on_change(lambda _: self._dirty_fields.add(attr))
             # Register validation callback
             obs.on_change(lambda _: self._validate_field(attr, obs.copy()))
+            # Register undo tracking callback
+            obs.on_change(lambda c: self._track_list_change(attr, c))
             self._lists[key] = obs
 
         return self._lists[key]
@@ -104,12 +156,25 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         attr: str,
         *,
         sync: bool | None = None,
+        undo_max: int | None = None,
+        undo_debounce_ms: int | None = None,
     ) -> IObservableDict[TDictKey, TDictValue]:
         """
         Get or create an ObservableDict for a dict field.
+
+        Args:
+            typ: A tuple of (key_type, value_type).
+            attr: The field name.
+            sync: Whether to sync changes back to the model immediately.
+            undo_max: Maximum number of undo steps to store. None means use the default.
+            undo_debounce_ms: Time window in milliseconds to group changes. None means use the default.
         """
         sync = self._sync_default if sync is None else sync
         key = ProxyFieldKey(attr, sync)
+
+        # Set up undo config if provided
+        if undo_max is not None or undo_debounce_ms is not None:
+            self.set_undo_config(attr, undo_max=undo_max, undo_debounce_ms=undo_debounce_ms)
 
         if key not in self._dicts:
             val_raw = getattr(self._obj, attr)
@@ -121,6 +186,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             obs.on_change(lambda _: self._dirty_fields.add(attr))
             # Register validation callback
             obs.on_change(lambda _: self._validate_field(attr, obs.copy()))
+            # Register undo tracking callback
+            obs.on_change(lambda c: self._track_dict_change(attr, c))
             self._dicts[key] = obs
 
         return self._dicts[key]
@@ -398,3 +465,496 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             self._validation_for_cache[attr] = obs
 
         return self._validation_for_cache[attr]
+
+    @override
+    def set_undo_config(
+        self,
+        attr: str,
+        *,
+        undo_max: int | None = None,
+        undo_debounce_ms: int | None = None,
+    ) -> None:
+        """
+        Set the undo configuration for a specific field.
+
+        Args:
+            attr: The field name to configure.
+            undo_max: Maximum number of undo steps to store. None means unlimited.
+            undo_debounce_ms: Time window in milliseconds to group changes. None means no debouncing.
+        """
+        # Get the current config or create a new one
+        config = self._field_undo_configs.get(attr, UndoConfig())
+
+        # Update the config with the provided values
+        if undo_max is not None:
+            config.undo_max = undo_max
+        if undo_debounce_ms is not None:
+            config.undo_debounce_ms = undo_debounce_ms
+
+        # Store the updated config
+        self._field_undo_configs[attr] = config
+
+        # Enforce the max size if it's been reduced
+        if attr in self._undo_stacks and config.undo_max is not None:
+            while len(self._undo_stacks[attr]) > config.undo_max:
+                self._undo_stacks[attr].pop(0)
+
+    def _get_undo_config(self, attr: str) -> UndoConfig:
+        """
+        Get the undo configuration for a field.
+
+        Args:
+            attr: The field name.
+
+        Returns:
+            The undo configuration for the field, or the default if not set.
+        """
+        return self._field_undo_configs.get(attr, self._default_undo_config)
+
+    def _track_scalar_change(self, attr: str, new_value: Any) -> None:
+        """
+        Track a change to a scalar field for undo/redo.
+
+        Args:
+            attr: The field name.
+            new_value: The new value.
+        """
+        print(f"DEBUG: _track_scalar_change called for {attr} with new value {new_value}")
+
+        # Get the observable for this field
+        obs = None
+        for key, o in self._scalars.items():
+            if key.attr == attr:
+                obs = o
+                break
+
+        if obs is None:
+            print(f"DEBUG: _track_scalar_change - Field {attr} not found")
+            return  # Field not found
+
+        # Store the old value (before the change)
+        old_value = obs.get()  # This is the value before the change
+        print(f"DEBUG: _track_scalar_change - old_value={old_value}, new_value={new_value}")
+
+        # Skip if the values are the same
+        if old_value == new_value:
+            print("DEBUG: _track_scalar_change - Values are the same, skipping")
+            return
+
+        # Create a flag to prevent recursive tracking
+        tracking_enabled = [True]
+        print(f"DEBUG: _track_scalar_change - Created tracking_enabled flag: {tracking_enabled}")
+
+        # Create a tracking function that can be disabled
+        def track_change(val: Any) -> None:
+            print(f"DEBUG: track_change callback called with val={val}, tracking_enabled={tracking_enabled[0]}")
+            if tracking_enabled[0]:
+                print("DEBUG: track_change - Calling _track_scalar_change")
+                self._track_scalar_change(attr, val)
+            else:
+                print("DEBUG: track_change - Tracking disabled, not calling _track_scalar_change")
+
+        # Replace the existing tracking callback with our new one
+        # First, find and remove any existing tracking callbacks
+        for key, o in self._scalars.items():
+            if key.attr == attr:
+                print(f"DEBUG: _track_scalar_change - Adding track_change callback to {attr}")
+                # Remove existing tracking callbacks
+                o.on_change(track_change)
+                break
+
+        # Create an undo function that restores the old value
+        def undo_func() -> None:
+            print(f"DEBUG: undo_func called for {attr}, setting value to {old_value}")
+            # Disable tracking during this operation
+            tracking_enabled[0] = False
+            # Set the old value
+            obs.set(old_value)
+            # Re-enable tracking
+            tracking_enabled[0] = True
+            print(f"DEBUG: undo_func completed for {attr}")
+
+        # Create a redo function that applies the new value
+        def redo_func() -> None:
+            print(f"DEBUG: redo_func called for {attr}, setting value to {new_value}")
+            # Disable tracking during this operation
+            tracking_enabled[0] = False
+            # Set the new value
+            obs.set(new_value)
+            # Re-enable tracking
+            tracking_enabled[0] = True
+            print(f"DEBUG: redo_func completed for {attr}")
+
+        # Add to the undo stack
+        print(f"DEBUG: _track_scalar_change - Calling _add_to_undo_stack for {attr}")
+        self._add_to_undo_stack(attr, undo_func, redo_func)
+        print(f"DEBUG: _track_scalar_change - Completed for {attr}")
+
+    def _track_list_change(self, attr: str, change: Any) -> None:
+        """
+        Track a change to a list field for undo/redo.
+
+        Args:
+            attr: The field name.
+            change: The change object.
+        """
+        # Get the observable for this field
+        obs = None
+        for key, o in self._lists.items():
+            if key.attr == attr:
+                obs = o
+                break
+
+        if obs is None:
+            return  # Field not found
+
+        # Create a flag to prevent recursive tracking
+        tracking_enabled = [True]
+
+        # Create a tracking function that can be disabled
+        def track_change(change: Any) -> None:
+            if tracking_enabled[0]:
+                self._track_list_change(attr, change)
+
+        # Replace the existing tracking callback with our new one
+        # First, find and remove any existing tracking callbacks
+        for key, o in self._lists.items():
+            if key.attr == attr:
+                # Remove existing tracking callbacks and add our new one
+                o.on_change(track_change)
+                break
+
+        # Helper function to temporarily disable tracking
+        def with_tracking_disabled(action: Callable[[], None]) -> None:
+            # Disable tracking during this operation
+            tracking_enabled[0] = False
+            # Perform the action
+            action()
+            # Re-enable tracking
+            tracking_enabled[0] = True
+
+        # Create undo/redo functions based on the change type
+        if hasattr(change, "index") and hasattr(change, "item"):
+            # This is an append or insert
+            index = change.index
+            item = change.item
+
+            def undo_func() -> None:
+                def action() -> None:
+                    if index < len(obs):  # Check if index is valid
+                        obs.pop(index)
+
+                with_tracking_disabled(action)
+
+            def redo_func() -> None:
+                def action() -> None:
+                    obs.insert(index, item)
+
+                with_tracking_disabled(action)
+
+        elif hasattr(change, "index") and hasattr(change, "old_item"):
+            # This is a remove
+            index = change.index
+            old_item = change.old_item
+
+            def undo_func() -> None:
+                def action() -> None:
+                    obs.insert(index, old_item)
+
+                with_tracking_disabled(action)
+
+            def redo_func() -> None:
+                def action() -> None:
+                    if index < len(obs):  # Check if index is valid
+                        obs.pop(index)
+
+                with_tracking_disabled(action)
+
+        elif hasattr(change, "old_items"):
+            # This is a clear
+            old_items = change.old_items
+
+            def undo_func() -> None:
+                def action() -> None:
+                    obs.extend(old_items)
+
+                with_tracking_disabled(action)
+
+            def redo_func() -> None:
+                def action() -> None:
+                    obs.clear()
+
+                with_tracking_disabled(action)
+
+        else:
+            # Unknown change type
+            return
+
+        # Add to the undo stack
+        self._add_to_undo_stack(attr, undo_func, redo_func)
+
+    def _track_dict_change(self, attr: str, change: Any) -> None:
+        """
+        Track a change to a dict field for undo/redo.
+
+        Args:
+            attr: The field name.
+            change: The change object.
+        """
+        # Get the observable for this field
+        obs = None
+        for key, o in self._dicts.items():
+            if key.attr == attr:
+                obs = o
+                break
+
+        if obs is None:
+            return  # Field not found
+
+        # Create a flag to prevent recursive tracking
+        tracking_enabled = [True]
+
+        # Create a tracking function that can be disabled
+        def track_change(change: Any) -> None:
+            if tracking_enabled[0]:
+                self._track_dict_change(attr, change)
+
+        # Replace the existing tracking callback with our new one
+        # First, find and remove any existing tracking callbacks
+        for key, o in self._dicts.items():
+            if key.attr == attr:
+                # Remove existing tracking callbacks and add our new one
+                o.on_change(track_change)
+                break
+
+        # Helper function to temporarily disable tracking
+        def with_tracking_disabled(action: Callable[[], None]) -> None:
+            # Disable tracking during this operation
+            tracking_enabled[0] = False
+            # Perform the action
+            action()
+            # Re-enable tracking
+            tracking_enabled[0] = True
+
+        # Create undo/redo functions based on the change type
+        if hasattr(change, "key") and hasattr(change, "value") and hasattr(change, "old_value"):
+            # This is a key update
+            dict_key = change.key
+            value = change.value
+            old_value = change.old_value
+
+            def undo_func() -> None:
+                def action() -> None:
+                    obs[dict_key] = old_value
+
+                with_tracking_disabled(action)
+
+            def redo_func() -> None:
+                def action() -> None:
+                    obs[dict_key] = value
+
+                with_tracking_disabled(action)
+
+        elif hasattr(change, "key") and hasattr(change, "value") and not hasattr(change, "old_value"):
+            # This is a new key
+            dict_key = change.key
+            value = change.value
+
+            def undo_func() -> None:
+                def action() -> None:
+                    if dict_key in obs:  # Check if key exists
+                        del obs[dict_key]
+
+                with_tracking_disabled(action)
+
+            def redo_func() -> None:
+                def action() -> None:
+                    obs[dict_key] = value
+
+                with_tracking_disabled(action)
+
+        elif hasattr(change, "key") and hasattr(change, "old_value") and not hasattr(change, "value"):
+            # This is a key deletion
+            dict_key = change.key
+            old_value = change.old_value
+
+            def undo_func() -> None:
+                def action() -> None:
+                    obs[dict_key] = old_value
+
+                with_tracking_disabled(action)
+
+            def redo_func() -> None:
+                def action() -> None:
+                    if dict_key in obs:  # Check if key exists
+                        del obs[dict_key]
+
+                with_tracking_disabled(action)
+
+        elif hasattr(change, "old_items"):
+            # This is a clear
+            old_items = change.old_items
+
+            def undo_func() -> None:
+                def action() -> None:
+                    obs.update(old_items)
+
+                with_tracking_disabled(action)
+
+            def redo_func() -> None:
+                def action() -> None:
+                    obs.clear()
+
+                with_tracking_disabled(action)
+
+        else:
+            # Unknown change type
+            return
+
+        # Add to the undo stack
+        self._add_to_undo_stack(attr, undo_func, redo_func)
+
+    def _add_to_undo_stack(self, attr: str, undo_func: Callable[[], None], redo_func: Callable[[], None]) -> None:
+        """
+        Add an undo/redo pair to the undo stack for a field.
+
+        Args:
+            attr: The field name.
+            undo_func: The function to call to undo the change.
+            redo_func: The function to call to redo the change.
+        """
+        print(f"DEBUG: _add_to_undo_stack called for {attr}")
+
+        # Initialize stacks if they don't exist
+        if attr not in self._undo_stacks:
+            self._undo_stacks[attr] = []
+            print(f"DEBUG: _add_to_undo_stack - Initialized undo stack for {attr}")
+        if attr not in self._redo_stacks:
+            self._redo_stacks[attr] = []
+            print(f"DEBUG: _add_to_undo_stack - Initialized redo stack for {attr}")
+
+        # Get the undo config for this field
+        config = self._get_undo_config(attr)
+        print(f"DEBUG: _add_to_undo_stack - Got undo config for {attr}: undo_max={config.undo_max}, undo_debounce_ms={config.undo_debounce_ms}")
+
+        # Check if we should debounce this change
+        now = time.monotonic() * 1000  # Convert to milliseconds
+        last_change_time = self._last_change_times.get(attr, 0)
+        debounce_window = config.undo_debounce_ms
+        time_since_last_change = now - last_change_time
+
+        print(f"DEBUG: _add_to_undo_stack - now={now}, last_change_time={last_change_time}, time_since_last_change={time_since_last_change}ms, debounce_window={debounce_window}ms")
+        print(f"DEBUG: _add_to_undo_stack - pending_undo_groups for {attr}: {attr in self._pending_undo_groups}")
+        if attr in self._pending_undo_groups:
+            print(f"DEBUG: _add_to_undo_stack - pending_undo_groups[{attr}] is None: {self._pending_undo_groups[attr] is None}")
+
+        if debounce_window is not None and attr in self._pending_undo_groups and self._pending_undo_groups[attr] is not None and time_since_last_change < debounce_window:
+            # We're within the debounce window, update the pending group
+            # The pending group is the redo function from the previous change
+            # We replace it with the new redo function
+            print(f"DEBUG: _add_to_undo_stack - Within debounce window, updating pending group for {attr}")
+            self._pending_undo_groups[attr] = redo_func
+        else:
+            # We're outside the debounce window or there's no pending group
+            print(f"DEBUG: _add_to_undo_stack - Outside debounce window or no pending group for {attr}")
+
+            # Clear the redo stack when a new change is made
+            self._redo_stacks[attr].clear()
+            print(f"DEBUG: _add_to_undo_stack - Cleared redo stack for {attr}")
+
+            # Add the undo function to the stack
+            self._undo_stacks[attr].append(undo_func)
+            print(f"DEBUG: _add_to_undo_stack - Added undo function to stack for {attr}, stack size: {len(self._undo_stacks[attr])}")
+
+            # Enforce the max size
+            if config.undo_max is not None and len(self._undo_stacks[attr]) > config.undo_max:
+                self._undo_stacks[attr].pop(0)
+                print(f"DEBUG: _add_to_undo_stack - Enforced max size for {attr}, removed oldest undo function")
+
+            # Set the pending group
+            self._pending_undo_groups[attr] = redo_func
+            print(f"DEBUG: _add_to_undo_stack - Set pending group for {attr}")
+
+        # Update the last change time
+        self._last_change_times[attr] = now
+        print(f"DEBUG: _add_to_undo_stack - Updated last change time for {attr} to {now}")
+        print(f"DEBUG: _add_to_undo_stack - Completed for {attr}")
+
+    @override
+    def undo(self, attr: str) -> None:
+        """
+        Undo the most recent change to a field.
+
+        Args:
+            attr: The field name to undo changes for.
+        """
+        print(f"DEBUG: undo called for {attr}")
+
+        if attr not in self._undo_stacks or not self._undo_stacks[attr]:
+            print(f"DEBUG: undo - Nothing to undo for {attr}")
+            return  # Nothing to undo
+
+        # Pop the most recent undo function
+        undo_func = self._undo_stacks[attr].pop()
+        print(f"DEBUG: undo - Popped undo function from stack for {attr}, remaining: {len(self._undo_stacks[attr])}")
+
+        # Get the pending redo function
+        redo_func = self._pending_undo_groups.get(attr)
+        print(f"DEBUG: undo - Got pending redo function for {attr}: {redo_func is not None}")
+
+        # Add to the redo stack if it exists
+        if redo_func is not None:
+            self._redo_stacks[attr].append(redo_func)
+            print(f"DEBUG: undo - Added redo function to stack for {attr}")
+            self._pending_undo_groups[attr] = None
+            print(f"DEBUG: undo - Cleared pending undo group for {attr}")
+
+        # Execute the undo function
+        print(f"DEBUG: undo - Executing undo function for {attr}")
+        undo_func()
+        print(f"DEBUG: undo - Completed for {attr}")
+
+    @override
+    def redo(self, attr: str) -> None:
+        """
+        Redo the most recently undone change to a field.
+
+        Args:
+            attr: The field name to redo changes for.
+        """
+        if attr not in self._redo_stacks or not self._redo_stacks[attr]:
+            return  # Nothing to redo
+
+        # Pop the most recent redo function
+        redo_func = self._redo_stacks[attr].pop()
+
+        # Execute it
+        redo_func()
+
+        # The change tracking will add the corresponding undo function back to the undo stack
+
+    @override
+    def can_undo(self, attr: str) -> bool:
+        """
+        Check if there are changes that can be undone for a field.
+
+        Args:
+            attr: The field name to check.
+
+        Returns:
+            True if there are changes that can be undone, False otherwise.
+        """
+        return attr in self._undo_stacks and bool(self._undo_stacks[attr])
+
+    @override
+    def can_redo(self, attr: str) -> bool:
+        """
+        Check if there are changes that can be redone for a field.
+
+        Args:
+            attr: The field name to check.
+
+        Returns:
+            True if there are changes that can be redone, False otherwise.
+        """
+        return attr in self._redo_stacks and bool(self._redo_stacks[attr])

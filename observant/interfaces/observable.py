@@ -30,3 +30,15 @@ class IObservable(Generic[T]):
             callback: A function that takes the new value as its argument.
         """
         ...
+
+    def enable(self) -> None:
+        """
+        Enable the observable to notify changes.
+        """
+        ...
+
+    def disable(self) -> None:
+        """
+        Disable the observable from notifying changes.
+        """
+        ...
