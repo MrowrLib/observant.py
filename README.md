@@ -1,11 +1,11 @@
-<img alt="Observant.py" src="docs/assets/images/observant-py.png" width="300" />
+<img alt="Observant.py" src="https://mrowrlib.github.io/observant.py/assets/images/observant-py.png" width="300" />
 
 # Observant.py
 
 **Reactive state management for Python.**  
 Track changes, validate data, implement undo/redo, and build reactive UIs with ease.
 
-📚 **Full documentation**: [https://mrowrlib.github.io/observant.py](https://mrowrlib.github.io/observant.py) ← *(replace with actual site)*
+📚 **Full documentation**: [https://mrowrlib.github.io/observant.py](https://mrowrlib.github.io/observant.py)
 
 [![PyPI version](https://badge.fury.io/py/observant.svg)](https://badge.fury.io/py/observant)
 [![License: 0BSD](https://img.shields.io/badge/License-0BSD-990099.svg)](https://opensource.org/license/0BSD)
