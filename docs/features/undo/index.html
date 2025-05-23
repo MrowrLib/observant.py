@@ -54,8 +54,6 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../style.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -574,6 +572,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Per-Field vs Global Undo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#batch-undo-helper" class="md-nav__link">
+    <span class="md-ellipsis">
+      Batch Undo Helper
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -769,8 +782,6 @@
       
         
       
-        
-      
     
     
     
@@ -911,29 +922,6 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../api_reference/undoable_observable/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    UndoableObservable
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
       
@@ -951,7 +939,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -969,8 +957,8 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_7">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             Types
           </label>
@@ -1009,7 +997,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_8" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -1027,8 +1015,8 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_8">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
             <span class="md-nav__icon md-icon"></span>
             Interfaces
           </label>
@@ -1192,6 +1180,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Per-Field vs Global Undo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#batch-undo-helper" class="md-nav__link">
+    <span class="md-ellipsis">
+      Batch Undo Helper
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1341,14 +1344,15 @@
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">proxy</span><span class="o">.</span><span class="n">set_undo_config</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">undo_debounce_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># These rapid changes will be combined into a single undo step</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Al&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Ali&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Alic&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Alice&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="c1"># Only one undo step is created</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>  <span class="c1"># Reverts directly to the original value</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">name_obs</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">name_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">name_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Al&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">name_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Ali&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">name_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Alic&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">name_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Alice&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="c1"># Only one undo step is created</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>  <span class="c1"># Reverts directly to the original value</span>
 </code></pre></div>
 <h2 id="undoredo-api">Undo/Redo API</h2>
 <p>Once undo is enabled, you can use the following methods to undo and redo changes:</p>
@@ -1371,25 +1375,27 @@
 <a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">proxy</span> <span class="o">=</span> <span class="n">ObservableProxy</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">undo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
 <a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="c1"># Make some changes</span>
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
-<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="c1"># Undo changes</span>
-<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>  <span class="c1"># Reverts name to &quot;Alice&quot;</span>
-<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>   <span class="c1"># Reverts age to 30</span>
-<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>
-<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="c1"># Redo changes</span>
-<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="n">proxy</span><span class="o">.</span><span class="n">redo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>  <span class="c1"># Sets name back to &quot;Bob&quot;</span>
-<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="n">proxy</span><span class="o">.</span><span class="n">redo</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>   <span class="c1"># Sets age back to 25</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">name_obs</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="n">age_obs</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="n">name_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="n">age_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="c1"># Undo changes</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>  <span class="c1"># Reverts name to &quot;Alice&quot;</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>   <span class="c1"># Reverts age to 30</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="c1"># Redo changes</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="n">proxy</span><span class="o">.</span><span class="n">redo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>  <span class="c1"># Sets name back to &quot;Bob&quot;</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="n">proxy</span><span class="o">.</span><span class="n">redo</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>   <span class="c1"># Sets age back to 25</span>
 </code></pre></div>
 <h3 id="checking-undoredo-availability">Checking Undo/Redo Availability</h3>
 <p>You can check if undo or redo is available for a field using the <code>can_undo</code> and <code>can_redo</code> methods:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Check if undo is available</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">if</span> <span class="n">proxy</span><span class="o">.</span><span class="n">can_undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">):</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">if</span> <span class="n">proxy</span><span class="o">.</span><span class="n">can_undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># Check if redo is available</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="k">if</span> <span class="n">proxy</span><span class="o">.</span><span class="n">can_redo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">):</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="k">if</span> <span class="n">proxy</span><span class="o">.</span><span class="n">can_redo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">proxy</span><span class="o">.</span><span class="n">redo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>These methods return observables, so you can also listen for changes:</p>
@@ -1402,118 +1408,142 @@
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Redo available for name: </span><span class="si">{</span><span class="n">can_redo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
 </code></pre></div>
 <h2 id="per-field-vs-global-undo">Per-Field vs Global Undo</h2>
-<p>Observant's undo system is field-based, meaning each field has its own undo stack. This allows you to undo changes to one field without affecting others.</p>
+<blockquote>
+<p><strong>Important</strong>: Observant's undo system is field-based, not transaction-based. Each field has its own independent undo stack. There is no concept of a "global undo" that reverts multiple fields at once as a single transaction.</p>
+</blockquote>
+<p>Observant's field-based undo system allows you to undo changes to one field without affecting others:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Make changes to multiple fields</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># Undo only the name change</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>  <span class="c1"># Reverts name to &quot;Alice&quot;</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># Age remains changed</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># 25</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">name_obs</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">age_obs</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">name_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">age_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Undo only the name change</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>  <span class="c1"># Reverts name to &quot;Alice&quot;</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="c1"># Age remains changed</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="nb">print</span><span class="p">(</span><span class="n">age_obs</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># 25</span>
 </code></pre></div>
 <p>This field-based approach gives you more control over which changes to undo, but it also means you need to undo each field separately if you want to undo all changes.</p>
-<p>If you need to undo all changes at once, you can iterate over the fields:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Undo all fields</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">]:</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="k">if</span> <span class="n">proxy</span><span class="o">.</span><span class="n">can_undo</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        <span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+<h3 id="batch-undo-helper">Batch Undo Helper</h3>
+<p>If you need to undo all changes at once, you can create a helper function:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">undo_all</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="n">fields</span><span class="p">):</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Undo all fields that have undo steps available.&quot;&quot;&quot;</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        <span class="k">if</span> <span class="n">proxy</span><span class="o">.</span><span class="n">can_undo</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>            <span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1"># Usage:</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="n">undo_all</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">])</span>
+</code></pre></div>
+<p>You can extend this pattern for more complex undo scenarios:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">undo_to_clean_state</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="n">fields</span><span class="p">):</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Undo all fields until none are dirty.&quot;&quot;&quot;</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="k">while</span> <span class="n">proxy</span><span class="o">.</span><span class="n">is_dirty</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>            <span class="k">if</span> <span class="n">proxy</span><span class="o">.</span><span class="n">is_field_dirty</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="ow">and</span> <span class="n">proxy</span><span class="o">.</span><span class="n">can_undo</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>                <span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="c1"># Break if we can&#39;t undo any more dirty fields</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="ow">not</span> <span class="n">proxy</span><span class="o">.</span><span class="n">can_undo</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span> <span class="k">if</span> <span class="n">proxy</span><span class="o">.</span><span class="n">is_field_dirty</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()):</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>            <span class="k">break</span>
 </code></pre></div>
 <h2 id="limitations-and-gotchas">Limitations and Gotchas</h2>
 <h3 id="sync-and-undo">Sync and Undo</h3>
 <p>The <code>sync</code> and <code>undo</code> options can be used together, but this can lead to unexpected behavior. When <code>sync=True</code>, changes are immediately applied to the underlying model, which means that undo operations will not affect the model until you call <code>save_to</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">proxy</span> <span class="o">=</span> <span class="n">ObservableProxy</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">undo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Make a change</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># &quot;Bob&quot; (sync=True applies changes immediately)</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="c1"># Undo the change</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># &quot;Alice&quot;</span>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># Still &quot;Bob&quot; until save_to is called</span>
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
-<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="c1"># Save changes back to the model</span>
-<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="n">proxy</span><span class="o">.</span><span class="n">save_to</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
-<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># Now &quot;Alice&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">proxy</span> <span class="o">=</span> <span class="n">ObservableProxy</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">undo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Make a change</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">name_obs</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="n">name_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># &quot;Bob&quot; (sync=True applies changes immediately)</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="c1"># Undo the change</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="nb">print</span><span class="p">(</span><span class="n">name_obs</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># &quot;Alice&quot;</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># Still &quot;Bob&quot; until save_to is called</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="c1"># Save changes back to the model</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="n">proxy</span><span class="o">.</span><span class="n">save_to</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># Now &quot;Alice&quot;</span>
 </code></pre></div>
 <p>For this reason, it's generally recommended to use <code>sync=False</code> when using undo functionality.</p>
 <h3 id="collection-fields">Collection Fields</h3>
 <p>For list and dictionary fields, undo/redo works on the entire collection, not individual elements. This means that if you make multiple changes to a collection, undoing will revert all of those changes at once.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">observant</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservableProxy</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="nd">@dataclass</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">TodoList</span><span class="p">:</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="n">todo_list</span> <span class="o">=</span> <span class="n">TodoList</span><span class="p">(</span><span class="n">tasks</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Buy milk&quot;</span><span class="p">])</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="n">proxy</span> <span class="o">=</span> <span class="n">ObservableProxy</span><span class="p">(</span><span class="n">todo_list</span><span class="p">,</span> <span class="n">undo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="c1"># Get the observable list</span>
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="n">tasks</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable_list</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;tasks&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>
-<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="c1"># Make multiple changes</span>
-<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Write docs&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Fix bugs&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="n">tasks</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;Buy milk&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>
-<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="c1"># Undo all changes at once</span>
-<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;tasks&quot;</span><span class="p">)</span>  <span class="c1"># Reverts to [&quot;Buy milk&quot;]</span>
-</code></pre></div>
-<h3 id="computed-fields">Computed Fields</h3>
-<p>Computed fields are not directly undoable, since their values are derived from other fields. However, when you undo changes to a field that a computed field depends on, the computed field will update accordingly.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">observant</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservableProxy</span>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="nd">@dataclass</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">:</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">first_name</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Smith&quot;</span><span class="p">)</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="n">proxy</span> <span class="o">=</span> <span class="n">ObservableProxy</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">undo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="c1"># Register a computed property</span>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="n">proxy</span><span class="o">.</span><span class="n">register_computed</span><span class="p">(</span>
-<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>    <span class="s2">&quot;full_name&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>    <span class="k">lambda</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;first_name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;last_name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>    <span class="n">dependencies</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">]</span>
-<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="p">)</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">TodoList</span><span class="p">:</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="n">todo_list</span> <span class="o">=</span> <span class="n">TodoList</span><span class="p">(</span><span class="n">tasks</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Buy milk&quot;</span><span class="p">])</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="n">proxy</span> <span class="o">=</span> <span class="n">ObservableProxy</span><span class="p">(</span><span class="n">todo_list</span><span class="p">,</span> <span class="n">undo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="c1"># Get the observable list</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="n">tasks</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable_list</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;tasks&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="c1"># Make multiple changes</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Write docs&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Fix bugs&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="n">tasks</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;Buy milk&quot;</span><span class="p">)</span>
 <a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>
-<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="c1"># Make a change</span>
-<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;first_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">)</span>
-<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">computed</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;full_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># &quot;Bob Smith&quot;</span>
-<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a>
-<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="c1"># Undo the change</span>
-<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;first_name&quot;</span><span class="p">)</span>
-<a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">computed</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;full_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># &quot;Alice Smith&quot;</span>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="c1"># Undo all changes at once</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;tasks&quot;</span><span class="p">)</span>  <span class="c1"># Reverts to [&quot;Buy milk&quot;]</span>
 </code></pre></div>
-<h3 id="validation-and-undo">Validation and Undo</h3>
-<p>When you undo a change, validation is automatically re-run for the affected field. This means that if you undo a change that makes a field invalid, the validation errors will be updated accordingly.</p>
+<h3 id="computed-fields">Computed Fields</h3>
+<p>Computed fields are not directly undoable, since their values are derived from other fields. However, when you undo changes to a field that a computed field depends on, the computed field will update accordingly.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">observant</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservableProxy</span>
 <a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="nd">@dataclass</span>
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">:</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="n">proxy</span> <span class="o">=</span> <span class="n">ObservableProxy</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">undo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
-<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="c1"># Add a validator</span>
-<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="n">proxy</span><span class="o">.</span><span class="n">add_validator</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="s2">&quot;Username required&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>
-<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="c1"># Set a valid value</span>
-<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;username&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;alice&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">is_valid</span><span class="p">())</span>  <span class="c1"># True</span>
-<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>
-<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="c1"># Undo the change</span>
-<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">is_valid</span><span class="p">())</span>  <span class="c1"># False</span>
-<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">validation_for</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># [&quot;Username required&quot;]</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">first_name</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Smith&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="n">proxy</span> <span class="o">=</span> <span class="n">ObservableProxy</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">undo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="c1"># Register a computed property</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="n">proxy</span><span class="o">.</span><span class="n">register_computed</span><span class="p">(</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="s2">&quot;full_name&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>    <span class="k">lambda</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;first_name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;last_name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    <span class="n">dependencies</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">]</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="p">)</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="c1"># Make a change</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="n">first_name_obs</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;first_name&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="n">first_name_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">computed</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;full_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># &quot;Bob Smith&quot;</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a><span class="c1"># Undo the change</span>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;first_name&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">computed</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;full_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># &quot;Alice Smith&quot;</span>
+</code></pre></div>
+<h3 id="validation-and-undo">Validation and Undo</h3>
+<p>When you undo a change, validation is automatically re-run for the affected field. This means that if you undo a change that makes a field invalid, the validation errors will be updated accordingly.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">observant</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservableProxy</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">:</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>    <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="n">proxy</span> <span class="o">=</span> <span class="n">ObservableProxy</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">undo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="c1"># Add a validator</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="n">proxy</span><span class="o">.</span><span class="n">add_validator</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="s2">&quot;Username required&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="c1"># Set a valid value</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="n">username_obs</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;username&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="n">username_obs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;alice&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># True</span>
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="c1"># Undo the change</span>
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="n">proxy</span><span class="o">.</span><span class="n">undo</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># False</span>
+<a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a><span class="nb">print</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">validation_for</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>  <span class="c1"># [&quot;Username required&quot;]</span>
 </code></pre></div>
 <h2 id="next-steps">Next Steps</h2>
 <p>Now that you understand how undo and redo work in Observant, you might want to explore:</p>
@@ -1522,6 +1552,7 @@
 <li><a href="../dirty/">Dirty Tracking</a>: Track unsaved changes</li>
 <li><a href="../sync/">Sync vs Non-Sync</a>: Understand immediate vs. deferred updates</li>
 </ul>
+<p><a href="../../">← Back to Overview</a></p>
 
 
 
