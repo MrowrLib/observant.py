@@ -34,8 +34,10 @@ user = User(name="Alice", age=30)
 proxy = ObservableProxy(user, sync=False)
 
 # Make changes
-proxy.observable(str, "name").set("Bob")
-proxy.observable(int, "age").set(31)
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+name_obs.set("Bob")
+age_obs.set(31)
 
 # Save changes back to the model
 proxy.save_to(user)
@@ -58,8 +60,10 @@ user2 = User(name="Charlie", age=32)
 proxy = ObservableProxy(user1, sync=False)
 
 # Make changes
-proxy.observable(str, "name").set("Bob")
-proxy.observable(int, "age").set(31)
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+name_obs.set("Bob")
+age_obs.set(31)
 
 # Save changes to user2
 proxy.save_to(user2)
@@ -85,22 +89,23 @@ When you call `save_to()`, the dirty state is not automatically reset. If you wa
 
 ```python
 # Make changes
-proxy.observable(str, "name").set("Bob")
+name_obs = proxy.observable(str, "name")
+name_obs.set("Bob")
 
 # The field is dirty
-print(proxy.is_dirty())  # True
+print(proxy.is_dirty().get())  # True
 
 # Save changes
 proxy.save_to(user)
 
 # The field is still dirty
-print(proxy.is_dirty())  # True
+print(proxy.is_dirty().get())  # True
 
 # Reset dirty state
 proxy.reset_dirty()
 
 # Now the field is not dirty
-print(proxy.is_dirty())  # False
+print(proxy.is_dirty().get())  # False
 ```
 
 This behavior allows you to track whether changes have been saved to a specific model, even if you save to multiple models.
@@ -129,8 +134,10 @@ proxy.load_dict({
 })
 
 # The proxy is updated
-print(proxy.observable(str, "name").get())  # "Bob"
-print(proxy.observable(int, "age").get())  # 31
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+print(name_obs.get())  # "Bob"
+print(age_obs.get())  # 31
 
 # The model is not updated yet
 print(user.name)  # "Alice"
@@ -144,6 +151,45 @@ print(user.name)  # "Bob"
 print(user.age)   # 31
 ```
 
+### Nested Data
+
+Note that `load_dict()` does not automatically handle nested objects. If your model contains nested objects, you'll need to manually create proxies for them:
+
+```python
+from dataclasses import dataclass
+from observant import ObservableProxy
+
+@dataclass
+class Address:
+    street: str
+    city: str
+
+@dataclass
+class User:
+    name: str
+    address: Address
+
+# Create a user with an address
+user = User(name="Alice", address=Address(street="123 Main St", city="Anytown"))
+proxy = ObservableProxy(user, sync=False)
+
+# This will NOT work for nested objects:
+proxy.load_dict({
+    "name": "Bob",
+    "address": {"street": "456 Oak St", "city": "Othertown"}  # Not automatically proxied
+})
+
+# Instead, you need to handle nested objects manually:
+proxy.observable(str, "name").set("Bob")
+address_proxy = ObservableProxy(user.address, sync=False)
+address_proxy.load_dict({
+    "street": "456 Oak St",
+    "city": "Othertown"
+})
+proxy.save_to(user)
+address_proxy.save_to(user.address)
+```
+
 ### reset_missing
 
 The `load_dict()` method has an optional `reset_missing` parameter. When set to `True`, fields that are not in the dictionary are reset to their default values:
@@ -155,8 +201,10 @@ proxy.load_dict({
 }, reset_missing=True)
 
 # Fields not in the dictionary are reset
-print(proxy.observable(str, "name").get())  # "Charlie"
-print(proxy.observable(int, "age").get())  # 0 (default value for int)
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+print(name_obs.get())  # "Charlie"
+print(age_obs.get())  # 0 (default value for int)
 ```
 
 When `reset_missing=False` (the default), fields not in the dictionary are left unchanged:
@@ -168,8 +216,10 @@ proxy.load_dict({
 }, reset_missing=False)
 
 # Fields not in the dictionary are unchanged
-print(proxy.observable(str, "name").get())  # "Dave"
-print(proxy.observable(int, "age").get())  # 31 (unchanged)
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+print(name_obs.get())  # "Dave"
+print(age_obs.get())  # 31 (unchanged)
 ```
 
 ### Validation and load_dict()
@@ -200,7 +250,7 @@ proxy.load_dict({
 })
 
 # Validation passes
-print(proxy.is_valid())  # True
+print(proxy.is_valid().get())  # True
 
 # Load invalid data
 proxy.load_dict({
@@ -209,8 +259,8 @@ proxy.load_dict({
 })
 
 # Validation fails
-print(proxy.is_valid())  # False
-print(proxy.validation_errors())  # {"name": ["Name required"], "age": ["Age must be positive"]}
+print(proxy.is_valid().get())  # False
+print(proxy.validation_errors().get())  # {"name": ["Name required"], "age": ["Age must be positive"]}
 ```
 
 ## update()
@@ -238,9 +288,12 @@ proxy.update({
 })
 
 # Only the specified fields are updated
-print(proxy.observable(str, "name").get())  # "Bob"
-print(proxy.observable(int, "age").get())  # 31
-print(proxy.observable(str, "email").get())  # "alice@example.com" (unchanged)
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+email_obs = proxy.observable(str, "email")
+print(name_obs.get())  # "Bob"
+print(age_obs.get())  # 31
+print(email_obs.get())  # "alice@example.com" (unchanged)
 ```
 
 ### update() vs load_dict()
@@ -256,15 +309,17 @@ The main differences between `update()` and `load_dict()` are:
 proxy.update({
     "name": "Charlie"
 })
-print(proxy.observable(str, "name").get())  # "Charlie"
-print(proxy.observable(int, "age").get())  # 31 (unchanged)
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+print(name_obs.get())  # "Charlie"
+print(age_obs.get())  # 31 (unchanged)
 
 # load_dict() with reset_missing=True resets unspecified fields
 proxy.load_dict({
     "name": "Dave"
 }, reset_missing=True)
-print(proxy.observable(str, "name").get())  # "Dave"
-print(proxy.observable(int, "age").get())  # 0 (reset to default)
+print(name_obs.get())  # "Dave"
+print(age_obs.get())  # 0 (reset to default)
 ```
 
 ## Saving to Different Models
@@ -291,8 +346,10 @@ original_user = User(name="Alice", age=30)
 proxy = ObservableProxy(original_user, sync=False)
 
 # Make changes
-proxy.observable(str, "name").set("Bob")
-proxy.observable(int, "age").set(31)
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+name_obs.set("Bob")
+age_obs.set(31)
 
 # Create a modified copy
 modified_user = User(name="", age=0)
@@ -331,9 +388,12 @@ user = User(name="Alice", age=30, email="alice@example.com")
 proxy = ObservableProxy(user, sync=False)
 
 # Make changes
-proxy.observable(str, "name").set("Bob")
-proxy.observable(int, "age").set(31)
-proxy.observable(str, "email").set("bob@example.com")
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+email_obs = proxy.observable(str, "email")
+name_obs.set("Bob")
+age_obs.set(31)
+email_obs.set("bob@example.com")
 
 # Create a simple user
 simple_user = SimpleUser(name="", age=0)
@@ -347,9 +407,9 @@ print(simple_user.age)   # 31
 # simple_user doesn't have an email field
 ```
 
-## Reusing Proxies
+## Reusing a Single Proxy
 
-You can reuse a proxy with different models by calling `save_to()` and then creating a new proxy:
+A powerful feature of Observant is the ability to reuse a single proxy instance across multiple data loads. This preserves observers, computed properties, and other state:
 
 ```python
 from dataclasses import dataclass
@@ -360,36 +420,34 @@ class User:
     name: str
     age: int
 
-# Create users
-user1 = User(name="Alice", age=30)
-user2 = User(name="Bob", age=31)
+# Create a user and proxy
+user = User(name="Alice", age=30)
+proxy = ObservableProxy(user, sync=False)
 
-# Create a proxy for user1
-proxy1 = ObservableProxy(user1, sync=False)
+# Register an observer
+name_obs = proxy.observable(str, "name")
+name_obs.on_change(lambda value: print(f"Name changed to: {value}"))
 
-# Make changes
-proxy1.observable(str, "name").set("Charlie")
+# Make a change
+name_obs.set("Bob")  # Prints: "Name changed to: Bob"
 
-# Save changes to user1
-proxy1.save_to(user1)
+# Later, load new data into the SAME proxy
+new_data = User(name="Charlie", age=25)
+proxy.load_from(new_data)  # Loads data from new_data into the existing proxy
 
-# Create a new proxy for user2
-proxy2 = ObservableProxy(user2, sync=False)
+# The observer is still active
+name_obs.set("Dave")  # Prints: "Name changed to: Dave"
 
-# Make changes
-proxy2.observable(int, "age").set(32)
-
-# Save changes to user2
-proxy2.save_to(user2)
-
-# Both users are updated
-print(user1.name)  # "Charlie"
-print(user1.age)   # 30
-print(user2.name)  # "Bob"
-print(user2.age)   # 32
+# Save changes to the original user
+proxy.save_to(user)
+print(user.name)  # "Dave"
 ```
 
-This approach is useful when you want to work with multiple models sequentially.
+This approach is particularly useful when:
+
+1. You have UI elements bound to observables and want to update the data without rebinding
+2. You have complex observer setups that you want to preserve
+3. You're implementing undo/redo and want to maintain the history
 
 ## Next Steps
 
@@ -398,3 +456,5 @@ Now that you understand how saving and loading work in Observant, you might want
 - [API Reference](../api_reference/index.md): Detailed API documentation
 - [Sync vs Non-Sync](sync.md): Understand immediate vs. deferred updates
 - [Dirty Tracking](dirty.md): Track unsaved changes
+
+[← Back to Overview](../index.md)

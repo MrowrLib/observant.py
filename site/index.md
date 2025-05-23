@@ -132,9 +132,10 @@ print(proxy.computed(str, "full_name").get())
 ```
 
 
-## Quick Example
+## Complete Form Example
 
 ```python
+# This is a complete form implementation with validation, dirty tracking, and save logic
 from dataclasses import dataclass
 from observant import ObservableProxy
 
@@ -163,6 +164,9 @@ if proxy.is_valid():
     # Save changes
     proxy.save_to(form)
     print("Form saved!")
+    
+    # Reset dirty state after saving
+    proxy.reset_dirty()
 else:
     # Show errors
     print("Validation errors:", proxy.validation_errors())

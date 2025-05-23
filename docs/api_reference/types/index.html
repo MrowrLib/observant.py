@@ -859,7 +859,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#observablecollectionchangetype" class="md-nav__link">
+  <a href="#observant.types.collection_change_type.ObservableCollectionChangeType" class="md-nav__link">
     <span class="md-ellipsis">
       ObservableCollectionChangeType
     </span>
@@ -868,7 +868,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#observablelistchange" class="md-nav__link">
+  <a href="#observant.types.list_change.ObservableListChange" class="md-nav__link">
     <span class="md-ellipsis">
       ObservableListChange
     </span>
@@ -877,7 +877,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#observabledictchange" class="md-nav__link">
+  <a href="#observant.types.dict_change.ObservableDictChange" class="md-nav__link">
     <span class="md-ellipsis">
       ObservableDictChange
     </span>
@@ -886,7 +886,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#proxyfieldkey" class="md-nav__link">
+  <a href="#observant.types.proxy_field_key.ProxyFieldKey" class="md-nav__link">
     <span class="md-ellipsis">
       ProxyFieldKey
     </span>
@@ -895,18 +895,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#undoconfig" class="md-nav__link">
+  <a href="#observant.types.undo_config.UndoConfig" class="md-nav__link">
     <span class="md-ellipsis">
       UndoConfig
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#auto-generated-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Auto-Generated Documentation
     </span>
   </a>
   
@@ -932,112 +923,394 @@
 
 
 <h1 id="types">Types</h1>
-<p>This section documents the various types used throughout the Observant library. These types define the structure of data and events in the library.</p>
-<h2 id="observablecollectionchangetype">ObservableCollectionChangeType</h2>
-<p>An enum that represents the type of change that occurred in a collection:</p>
-<ul>
-<li><code>ADD</code>: An item was added to the collection</li>
-<li><code>REMOVE</code>: An item was removed from the collection</li>
-<li><code>UPDATE</code>: An item was updated in the collection</li>
-<li><code>CLEAR</code>: The collection was cleared</li>
-</ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">observant</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservableCollectionChangeType</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Example usage</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">if</span> <span class="n">change</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ObservableCollectionChangeType</span><span class="o">.</span><span class="n">ADD</span><span class="p">:</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Item added&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">elif</span> <span class="n">change</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ObservableCollectionChangeType</span><span class="o">.</span><span class="n">REMOVE</span><span class="p">:</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Item removed&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">elif</span> <span class="n">change</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ObservableCollectionChangeType</span><span class="o">.</span><span class="n">UPDATE</span><span class="p">:</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Item updated&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">elif</span> <span class="n">change</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ObservableCollectionChangeType</span><span class="o">.</span><span class="n">CLEAR</span><span class="p">:</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Collection cleared&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="observablelistchange">ObservableListChange</h2>
-<p>A class that represents a change to an observable list. It contains:</p>
-<ul>
-<li><code>type</code>: The type of change (ADD, REMOVE, CLEAR)</li>
-<li><code>index</code>: The index where the change occurred (for ADD and REMOVE)</li>
-<li><code>item</code>: The item that was added or removed (for single-item changes)</li>
-<li><code>items</code>: The items that were added or removed (for multi-item changes)</li>
-</ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">observant</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservableList</span><span class="p">,</span> <span class="n">ObservableListChange</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Create an observable list</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">tasks</span> <span class="o">=</span> <span class="n">ObservableList</span><span class="p">[</span><span class="nb">str</span><span class="p">]([</span><span class="s2">&quot;Task 1&quot;</span><span class="p">])</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Register a callback</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">on_tasks_change</span><span class="p">(</span><span class="n">change</span><span class="p">:</span> <span class="n">ObservableListChange</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Change type: </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">change</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">):</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Index: </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">change</span><span class="p">,</span> <span class="s2">&quot;item&quot;</span><span class="p">):</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Item: </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">change</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">):</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Items: </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">items</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">tasks</span><span class="o">.</span><span class="n">on_change</span><span class="p">(</span><span class="n">on_tasks_change</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="observabledictchange">ObservableDictChange</h2>
-<p>A class that represents a change to an observable dictionary. It contains:</p>
-<ul>
-<li><code>type</code>: The type of change (ADD, UPDATE, REMOVE, CLEAR)</li>
-<li><code>key</code>: The key that was added, updated, or removed (for single-item changes)</li>
-<li><code>value</code>: The value that was added or updated (for single-item changes)</li>
-<li><code>items</code>: The items that were added, updated, or removed (for multi-item changes)</li>
-</ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">observant</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservableDict</span><span class="p">,</span> <span class="n">ObservableDictChange</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Create an observable dictionary</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">ObservableDict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]({</span><span class="s2">&quot;theme&quot;</span><span class="p">:</span> <span class="s2">&quot;dark&quot;</span><span class="p">})</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Register a callback</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">on_settings_change</span><span class="p">(</span><span class="n">change</span><span class="p">:</span> <span class="n">ObservableDictChange</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Change type: </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">change</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">):</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key: </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">change</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">):</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Value: </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">change</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">):</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Items: </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">items</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">settings</span><span class="o">.</span><span class="n">on_change</span><span class="p">(</span><span class="n">on_settings_change</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="proxyfieldkey">ProxyFieldKey</h2>
-<p>A class that represents a field key in an <code>ObservableProxy</code>. It's used internally to track fields.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">observant.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProxyFieldKey</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># This is typically used internally by ObservableProxy</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">field_key</span> <span class="o">=</span> <span class="n">ProxyFieldKey</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="undoconfig">UndoConfig</h2>
-<p>A class that represents the configuration for undo/redo functionality. It contains:</p>
-<ul>
-<li><code>enabled</code>: Whether undo is enabled</li>
-<li><code>undo_max</code>: Maximum number of undo steps to store</li>
-<li><code>undo_debounce_ms</code>: Time in milliseconds to wait before recording a new undo step</li>
-</ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">observant.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">UndoConfig</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># Create an undo configuration</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">UndoConfig</span><span class="p">(</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">undo_max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">undo_debounce_ms</span><span class="o">=</span><span class="mi">500</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">)</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1"># This is typically used internally by ObservableProxy</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="n">proxy</span><span class="o">.</span><span class="n">set_undo_config</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">enabled</span><span class="p">,</span> <span class="n">undo_max</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">undo_max</span><span class="p">,</span> <span class="n">undo_debounce_ms</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">undo_debounce_ms</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="auto-generated-documentation">Auto-Generated Documentation</h2>
-<p>For more detailed information about each type, refer to the auto-generated documentation:</p>
-<ul>
-<li>ObservableCollectionChangeType</li>
-<li>ObservableListChange</li>
-<li>ObservableDictChange</li>
-<li>ProxyFieldKey</li>
-<li>UndoConfig</li>
-</ul>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="observant.types.collection_change_type.ObservableCollectionChangeType" class="doc doc-heading">
+            <code>observant.types.collection_change_type.ObservableCollectionChangeType</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="enum.Enum">Enum</span></code></p>
+
+
+        <p>Type of change that occurred in a collection.</p>
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>observant\types\collection_change_type.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-0-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-0-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-0-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-0-10">10</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">ObservableCollectionChangeType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of change that occurred in a collection.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="n">ADD</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8"></a>    <span class="n">REMOVE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9"></a>    <span class="n">CLEAR</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10"></a>    <span class="n">UPDATE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1"># For dictionaries, when a value is updated</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="observant.types.list_change.ObservableListChange" class="doc doc-heading">
+            <code>observant.types.list_change.ObservableListChange</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="typing.Generic">Generic</span>[<span title="observant.types.list_change.T">T</span>]</code></p>
+
+
+        <p>Information about a change to an ObservableList.</p>
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>observant\types\list_change.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-9" name="__codelineno-0-9"></a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="k">class</span><span class="w"> </span><span class="nc">ObservableListChange</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about a change to an ObservableList.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12"></a>
+<a id="__codelineno-0-13" name="__codelineno-0-13"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">ObservableCollectionChangeType</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14"></a>    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Index where the change occurred, if applicable</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15"></a>    <span class="n">item</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Item that was added or removed, if applicable</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16"></a>    <span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Multiple items that were added or removed, if applicable</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="observant.types.dict_change.ObservableDictChange" class="doc doc-heading">
+            <code>observant.types.dict_change.ObservableDictChange</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="typing.Generic">Generic</span>[<span title="observant.types.dict_change.TKey">TKey</span>, <span title="observant.types.dict_change.TValue">TValue</span>]</code></p>
+
+
+        <p>Information about a change to an ObservableDict.</p>
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>observant\types\dict_change.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="k">class</span><span class="w"> </span><span class="nc">ObservableDictChange</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TKey</span><span class="p">,</span> <span class="n">TValue</span><span class="p">]):</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about a change to an ObservableDict.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">ObservableCollectionChangeType</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15"></a>    <span class="n">key</span><span class="p">:</span> <span class="n">TKey</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Key where the change occurred, if applicable</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16"></a>    <span class="n">value</span><span class="p">:</span> <span class="n">TValue</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17"></a>        <span class="kc">None</span>  <span class="c1"># Value that was added, removed, or updated, if applicable</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18"></a>    <span class="p">)</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19"></a>    <span class="n">items</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">TKey</span><span class="p">,</span> <span class="n">TValue</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20"></a>        <span class="kc">None</span>  <span class="c1"># Multiple items that were added, removed, or updated, if applicable</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21"></a>    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="observant.types.proxy_field_key.ProxyFieldKey" class="doc doc-heading">
+            <code>observant.types.proxy_field_key.ProxyFieldKey</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>observant\types\proxy_field_key.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-0-10">10</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-7" name="__codelineno-0-7"></a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">ProxyFieldKey</span><span class="p">:</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9"></a>    <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10"></a>    <span class="n">sync</span><span class="p">:</span> <span class="nb">bool</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="observant.types.undo_config.UndoConfig" class="doc doc-heading">
+            <code>observant.types.undo_config.UndoConfig</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Configuration for undo/redo behavior of an observable field.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="observant.types.undo_config.UndoConfig.enabled">enabled</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether undo/redo functionality is enabled for this field.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="observant.types.undo_config.UndoConfig.undo_max">undo_max</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Maximum number of undo steps to store. None means unlimited.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="observant.types.undo_config.UndoConfig.undo_debounce_ms">undo_debounce_ms</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Time window in milliseconds to group changes. None means no debouncing.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>observant\types\undo_config.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-0-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-0-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">UndoConfig</span><span class="p">:</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="sd">    Configuration for undo/redo behavior of an observable field.</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="sd">    Attributes:</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="sd">        enabled: Whether undo/redo functionality is enabled for this field.</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="sd">        undo_max: Maximum number of undo steps to store. None means unlimited.</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">        undo_debounce_ms: Time window in milliseconds to group changes. None means no debouncing.</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15"></a>
+<a id="__codelineno-0-16" name="__codelineno-0-16"></a>    <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17"></a>    <span class="n">undo_max</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">50</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18"></a>    <span class="n">undo_debounce_ms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 
 

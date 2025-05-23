@@ -18,6 +18,8 @@ Key features of computed properties in Observant:
 - Support for validation
 - Integration with the undo system
 
+> **Important**: Computed properties are read-only. You cannot directly set their values, as they are derived from their dependencies. To change a computed property's value, you must modify its dependencies.
+
 ## Registering Computed Fields
 
 You can register a computed property using the `register_computed` method of `ObservableProxy`. This method takes:
@@ -174,6 +176,28 @@ print(proxy.computed(float, "total").get())       # 33.0
 
 In this example, changing the `quantity` field triggers updates to `subtotal`, which in turn triggers updates to `tax_amount` and `total`.
 
+### Dependency Graph
+
+The dependencies in the example above form a directed acyclic graph (DAG):
+
+```mermaid
+graph TD
+    price --> subtotal
+    quantity --> subtotal
+    subtotal --> tax_amount
+    tax_rate --> tax_amount
+    subtotal --> total
+    tax_amount --> total
+```
+
+This visualization helps understand how changes propagate through the system:
+
+1. When `price` or `quantity` changes, `subtotal` is recalculated
+2. When `subtotal` or `tax_rate` changes, `tax_amount` is recalculated
+3. When `subtotal` or `tax_amount` changes, `total` is recalculated
+
+So a change to `quantity` triggers a cascade of updates through the entire graph.
+
 ## Shadowing Real Fields
 
 Computed properties can shadow real fields, meaning they can have the same name as a field in the underlying model. This can be useful for adding formatting or validation to existing fields.
@@ -322,3 +346,5 @@ Now that you understand how computed properties work in Observant, you might wan
 - [Dirty Tracking](dirty.md): Track unsaved changes
 - [Sync vs Non-Sync](sync.md): Understand immediate vs. deferred updates
 - [Saving and Loading](save_load.md): Save changes and load data
+
+[← Back to Overview](../index.md)

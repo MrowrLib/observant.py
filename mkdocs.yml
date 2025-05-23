@@ -50,8 +50,8 @@ markdown_extensions:
       alternate_style: true
   - tables
 
-extra_css:
-  - style.css
+# extra_css:
+#   - style.css
 
 plugins:
   - search
@@ -80,7 +80,6 @@ nav:
       - ObservableList: api_reference/observable_list.md
       - ObservableDict: api_reference/observable_dict.md
       - ObservableProxy: api_reference/observable_proxy.md
-      - UndoableObservable: api_reference/undoable_observable.md
       - Types:
           - Overview: api_reference/types/index.md
       - Interfaces:

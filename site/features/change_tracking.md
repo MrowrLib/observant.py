@@ -272,3 +272,5 @@ Now that you understand how change tracking works in Observant, you might want t
 - [Validation](validation.md): Add validation to your models
 - [Computed Properties](computed.md): Create properties that depend on other fields
 - [Undo and Redo](undo.md): Implement undo/redo functionality
+
+[← Back to Overview](../index.md)

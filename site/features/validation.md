@@ -141,9 +141,118 @@ proxy.observable(int, "age").set(30)
 # Prints: "Model is valid: True"
 ```
 
-## Resetting Validation
+## When to Validate
 
-Sometimes you may want to reset the validation state, for example when a form is submitted or when you want to clear all validation errors.
+Observant's validation system is flexible and can be used in different ways depending on your needs. Here are three common approaches to validation timing:
+
+### Immediate Validation
+
+With immediate validation, validators run as soon as a field's value changes. This provides instant feedback to users but can be intrusive for fields that are still being edited.
+
+```python
+# Immediate validation is the default behavior
+username_obs = proxy.observable(str, "username")
+username_obs.set("a")  # Validation runs immediately
+
+# Check validation errors
+print(proxy.validation_for("username").get())  # ['Too short']
+```
+
+This approach is good for:
+- Simple forms where immediate feedback is helpful
+- Fields with critical validation requirements
+- When you want to prevent invalid input as early as possible
+
+### Deferred Validation
+
+With deferred validation, you manually trigger validation when needed, such as when a form is submitted. This gives users more freedom to enter data without being interrupted by validation errors.
+
+```python
+from dataclasses import dataclass
+from observant import ObservableProxy
+
+@dataclass
+class LoginForm:
+    username: str
+    password: str
+
+# Create a form and proxy
+form = LoginForm(username="", password="")
+proxy = ObservableProxy(form)
+
+# Add validators but don't run them yet
+proxy.add_validator("username", lambda v: "Username required" if not v else None)
+proxy.add_validator("password", lambda v: "Password required" if not v else None)
+
+# Disable automatic validation
+username_obs = proxy.observable(str, "username")
+username_obs.set("", notify=False)  # No validation runs
+password_obs = proxy.observable(str, "password")
+password_obs.set("", notify=False)  # No validation runs
+
+# Later, when the form is submitted, manually trigger validation
+def on_submit():
+    # Force validation of all fields
+    proxy.reset_validation()
+    
+    if proxy.is_valid().get():
+        # Form is valid, proceed with submission
+        print("Form submitted successfully")
+    else:
+        # Show validation errors
+        print("Please fix the following errors:")
+        for field, errors in proxy.validation_errors().get().items():
+            print(f"{field}: {', '.join(errors)}")
+
+# Test the submit function
+on_submit()
+# Prints:
+# Please fix the following errors:
+# username: Username required
+# password: Password required
+```
+
+This approach is good for:
+- Complex forms where immediate validation would be disruptive
+- When you want to validate multiple fields at once
+- When validation should only happen at specific points (e.g., form submission)
+
+### Hybrid Validation
+
+You can also use a hybrid approach, where some fields are validated immediately and others are validated only when needed:
+
+```python
+# Username is validated immediately
+proxy.add_validator("username", lambda v: "Username required" if not v else None)
+
+# Password is not validated until form submission
+proxy.add_validator("password", lambda v: "Password required" if not v else None)
+password_obs = proxy.observable(str, "password")
+password_obs.set("", notify=False)  # No validation runs
+
+# When the form is submitted, validate all fields
+def on_submit():
+    # Force validation of all fields
+    proxy.reset_validation()
+    
+    if proxy.is_valid().get():
+        # Form is valid, proceed with submission
+        print("Form submitted successfully")
+    else:
+        # Show validation errors
+        print("Please fix the following errors:")
+        for field, errors in proxy.validation_errors().get().items():
+            print(f"{field}: {', '.join(errors)}")
+```
+
+This approach is good for:
+- Forms with a mix of critical and non-critical fields
+- When you want immediate validation for some fields but not others
+- When you want to balance user experience with validation requirements
+
+## Clearing Validation Errors
+
+Sometimes you may want to clear validation errors, for example after a successful form submission or when you want to reset the form.
 
 ### reset_validation()
 
@@ -162,6 +271,68 @@ By default, `reset_validation()` also re-runs the validators. If you want to jus
 ```python
 # Reset validation without re-running validators
 proxy.reset_validation(revalidate=False)
+```
+
+This is particularly useful when:
+- You've successfully saved the form and want to clear all validation errors
+- You're resetting the form to its initial state
+- You want to temporarily disable validation
+
+### Practical Example: Form Submission
+
+Here's a complete example of a form submission flow with validation:
+
+```python
+from dataclasses import dataclass
+from observant import ObservableProxy
+
+@dataclass
+class RegistrationForm:
+    username: str
+    email: str
+    password: str
+
+# Create a form and proxy
+form = RegistrationForm(username="", email="", password="")
+proxy = ObservableProxy(form)
+
+# Add validators
+proxy.add_validator("username", lambda v: "Username required" if not v else None)
+proxy.add_validator("email", lambda v: "Invalid email" if "@" not in v else None)
+proxy.add_validator("password", lambda v: "Password too short" if len(v) < 8 else None)
+
+# Function to handle form submission
+def submit_form():
+    # Force validation of all fields
+    proxy.reset_validation()
+    
+    if proxy.is_valid().get():
+        # Form is valid, proceed with submission
+        print("Form submitted successfully")
+        
+        # Save the form data (e.g., to a database)
+        save_to_database(proxy)
+        
+        # Clear all validation errors and mark form as clean
+        proxy.reset_validation(revalidate=False)
+        proxy.reset_dirty()
+        
+        return True
+    else:
+        # Show validation errors
+        print("Please fix the following errors:")
+        for field, errors in proxy.validation_errors().get().items():
+            print(f"{field}: {', '.join(errors)}")
+        
+        return False
+
+# Simulate user input
+proxy.observable(str, "username").set("alice")
+proxy.observable(str, "email").set("alice@example.com")
+proxy.observable(str, "password").set("password123")
+
+# Submit the form
+submit_form()  # Prints: "Form submitted successfully"
 ```
 
 ## Computed Field Validation
@@ -269,3 +440,5 @@ Now that you understand how validation works in Observant, you might want to exp
 - [Computed Properties](computed.md): Create properties that depend on other fields
 - [Undo and Redo](undo.md): Implement undo/redo functionality
 - [Dirty Tracking](dirty.md): Track unsaved changes
+
+[← Back to Overview](../index.md)

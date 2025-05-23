@@ -241,3 +241,5 @@ Now that you understand the difference between sync and non-sync modes in Observ
 - [Saving and Loading](save_load.md): Learn more about saving changes and loading data
 - [Dirty Tracking](dirty.md): Track unsaved changes
 - [Undo and Redo](undo.md): Implement undo/redo functionality
+
+[← Back to Overview](../index.md)

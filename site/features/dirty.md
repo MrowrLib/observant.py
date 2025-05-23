@@ -301,3 +301,5 @@ Now that you understand how dirty tracking works in Observant, you might want to
 - [Sync vs Non-Sync](sync.md): Understand immediate vs. deferred updates
 - [Saving and Loading](save_load.md): Save changes and load data
 - [API Reference](../api_reference/index.md): Detailed API documentation
+
+[← Back to Overview](../index.md)

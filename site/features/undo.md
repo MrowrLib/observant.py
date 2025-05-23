@@ -88,11 +88,12 @@ This is useful for fields that change rapidly, such as text fields during typing
 proxy.set_undo_config("name", enabled=True, undo_debounce_ms=500)
 
 # These rapid changes will be combined into a single undo step
-proxy.observable(str, "name").set("A")
-proxy.observable(str, "name").set("Al")
-proxy.observable(str, "name").set("Ali")
-proxy.observable(str, "name").set("Alic")
-proxy.observable(str, "name").set("Alice")
+name_obs = proxy.observable(str, "name")
+name_obs.set("A")
+name_obs.set("Al")
+name_obs.set("Ali")
+name_obs.set("Alic")
+name_obs.set("Alice")
 
 # Only one undo step is created
 proxy.undo("name")  # Reverts directly to the original value
@@ -122,8 +123,10 @@ user = User(name="Alice", age=30)
 proxy = ObservableProxy(user, undo=True)
 
 # Make some changes
-proxy.observable(str, "name").set("Bob")
-proxy.observable(int, "age").set(25)
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+name_obs.set("Bob")
+age_obs.set(25)
 
 # Undo changes
 proxy.undo("name")  # Reverts name to "Alice"
@@ -140,11 +143,11 @@ You can check if undo or redo is available for a field using the `can_undo` and 
 
 ```python
 # Check if undo is available
-if proxy.can_undo("name"):
+if proxy.can_undo("name").get():
     proxy.undo("name")
 
 # Check if redo is available
-if proxy.can_redo("name"):
+if proxy.can_redo("name").get():
     proxy.redo("name")
 ```
 
@@ -162,29 +165,53 @@ proxy.can_redo("name").on_change(lambda can_redo:
 
 ## Per-Field vs Global Undo
 
-Observant's undo system is field-based, meaning each field has its own undo stack. This allows you to undo changes to one field without affecting others.
+> **Important**: Observant's undo system is field-based, not transaction-based. Each field has its own independent undo stack. There is no concept of a "global undo" that reverts multiple fields at once as a single transaction.
+
+Observant's field-based undo system allows you to undo changes to one field without affecting others:
 
 ```python
 # Make changes to multiple fields
-proxy.observable(str, "name").set("Bob")
-proxy.observable(int, "age").set(25)
+name_obs = proxy.observable(str, "name")
+age_obs = proxy.observable(int, "age")
+name_obs.set("Bob")
+age_obs.set(25)
 
 # Undo only the name change
 proxy.undo("name")  # Reverts name to "Alice"
 
 # Age remains changed
-print(proxy.observable(int, "age").get())  # 25
+print(age_obs.get())  # 25
 ```
 
 This field-based approach gives you more control over which changes to undo, but it also means you need to undo each field separately if you want to undo all changes.
 
-If you need to undo all changes at once, you can iterate over the fields:
+### Batch Undo Helper
+
+If you need to undo all changes at once, you can create a helper function:
 
 ```python
-# Undo all fields
-for field in ["name", "age", "email"]:
-    if proxy.can_undo(field).get():
-        proxy.undo(field)
+def undo_all(proxy, fields):
+    """Undo all fields that have undo steps available."""
+    for field in fields:
+        if proxy.can_undo(field).get():
+            proxy.undo(field)
+
+# Usage:
+undo_all(proxy, ["name", "age", "email"])
+```
+
+You can extend this pattern for more complex undo scenarios:
+
+```python
+def undo_to_clean_state(proxy, fields):
+    """Undo all fields until none are dirty."""
+    while proxy.is_dirty().get():
+        for field in fields:
+            if proxy.is_field_dirty(field).get() and proxy.can_undo(field).get():
+                proxy.undo(field)
+        # Break if we can't undo any more dirty fields
+        if all(not proxy.can_undo(field).get() for field in fields if proxy.is_field_dirty(field).get()):
+            break
 ```
 
 ## Limitations and Gotchas
@@ -198,12 +225,13 @@ user = User(name="Alice", age=30)
 proxy = ObservableProxy(user, sync=True, undo=True)
 
 # Make a change
-proxy.observable(str, "name").set("Bob")
+name_obs = proxy.observable(str, "name")
+name_obs.set("Bob")
 print(user.name)  # "Bob" (sync=True applies changes immediately)
 
 # Undo the change
 proxy.undo("name")
-print(proxy.observable(str, "name").get())  # "Alice"
+print(name_obs.get())  # "Alice"
 print(user.name)  # Still "Bob" until save_to is called
 
 # Save changes back to the model
@@ -264,7 +292,8 @@ proxy.register_computed(
 )
 
 # Make a change
-proxy.observable(str, "first_name").set("Bob")
+first_name_obs = proxy.observable(str, "first_name")
+first_name_obs.set("Bob")
 print(proxy.computed(str, "full_name").get())  # "Bob Smith"
 
 # Undo the change
@@ -291,12 +320,13 @@ proxy = ObservableProxy(user, undo=True)
 proxy.add_validator("username", lambda v: "Username required" if not v else None)
 
 # Set a valid value
-proxy.observable(str, "username").set("alice")
-print(proxy.is_valid())  # True
+username_obs = proxy.observable(str, "username")
+username_obs.set("alice")
+print(proxy.is_valid().get())  # True
 
 # Undo the change
 proxy.undo("username")
-print(proxy.is_valid())  # False
+print(proxy.is_valid().get())  # False
 print(proxy.validation_for("username").get())  # ["Username required"]
 ```
 
@@ -307,3 +337,5 @@ Now that you understand how undo and redo work in Observant, you might want to e
 - [Computed Properties](computed.md): Create properties that depend on other fields
 - [Dirty Tracking](dirty.md): Track unsaved changes
 - [Sync vs Non-Sync](sync.md): Understand immediate vs. deferred updates
+
+[← Back to Overview](../index.md)
