@@ -85,7 +85,7 @@ This can be useful when you want to:
 
 ### Saving and Dirty State
 
-When you call `save_to()`, the dirty state is not automatically reset. If you want to reset the dirty state, you need to call `reset_dirty()` explicitly:
+When you call `save_to()`, the dirty state is automatically reset. This means that after saving, all fields are marked as clean:
 
 ```python
 # Make changes
@@ -93,22 +93,31 @@ name_obs = proxy.observable(str, "name")
 name_obs.set("Bob")
 
 # The field is dirty
-print(proxy.is_dirty().get())  # True
+print(proxy.is_dirty())  # True
 
 # Save changes
 proxy.save_to(user)
 
-# The field is still dirty
-print(proxy.is_dirty().get())  # True
+# The field is now clean
+print(proxy.is_dirty())  # False
+```
 
-# Reset dirty state
+If you want to manually reset the dirty state without saving, you can call `reset_dirty()`:
+
+```python
+# Make changes
+name_obs = proxy.observable(str, "name")
+name_obs.set("Bob")
+
+# The field is dirty
+print(proxy.is_dirty())  # True
+
+# Reset dirty state without saving
 proxy.reset_dirty()
 
 # Now the field is not dirty
-print(proxy.is_dirty().get())  # False
+print(proxy.is_dirty())  # False
 ```
-
-This behavior allows you to track whether changes have been saved to a specific model, even if you save to multiple models.
 
 ## load_dict()
 
