@@ -1,3 +1,0 @@
-# Observant.py
-
-::: observant.observable

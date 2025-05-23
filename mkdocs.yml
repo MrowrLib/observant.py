@@ -1,16 +1,64 @@
 site_name: Observant.py
 site_url: https://mrowrlib.github.io/observant.py
+site_description: Observable state management for Python
+site_author: Mrowr Purr
+
+repo_url: https://github.com/MrowrLib/observant.py
+repo_name: MrowrLib/observant.py
 
 theme:
   name: material
+  palette:
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.indexes
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
 
 extra_css:
-- style.css
+  - style.css
 
 plugins:
-- search
-- mkdocstrings
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            heading_level: 2
 
 nav:
-- index.md
-- Code Reference: reference.md
+  - Home: index.md
+  - Getting Started: getting_started.md
+  - Reference:
+      - Observable: reference/observable.md
+      - ObservableList: reference/observable_list.md
+      - ObservableDict: reference/observable_dict.md
+      - ObservableProxy:
+          - Overview: reference/proxy/index.md
+          - Validation: reference/proxy/validation.md
+          - Undo/Redo: reference/proxy/undo.md
+          - Computed Fields: reference/proxy/computed.md
+          - Syncing & Dirty State: reference/proxy/sync.md
+      - All Types: reference/all_types.md
+  - Examples:
+      - Basic Usage: examples/basic.md
+      - Advanced Patterns: examples/advanced.md
+  - API Reference: api_reference.md
