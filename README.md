@@ -2,7 +2,7 @@
 
 # Observant.py
 
-**Observable state management for Python.**  
+**Reactive state management for Python.**  
 Track changes, validate data, implement undo/redo, and build reactive UIs with ease.
 
 📚 **Full documentation**: [https://mrowrlib.github.io/observant.py](https://mrowrlib.github.io/observant.py) ← *(replace with actual site)*

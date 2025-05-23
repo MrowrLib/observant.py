@@ -1,6 +1,6 @@
 site_name: Observant.py
 site_url: https://mrowrlib.github.io/observant.py
-site_description: Observable state management for Python
+site_description: Reactive state management for Python
 site_author: Mrowr Purr
 
 repo_url: https://github.com/MrowrLib/observant.py
