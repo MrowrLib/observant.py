@@ -1,3 +1,0 @@
-# Observable
-
-::: observant.observable.Observable
