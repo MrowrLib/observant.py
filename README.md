@@ -25,7 +25,6 @@ Observant.py provides a set of observable primitives:
 - `ObservableList[T]`: Observable wrapper around a list
 - `ObservableDict[K, V]`: Observable wrapper around a dictionary
 - `ObservableProxy[T]`: Wraps a dataclass or object and exposes its fields as observables
-- `UndoableObservable[T]`: Adds undo/redo support to any observable
 
 ## Quick Examples
 

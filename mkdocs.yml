@@ -11,6 +11,7 @@ repo_name: MrowrLib/observant.py
 
 theme:
   name: material
+  favicon: favicon.ico
   palette:
     
     # Palette toggle for light mode
