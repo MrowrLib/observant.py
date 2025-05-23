@@ -1,3 +1,5 @@
+![Observant.py Logo](docs/assets/images/observant-py.png)
+
 # Observant.py
 
 **Observable state management for Python.**  
