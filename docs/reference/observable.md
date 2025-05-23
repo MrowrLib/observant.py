@@ -199,4 +199,4 @@ For more advanced use cases, consider using `ObservableProxy` which can automati
 
 ## API Documentation
 
-[API Reference for Observable](../api_reference.md#observable)
+[API Reference for Observable](../api_reference/observable.md)

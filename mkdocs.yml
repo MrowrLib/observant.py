@@ -58,7 +58,26 @@ nav:
           - Computed Fields: reference/proxy/computed.md
           - Syncing & Dirty State: reference/proxy/sync.md
       - All Types: reference/all_types.md
+  - API Reference:
+      - Overview: api_reference/index.md
+      - Observable: api_reference/observable.md
+      - ObservableDict: api_reference/observable_dict.md
+      - ObservableList: api_reference/observable_list.md
+      - ObservableProxy: api_reference/observable_proxy.md
+      - UndoableObservable: api_reference/undoable_observable.md
+      - Interfaces:
+          - Overview: api_reference/interfaces/index.md
+          - IObservable: api_reference/interfaces/iobservable.md
+          - IObservableList: api_reference/interfaces/iobservable_list.md
+          - IObservableDict: api_reference/interfaces/iobservable_dict.md
+          - IObservableProxy: api_reference/interfaces/iobservable_proxy.md
+      - Types:
+          - Overview: api_reference/types/index.md
+          - ObservableCollectionChangeType: api_reference/types/observablecollectionchangetype.md
+          - ObservableListChange: api_reference/types/observablelistchange.md
+          - ObservableDictChange: api_reference/types/observabledictchange.md
+          - ProxyFieldKey: api_reference/types/proxyfieldkey.md
+          - UndoConfig: api_reference/types/undoconfig.md
   - Examples:
       - Basic Usage: examples/basic.md
       - Advanced Patterns: examples/advanced.md
-  - API Reference: api_reference.md

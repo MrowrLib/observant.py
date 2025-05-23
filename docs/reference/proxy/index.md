@@ -274,4 +274,4 @@ Explore the specific features of `ObservableProxy` in more detail:
 
 ## API Documentation
 
-[API Reference for ObservableProxy](../../api_reference.md#observableproxy)
+[API Reference for ObservableProxy](../../api_reference/observable_proxy.md)

@@ -252,4 +252,4 @@ For more advanced use cases, consider using `ObservableProxy` which can automati
 
 ## API Documentation
 
-[API Reference for ObservableList](../api_reference.md#observablelist)
+[API Reference for ObservableList](../api_reference/observable_list.md)
