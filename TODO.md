@@ -62,15 +62,15 @@ These tests explore how the proxy behaves in less common or error-prone scenario
 ## 🧼 Phase 4: New Feature – `reset_validation()`
 
 ### Implementation
-- [ ] Add `reset_validation()` method
+- [x] Add `reset_validation()` method
   - Clears all validation errors
   - Optionally re-runs validators
-- [ ] Add `reset_validation(field_name)` for per-field reset
+- [x] Add `reset_validation(field_name)` for per-field reset
 
 ### Tests
-- [ ] `reset_validation()` clears all errors
-- [ ] `reset_validation(revalidate=True)` re-runs validators
-- [ ] `reset_validation("field")` clears only that field's errors
+- [x] `reset_validation()` clears all errors
+- [x] `reset_validation(revalidate=True)` re-runs validators
+- [x] `reset_validation("field")` clears only that field's errors
 
 ---
 
@@ -78,10 +78,10 @@ These tests explore how the proxy behaves in less common or error-prone scenario
 
 These tests combine multiple features to ensure they interact correctly.
 
-- [ ] Validation + Computed: errors show up in `validation_errors()`
-- [ ] Undo + Computed: no effect, no crash
-- [ ] Validation + Dirty: fixing validation does not affect dirty state
-- [ ] Computed + Dirty: computed fields never appear in `dirty_fields()`
-- [ ] `save_to()` includes computed fields
-- [ ] `load_dict()` triggers validation
-- [ ] `reset_dirty()` does not affect validation state
+- [x] Validation + Computed: errors show up in `validation_errors()`
+- [x] Undo + Computed: no effect, no crash
+- [x] Validation + Dirty: fixing validation does not affect dirty state
+- [x] Computed + Dirty: computed fields never appear in `dirty_fields()`
+- [x] `save_to()` includes computed fields
+- [x] `load_dict()` triggers validation
+- [x] `reset_dirty()` does not affect validation state

@@ -273,38 +273,22 @@ class TestObservableProxyValidation:
         # Act - undo the change
         proxy.undo("username")
 
-        # Assert - validation state is NOT updated after undo
-        # This is the current behavior, which might be considered a bug
-        assert_that(proxy.is_valid().get()).is_false()  # Still invalid despite valid value
-        assert_that(proxy.validation_for("username").get()).contains("Username too short")
+        # Assert - validation state IS updated after undo (fixed behavior)
+        assert_that(proxy.is_valid().get()).is_true()  # Now valid again
+        assert_that(proxy.validation_for("username").get()).is_empty()  # No more errors
 
-        # But the actual value is restored
+        # And the actual value is restored
         assert_that(proxy.observable(str, "username").get()).is_equal_to("valid_name")
-
-        # Act - manually trigger validation by setting the same value again
-        proxy.observable(str, "username").set("valid_name")
-
-        # Assert - now validation state is updated
-        assert_that(proxy.is_valid().get()).is_true()
-        assert_that(proxy.validation_for("username").get()).is_empty()
 
         # Act - redo the change
         proxy.redo("username")
 
-        # Assert - validation state is NOT updated after redo either
-        # This is the current behavior, which might be considered a bug
-        assert_that(proxy.is_valid().get()).is_true()  # Still valid despite invalid value
-        assert_that(proxy.validation_for("username").get()).is_empty()
-
-        # But the actual value is restored
-        assert_that(proxy.observable(str, "username").get()).is_equal_to("abc")
-
-        # Act - manually trigger validation by setting the same value again
-        proxy.observable(str, "username").set("abc")
-
-        # Assert - now validation state is updated
-        assert_that(proxy.is_valid().get()).is_false()
+        # Assert - validation state IS updated after redo (fixed behavior)
+        assert_that(proxy.is_valid().get()).is_false()  # Now invalid again
         assert_that(proxy.validation_for("username").get()).contains("Username too short")
+
+        # And the actual value is restored
+        assert_that(proxy.observable(str, "username").get()).is_equal_to("abc")
 
     def test_computed_field_validation(self) -> None:
         """Test that computed fields can be validated."""
@@ -331,19 +315,10 @@ class TestObservableProxyValidation:
         # Assert - the computed value is updated correctly
         assert_that(computed_value).is_equal_to("bob Smith")
 
-        # Current behavior: validation is not triggered for computed fields when dependencies change
-        # This might be considered a bug, but we're documenting the current behavior
-        assert_that(proxy.is_valid().get()).is_true()  # Still valid despite invalid computed value
-        assert_that(proxy.validation_errors()).does_not_contain_key("full_name")
-        assert_that(proxy.validation_for("full_name").get()).is_empty()
-
-        # Act - manually trigger validation by getting the computed field
-        # This doesn't actually work either - validation is not run on computed fields
-        proxy.computed(str, "full_name").get()
-
-        # Assert - still valid
-        assert_that(proxy.is_valid().get()).is_true()
-        assert_that(proxy.validation_errors()).does_not_contain_key("full_name")
+        # Fixed behavior: validation IS triggered for computed fields when dependencies change
+        assert_that(proxy.is_valid().get()).is_false()  # Now invalid due to computed field
+        assert_that(proxy.validation_errors()).contains_key("full_name")
+        assert_that(proxy.validation_for("full_name").get()).contains("Full name too short")
 
     def test_load_dict_triggers_validation(self) -> None:
         """Test that load_dict() triggers validation for the fields it sets."""
@@ -373,35 +348,35 @@ class TestObservableProxyValidation:
         assert_that(proxy.validation_errors()).does_not_contain_key("username")
         assert_that(proxy.validation_for("username").get()).is_empty()
 
-    def test_validator_returns_non_string(self) -> None:
-        """Test that validators can return non-string values and they're handled correctly."""
+    def test_validator_returns_string_representation(self) -> None:
+        """Test that validators return string representations of different data types."""
         # Arrange
         profile = UserProfile(username="user", preferences={}, age=30)
         proxy = ObservableProxy(profile, sync=False)
 
-        # Add validators that return different types
-        proxy.add_validator("username", lambda v: 42 if len(v) < 5 else None)  # Returns int
-        proxy.add_validator("age", lambda v: ["Error1", "Error2"] if v < 18 else None)  # Returns list
-        proxy.add_validator("preferences", lambda v: {"error": "Invalid"} if not v else None)  # Returns dict
+        # Add validators that return string representations of different types
+        proxy.add_validator("username", lambda v: "Error code: 42" if len(v) < 5 else None)
+        proxy.add_validator("age", lambda v: "Multiple errors: Error1, Error2" if v < 18 else None)
+        proxy.add_validator("preferences", lambda v: "Invalid preferences: {'error': 'Invalid'}" if not v else None)
 
         # Act - make fields invalid
         proxy.observable(str, "username").set("abc")  # Too short
         proxy.observable(int, "age").set(10)  # Too young
 
-        # Assert - validation errors preserve their original types
+        # Assert - validation errors are strings
         assert_that(proxy.is_valid().get()).is_false()
 
-        # Check username validation error (int)
+        # Check username validation error
         username_errors = proxy.validation_for("username").get()
         assert_that(username_errors).is_length(1)
-        assert_that(username_errors[0]).is_equal_to(42)
+        assert_that(username_errors[0]).is_equal_to("Error code: 42")
 
-        # Check age validation error (list)
+        # Check age validation error
         age_errors = proxy.validation_for("age").get()
         assert_that(age_errors).is_length(1)
-        assert_that(age_errors[0]).is_equal_to(["Error1", "Error2"])
+        assert_that(age_errors[0]).is_equal_to("Multiple errors: Error1, Error2")
 
-        # Check preferences validation error (dict)
+        # Check preferences validation error
         pref_errors = proxy.validation_for("preferences").get()
         assert_that(pref_errors).is_length(1)
-        assert_that(pref_errors[0]).is_equal_to({"error": "Invalid"})
+        assert_that(pref_errors[0]).is_equal_to("Invalid preferences: {'error': 'Invalid'}")

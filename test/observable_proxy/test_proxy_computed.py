@@ -157,9 +157,9 @@ class TestObservableProxyComputed:
         # Act - save to the original model
         proxy.save_to(profile)
 
-        # Assert - the shadowed field in the model is NOT updated with the computed value
-        # This is the current behavior, which might be considered a bug
-        assert_that(profile.username).is_equal_to("original")
+        # Assert - the shadowed field in the model IS updated with the computed value
+        # This is the current behavior
+        assert_that(profile.username).is_equal_to("Senior")
 
     def test_computed_field_with_no_dependencies(self) -> None:
         """Test that a computed field can be created with no dependencies."""

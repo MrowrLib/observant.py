@@ -249,6 +249,17 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         for key, obs in self._dicts.items():
             setattr(obj, key.attr, obs.copy())
 
+        # Save computed fields that shadow real fields
+        for name, obs in self._computeds.items():
+            try:
+                # Check if the target object has this field
+                getattr(obj, name)
+                # If we get here, the field exists, so save the computed value
+                setattr(obj, name, obs.get())
+            except (AttributeError, TypeError):
+                # Field doesn't exist in the target object, skip it
+                pass
+
         # Reset dirty state after saving
         self.reset_dirty()
 
@@ -327,6 +338,13 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             # Check if the dependency is another computed property
             if dep in self._computeds:
                 self._computeds[dep].on_change(update_computed)
+
+        # Validate the computed property when it changes
+        def validate_computed(_: Any) -> None:
+            value = compute()
+            self._validate_field(name, value)
+
+        obs.on_change(validate_computed)
 
     @override
     def computed(
@@ -485,6 +503,36 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             self._validation_for_cache[attr] = obs
 
         return self._validation_for_cache[attr]
+
+    @override
+    def reset_validation(self, attr: str | None = None, *, revalidate: bool = False) -> None:
+        """
+        Reset validation errors for a specific field or all fields.
+
+        Args:
+            attr: The field name to reset validation for. If None, reset all fields.
+            revalidate: Whether to re-run validators after clearing errors.
+        """
+        if attr is None:
+            # Reset all validation errors
+            self._validation_errors_dict.clear()
+            # Update the is_valid observable
+            self._is_valid_obs.set(True)
+
+            # Re-run all validators if requested
+            if revalidate:
+                for field_name in self._validators.keys():
+                    self._validate_field_if_exists(field_name)
+        else:
+            # Reset validation errors for a specific field
+            if attr in self._validation_errors_dict:
+                del self._validation_errors_dict[attr]
+                # Update the is_valid observable
+                self._is_valid_obs.set(len(self._validation_errors_dict) == 0)
+
+            # Re-run validator for this field if requested
+            if revalidate:
+                self._validate_field_if_exists(attr)
 
     @override
     def set_undo_config(
@@ -891,10 +939,30 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             self._pending_undo_groups[attr] = None
             print(f"DEBUG: undo - Cleared pending undo group for {attr}")
 
-        # Execute the undo function
+        # Find the observable for this field to set the undoing flag
+        obs = None
+        for key, o in self._scalars.items():
+            if key.attr == attr:
+                obs = o
+                break
+
+        # Execute the undo function with undoing flag set
         print(f"DEBUG: undo - Executing undo function for {attr}")
         print(f"DEBUG: undo - undo_func: {undo_func}")
-        undo_func()
+
+        # Set the undoing flag if we found the observable and it's a UndoableObservable
+        from observant.undoable_observable import UndoableObservable
+
+        if obs is not None and isinstance(obs, UndoableObservable):
+            obs.set_undoing(True)
+
+        try:
+            undo_func()
+        finally:
+            # Reset the undoing flag
+            if obs is not None and isinstance(obs, UndoableObservable):
+                obs.set_undoing(False)
+
         print(f"DEBUG: undo - Completed for {attr}")
 
         # If sync is enabled for this field, update the model
@@ -951,9 +1019,29 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         # We don't need to simulate change objects anymore
 
-        # Execute the redo function
+        # Find the scalar observable for this field to set the undoing flag
+        obs_scalar = None
+        for key, o in self._scalars.items():
+            if key.attr == attr:
+                obs_scalar = o
+                break
+
+        # Execute the redo function with undoing flag set
         print(f"DEBUG: redo - Executing redo function for {attr}")
-        redo_func()
+
+        # Set the undoing flag if we found the observable and it's a UndoableObservable
+        from observant.undoable_observable import UndoableObservable
+
+        if obs_scalar is not None and isinstance(obs_scalar, UndoableObservable):
+            obs_scalar.set_undoing(True)
+
+        try:
+            redo_func()
+        finally:
+            # Reset the undoing flag
+            if obs_scalar is not None and isinstance(obs_scalar, UndoableObservable):
+                obs_scalar.set_undoing(False)
+
         print(f"DEBUG: redo - Redo function executed for {attr}")
 
         # Add the undo function back to the undo stack
@@ -1088,14 +1176,24 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         # Create undo/redo functions
         def undo_func() -> None:
             print(f"DEBUG: undo_func called for {attr}, setting value to {old_value}")
-            # Set the old value without triggering callbacks to avoid recursive tracking
-            obs.set(old_value, notify=False)
+            # Set the old value with triggering callbacks to ensure computed properties update
+            obs.set(old_value)
+
+            # If we're undoing to the original value, clear the dirty state
+            if old_value == self._initial_values.get(attr):
+                self._dirty_fields.discard(attr)
+
             print(f"DEBUG: undo_func completed for {attr}")
 
         def redo_func() -> None:
             print(f"DEBUG: redo_func called for {attr}, setting value to {new_value}")
-            # Set the new value without triggering callbacks to avoid recursive tracking
-            obs.set(new_value, notify=False)
+            # Set the new value with triggering callbacks to ensure computed properties update
+            obs.set(new_value)
+
+            # If we're redoing to a non-original value, mark as dirty
+            if new_value != self._initial_values.get(attr):
+                self._dirty_fields.add(attr)
+
             print(f"DEBUG: redo_func completed for {attr}")
 
         # Add to the undo stack

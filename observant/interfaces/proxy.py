@@ -196,6 +196,17 @@ class IObservableProxy(Generic[T], ABC):
         ...
 
     @abstractmethod
+    def reset_validation(self, attr: str | None = None, *, revalidate: bool = False) -> None:
+        """
+        Reset validation errors for a specific field or all fields.
+
+        Args:
+            attr: The field name to reset validation for. If None, reset all fields.
+            revalidate: Whether to re-run validators after clearing errors.
+        """
+        ...
+
+    @abstractmethod
     def set_undo_config(
         self,
         attr: str,

@@ -458,10 +458,9 @@ class TestObservableProxyUndo:
         # Act - undo the dependency change
         proxy.undo("username")
 
-        # Assert - computed field does not update when dependency is undone
-        # This is because undo sets the value with notify=False
-        # This is the current behavior, but it might be considered a bug
-        assert_that(proxy.computed(str, "full_name").get()).is_equal_to("modified User")
+        # Assert - computed field DOES update when dependency is undone
+        # This is the expected behavior since we now use notify=True in undo
+        assert_that(proxy.computed(str, "full_name").get()).is_equal_to("original User")
         assert_that(proxy.can_undo("full_name")).is_false()  # Still false
         assert_that(proxy.can_redo("full_name")).is_false()  # Still false
 
@@ -502,9 +501,9 @@ class TestObservableProxyUndo:
         # Act - undo the dependency change
         proxy.undo("username")
 
-        # Assert - computed field does not update when dependency is undone
-        # This is because undo sets the value with notify=False
-        assert_that(proxy.computed(str, "full_name").get()).is_equal_to(new_value)
+        # Assert - computed field DOES update when dependency is undone
+        # This is the expected behavior since we now use notify=True in undo
+        assert_that(proxy.computed(str, "full_name").get()).is_equal_to("original User")
 
     def test_undo_redo_stacks_isolated_per_field(self) -> None:
         """Test that undo/redo stacks are isolated per field."""
@@ -601,9 +600,8 @@ class TestObservableProxyUndo:
         proxy.undo("username")
 
         # Assert - back to valid_name (the invalid change was added to the undo stack)
-        # But validation state is not updated because undo sets values with notify=False
-        # This is the current behavior, which might be considered a bug
+        # Validation state is now updated because undo sets values with notify=True
         assert_that(proxy.observable(str, "username").get()).is_equal_to("valid_name")
-        assert_that(proxy.is_valid().get()).is_false()  # Still invalid despite valid value
-        assert_that(proxy.validation_for("username").get()).contains("Username too short")  # Old error still present
+        assert_that(proxy.is_valid().get()).is_true()  # Now valid again
+        assert_that(proxy.validation_for("username").get()).is_empty()  # No more errors
         assert_that(proxy.can_undo("username")).is_true()  # Can still undo to original
