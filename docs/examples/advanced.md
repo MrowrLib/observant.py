@@ -689,4 +689,4 @@ print(f"Generated {len(alert_manager.alerts)} alerts")
 
 ## Next Steps
 
-These examples demonstrate some of the more advanced patterns and use cases for Observant.py. For more information, see the [API Reference](../api_reference.md).
+These examples demonstrate some of the more advanced patterns and use cases for Observant.py. For more information, see the [API Reference](../api_reference/index.md).

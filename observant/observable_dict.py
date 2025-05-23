@@ -7,7 +7,7 @@ TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
 
 
-class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
+class ObservableDict(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
     """Base implementation that can work with an external dict or create its own."""
 
     def __init__(self, items: dict[TKey, TValue] | None = None, *, copy: bool = False) -> None:
@@ -356,16 +356,3 @@ class ObservableDictBase(Generic[TKey, TValue], IObservableDict[TKey, TValue]):
         change = ObservableDictChange(type=ObservableCollectionChangeType.CLEAR, items=items)
         for callback in self._change_callbacks:
             callback(change)
-
-
-class ObservableDict(ObservableDictBase[TKey, TValue]):
-    """A dictionary that notifies observers when items are added, removed, or updated."""
-
-    def __init__(self, initial_items: dict[TKey, TValue] | None = None, *, copy: bool = False) -> None:
-        """
-        Initialize an ObservableDict.
-
-        Args:
-            initial_items: Initial items to add to the dictionary
-        """
-        super().__init__(initial_items, copy=copy)

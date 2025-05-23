@@ -47,17 +47,20 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting_started.md
-  - Reference:
+  - Documentation:
+      - Core Types: reference/all_types.md
       - Observable: reference/observable.md
-      - ObservableList: reference/observable_list.md
-      - ObservableDict: reference/observable_dict.md
-      - ObservableProxy:
+      - Observable List: reference/observable_list.md
+      - Observable Dictionary: reference/observable_dict.md
+      - Observable Proxy:
           - Overview: reference/proxy/index.md
           - Validation: reference/proxy/validation.md
           - Undo/Redo: reference/proxy/undo.md
           - Computed Fields: reference/proxy/computed.md
           - Syncing & Dirty State: reference/proxy/sync.md
-      - All Types: reference/all_types.md
+  - Examples:
+      - Basic Usage: examples/basic.md
+      - Advanced Patterns: examples/advanced.md
   - API Reference:
       - Overview: api_reference/index.md
       - Observable: api_reference/observable.md
@@ -78,6 +81,3 @@ nav:
           - ObservableDictChange: api_reference/types/observabledictchange.md
           - ProxyFieldKey: api_reference/types/proxyfieldkey.md
           - UndoConfig: api_reference/types/undoconfig.md
-  - Examples:
-      - Basic Usage: examples/basic.md
-      - Advanced Patterns: examples/advanced.md

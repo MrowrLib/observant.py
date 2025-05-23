@@ -5,11 +5,75 @@
          <lastmod>2025-05-23</lastmod>
     </url>
     <url>
+         <loc>https://mrowrlib.github.io/observant.py/getting_started/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
          <loc>https://mrowrlib.github.io/observant.py/api_reference/</loc>
          <lastmod>2025-05-23</lastmod>
     </url>
     <url>
-         <loc>https://mrowrlib.github.io/observant.py/getting_started/</loc>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/observable/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/observable_dict/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/observable_list/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/observable_proxy/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/undoable_observable/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/interfaces/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/interfaces/iobservable/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/interfaces/iobservable_dict/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/interfaces/iobservable_list/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/interfaces/iobservable_proxy/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/types/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/types/observablecollectionchangetype/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/types/observabledictchange/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/types/observablelistchange/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/types/proxyfieldkey/</loc>
+         <lastmod>2025-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/api_reference/types/undoconfig/</loc>
          <lastmod>2025-05-23</lastmod>
     </url>
     <url>

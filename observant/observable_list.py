@@ -6,7 +6,7 @@ from observant.types.collection_change_type import ObservableCollectionChangeTyp
 T = TypeVar("T")
 
 
-class ObservableListBase(Generic[T], IObservableList[T]):
+class ObservableList(Generic[T], IObservableList[T]):
     """Base implementation that can work with an external list or create its own."""
 
     def __init__(self, items: list[T] | None = None, *, copy: bool = False):
@@ -367,16 +367,3 @@ class ObservableListBase(Generic[T], IObservableList[T]):
         change = ObservableListChange(type=ObservableCollectionChangeType.CLEAR, items=items)
         for callback in self._change_callbacks:
             callback(change)
-
-
-class ObservableList(ObservableListBase[T]):
-    """A list that notifies observers when items are added or removed."""
-
-    def __init__(self, initial_items: list[T] | None = None, *, copy: bool = False):
-        """
-        Initialize an ObservableList.
-
-        Args:
-            initial_items: Initial items to add to the list
-        """
-        super().__init__(initial_items, copy=copy)
