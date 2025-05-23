@@ -12,11 +12,20 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = []
-description = ""
-keywords = []
+description = "Type-safe observables and proxies for building reactive Python applications."
+keywords = [
+  "observable",
+  "reactive programming",
+  "data binding",
+  "state management",
+  "python reactive",
+  "undo redo",
+  "computed properties",
+  "python state",
+]
 name = "observant"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 version = "0.1.0"
 
 [project.urls]

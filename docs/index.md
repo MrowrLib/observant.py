@@ -3,7 +3,8 @@
 **Observable state management for Python**
 
 [![PyPI version](https://badge.fury.io/py/observant.svg)](https://badge.fury.io/py/observant)
-[![License: 0BSD](https://img.shields.io/badge/License-0BSD-pink.svg)](https://opensource.org/license/0BSD)
+[![License: 0BSD](https://img.shields.io/badge/License-0BSD-990099.svg)](https://opensource.org/license/0BSD)
+[![License: 0BSD](https://img.shields.io/badge/python-3.12-008026.svg)](https://www.python.org/)
 
 ## What is Observant.py?
 
