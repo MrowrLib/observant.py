@@ -1,3 +1,6 @@
+docs_dir: site
+site_dir: docs
+
 site_name: Observant.py
 site_url: https://mrowrlib.github.io/observant.py
 site_description: Reactive state management for Python
