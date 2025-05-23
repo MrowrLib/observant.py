@@ -164,9 +164,6 @@ if proxy.is_valid():
     # Save changes
     proxy.save_to(form)
     print("Form saved!")
-    
-    # Reset dirty state after saving
-    proxy.reset_dirty()
 else:
     # Show errors
     print("Validation errors:", proxy.validation_errors())
