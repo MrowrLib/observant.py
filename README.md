@@ -1,4 +1,4 @@
-![Observant.py Logo](docs/assets/images/observant-py.png)
+<img alt="Observant.py" src="docs/assets/images/observant-py.png" width="300" />
 
 # Observant.py
 
