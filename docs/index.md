@@ -1,3 +1,5 @@
+<img src="assets/images/observant-py.png" width="300" />
+
 # Observant.py
 
 **Reactive state management for Python**
