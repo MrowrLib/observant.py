@@ -1,4 +1,4 @@
-# ObservableList {#ref-observable-list}
+# ObservableList
 
 The `ObservableList` class provides an observable wrapper around a Python list. It notifies listeners when items are added, removed, or the list is cleared.
 
@@ -252,4 +252,4 @@ For more advanced use cases, consider using `ObservableProxy` which can automati
 
 ## API Documentation
 
-::: observant.observable_list.ObservableList
+[API Reference for ObservableList](../api_reference.md#observablelist)

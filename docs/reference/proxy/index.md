@@ -1,4 +1,4 @@
-# ObservableProxy {#ref-observable-proxy}
+# ObservableProxy
 
 The `ObservableProxy` class is the most powerful component of Observant.py. It wraps an existing object and exposes its fields as observables, allowing you to track changes, validate data, implement undo/redo, create computed properties, and synchronize state.
 
@@ -274,4 +274,4 @@ Explore the specific features of `ObservableProxy` in more detail:
 
 ## API Documentation
 
-::: observant.observable_proxy.ObservableProxy
+[API Reference for ObservableProxy](../../api_reference.md#observableproxy)

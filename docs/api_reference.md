@@ -2,19 +2,19 @@
 
 This page provides a comprehensive API reference for all classes and interfaces in Observant.py.
 
-## Observable {#api-observable}
+## Observable
 
 ::: observant.observable.Observable
 
-## ObservableList {#api-observable-list}
+## ObservableList
 
 ::: observant.observable_list.ObservableList
 
-## ObservableDict {#api-observable-dict}
+## ObservableDict
 
 ::: observant.observable_dict.ObservableDict
 
-## ObservableProxy {#api-observable-proxy}
+## ObservableProxy
 
 ::: observant.observable_proxy.ObservableProxy
 

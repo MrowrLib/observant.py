@@ -1,4 +1,4 @@
-# Observable {#ref-observable}
+# Observable
 
 The `Observable` class is the foundation of Observant.py. It wraps a value and notifies listeners when the value changes.
 
@@ -199,4 +199,4 @@ For more advanced use cases, consider using `ObservableProxy` which can automati
 
 ## API Documentation
 
-::: observant.observable.Observable
+[API Reference for Observable](../api_reference.md#observable)

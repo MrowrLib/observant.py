@@ -1,4 +1,4 @@
-# ObservableDict {#ref-observable-dict}
+# ObservableDict
 
 The `ObservableDict` class provides an observable wrapper around a Python dictionary. It notifies listeners when entries are added, updated, or removed.
 
@@ -292,4 +292,4 @@ For more advanced use cases, consider using `ObservableProxy` which can automati
 
 ## API Documentation
 
-::: observant.observable_dict.ObservableDict
+[API Reference for ObservableDict](../api_reference.md#observabledict)
