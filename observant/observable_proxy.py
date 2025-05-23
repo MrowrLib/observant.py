@@ -22,7 +22,78 @@ TDictValue = TypeVar("TDictValue")
 class ObservableProxy(Generic[T], IObservableProxy[T]):
     """
     Proxy for a data object that exposes its fields as Observable, ObservableList, or ObservableDict.
-    Provides optional sync behavior to automatically write back to the source model.
+
+    ObservableProxy is the central class in the observant library, providing a reactive
+    interface to any Python object. It wraps a data object and exposes its fields as
+    observable properties that can be watched for changes.
+
+    Key features:
+    - Expose scalar fields as Observable objects
+    - Expose list fields as ObservableList objects
+    - Expose dictionary fields as ObservableDict objects
+    - Optional synchronization with the source model
+    - Validation with error tracking
+    - Computed properties that depend on other observables
+    - Undo/redo functionality with configurable history
+    - Change tracking (dirty state)
+
+    The proxy can be configured to automatically sync changes back to the source model,
+    or to require explicit saving. It also supports undo/redo functionality with
+    configurable history size and debounce timing.
+
+    Attributes:
+        _obj: The object being proxied.
+        _sync_default: Whether to sync changes back to the model by default.
+        _scalars: Dictionary of scalar observables.
+        _lists: Dictionary of list observables.
+        _dicts: Dictionary of dictionary observables.
+        _computeds: Dictionary of computed observables.
+        _dirty_fields: Set of field names that have been modified.
+        _validators: Dictionary of validator functions for each field.
+        _validation_errors_dict: Observable dictionary of validation errors.
+        _validation_for_cache: Cache of validation observables for each field.
+        _is_valid_obs: Observable indicating whether all fields are valid.
+        _default_undo_config: Default undo configuration.
+        _field_undo_configs: Dictionary of undo configurations for each field.
+        _undo_stacks: Dictionary of undo stacks for each field.
+        _redo_stacks: Dictionary of redo stacks for each field.
+        _last_change_times: Dictionary of last change times for each field.
+        _pending_undo_groups: Dictionary of pending undo groups for each field.
+        _initial_values: Dictionary of initial values for each field.
+
+    Examples:
+        ```python
+        from dataclasses import dataclass
+        from observant import ObservableProxy
+
+        @dataclass
+        class User:
+            name: str
+            age: int
+            tags: list[str]
+
+        # Create a user object
+        user = User(name="Alice", age=30, tags=["developer", "python"])
+
+        # Create a proxy with automatic sync
+        proxy = ObservableProxy(user, sync=True)
+
+        # Get observables for fields
+        name_obs = proxy.observable(str, "name")
+        age_obs = proxy.observable(int, "age")
+        tags_obs = proxy.observable_list(str, "tags")
+
+        # Register change callbacks
+        name_obs.on_change(lambda v: print(f"Name changed to {v}"))
+
+        # Modify values through the observables
+        name_obs.set("Bob")  # Prints: "Name changed to Bob"
+        tags_obs.append("observant")
+
+        # The original object is updated automatically with sync=True
+        print(user.name)  # Prints: "Bob"
+        print(user.tags)  # Prints: ["developer", "python", "observant"]
+        ```
     """
 
     def __init__(
@@ -35,12 +106,37 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         undo_debounce_ms: int | None = None,
     ) -> None:
         """
+        Initialize a new ObservableProxy for a data object.
+
+        Creates a proxy that wraps a data object and exposes its fields as observable
+        properties. The proxy can be configured to automatically sync changes back to
+        the source model, or to require explicit saving.
+
         Args:
-            obj: The object to proxy.
-            sync: If True, observables will sync back to the model immediately. If False, changes must be saved explicitly.
+            obj: The object to proxy. This can be any Python object with attributes.
+            sync: If True, observables will sync back to the model immediately when changed.
+                 If False, changes must be saved explicitly using save_to().
             undo: If True, enables undo/redo functionality for all fields.
-            undo_max: Maximum number of undo steps to store. None means unlimited.
-            undo_debounce_ms: Time window in milliseconds to group changes. None means no debouncing.
+                 Individual fields can override this setting.
+            undo_max: Maximum number of undo steps to store per field.
+                     None means unlimited (though default is 100 if not specified).
+            undo_debounce_ms: Time window in milliseconds to group changes into a single undo step.
+                             None means no debouncing (every change is a separate undo step).
+
+        Examples:
+            ```python
+            # Create a proxy with no automatic sync
+            user = User(name="Alice", age=30)
+            proxy = ObservableProxy(user)
+
+            # Create a proxy with automatic sync
+            settings = Settings(theme="dark", font_size=12)
+            proxy = ObservableProxy(settings, sync=True)
+
+            # Create a proxy with undo/redo enabled
+            document = Document(title="Draft", content="Hello world")
+            proxy = ObservableProxy(document, undo=True, undo_max=50, undo_debounce_ms=500)
+            ```
         """
         self._obj = obj
         self._sync_default = sync
@@ -83,12 +179,34 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Get or create an Observable[T] for a scalar field.
 
+        Creates or returns an existing Observable for a scalar field of the proxied object.
+        The Observable allows watching for changes to the field value and modifying it.
+
         Args:
             typ: The type of the field.
             attr: The field name.
             sync: Whether to sync changes back to the model immediately.
+                 If None, uses the default sync setting from the proxy.
             undo_max: Maximum number of undo steps to store. None means use the default.
             undo_debounce_ms: Time window in milliseconds to group changes. None means use the default.
+
+        Returns:
+            An Observable containing the field value.
+
+        Examples:
+            ```python
+            # Get an observable for a string field
+            name_obs = proxy.observable(str, "name")
+
+            # Register a callback
+            name_obs.on_change(lambda value: print(f"Name changed to {value}"))
+
+            # Get the current value
+            current_name = name_obs.get()
+
+            # Set a new value
+            name_obs.set("New Name")
+            ```
         """
         sync = self._sync_default if sync is None else sync
         key = ProxyFieldKey(attr, sync)
@@ -139,12 +257,33 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Get or create an ObservableList[T] for a list field.
 
+        Creates or returns an existing ObservableList for a list field of the proxied object.
+        The ObservableList provides the same interface as a regular Python list, but with
+        change notification capabilities.
+
         Args:
             typ: The type of the list elements.
             attr: The field name.
             sync: Whether to sync changes back to the model immediately.
+                 If None, uses the default sync setting from the proxy.
             undo_max: Maximum number of undo steps to store. None means use the default.
             undo_debounce_ms: Time window in milliseconds to group changes. None means use the default.
+
+        Returns:
+            An ObservableList containing the field value.
+
+        Examples:
+            ```python
+            # Get an observable list for a tags field
+            tags_obs = proxy.observable_list(str, "tags")
+
+            # Register a callback
+            tags_obs.on_change(lambda change: print(f"Tags changed: {change.type}"))
+
+            # Modify the list
+            tags_obs.append("new_tag")
+            tags_obs.remove("old_tag")
+            ```
         """
         sync = self._sync_default if sync is None else sync
         key = ProxyFieldKey(attr, sync)
@@ -182,12 +321,33 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Get or create an ObservableDict for a dict field.
 
+        Creates or returns an existing ObservableDict for a dictionary field of the proxied object.
+        The ObservableDict provides the same interface as a regular Python dictionary, but with
+        change notification capabilities.
+
         Args:
-            typ: A tuple of (key_type, value_type).
+            typ: A tuple of (key_type, value_type) for the dictionary.
             attr: The field name.
             sync: Whether to sync changes back to the model immediately.
+                 If None, uses the default sync setting from the proxy.
             undo_max: Maximum number of undo steps to store. None means use the default.
             undo_debounce_ms: Time window in milliseconds to group changes. None means use the default.
+
+        Returns:
+            An ObservableDict containing the field value.
+
+        Examples:
+            ```python
+            # Get an observable dict for a metadata field
+            metadata_obs = proxy.observable_dict((str, str), "metadata")
+
+            # Register a callback
+            metadata_obs.on_change(lambda change: print(f"Metadata changed: {change.type}"))
+
+            # Modify the dictionary
+            metadata_obs["author"] = "Alice"
+            del metadata_obs["draft"]
+            ```
         """
         sync = self._sync_default if sync is None else sync
         key = ProxyFieldKey(attr, sync)
@@ -223,6 +383,19 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
     def update(self, **kwargs: Any) -> None:
         """
         Set one or more scalar observable values.
+
+        This is a convenience method for setting multiple scalar values at once.
+        It creates observables for any fields that don't already have them.
+
+        Args:
+            **kwargs: Keyword arguments where each key is a field name and each value
+                     is the new value to set for that field.
+
+        Examples:
+            ```python
+            # Update multiple fields at once
+            proxy.update(name="Alice", age=30, active=True)
+            ```
         """
         for attr, value in kwargs.items():
             self.observable(object, attr).set(value)
@@ -231,6 +404,20 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
     def load_dict(self, values: dict[str, Any]) -> None:
         """
         Set multiple scalar observable values from a dict.
+
+        This is similar to update(), but takes a dictionary instead of keyword arguments.
+        It creates observables for any fields that don't already have them.
+
+        Args:
+            values: A dictionary where each key is a field name and each value
+                   is the new value to set for that field.
+
+        Examples:
+            ```python
+            # Load values from a dictionary
+            data = {"name": "Alice", "age": 30, "active": True}
+            proxy.load_dict(data)
+            ```
         """
         for attr, value in values.items():
             self.observable(object, attr).set(value)
@@ -239,6 +426,35 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
     def save_to(self, obj: T) -> None:
         """
         Write all observable values back into the given object.
+
+        This method copies all values from the observables back to the target object.
+        It's useful when sync=False and you want to explicitly save changes.
+
+        Args:
+            obj: The object to write values to. This can be the original object
+                 or a different object of the same type.
+
+        Examples:
+            ```python
+            # Create a proxy with no automatic sync
+            user = User(name="Alice", age=30)
+            proxy = ObservableProxy(user)
+
+            # Make changes through the proxy
+            proxy.observable(str, "name").set("Bob")
+
+            # At this point, user.name is still "Alice"
+            print(user.name)  # Prints: "Alice"
+
+            # Save changes back to the original object
+            proxy.save_to(user)
+            print(user.name)  # Prints: "Bob"
+
+            # Or save to a new object
+            new_user = User(name="", age=0)
+            proxy.save_to(new_user)
+            print(new_user.name)  # Prints: "Bob"
+            ```
         """
         for key, obs in self._scalars.items():
             setattr(obj, key.attr, obs.get())
@@ -268,8 +484,33 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Check if any fields have been modified since initialization or last reset.
 
+        This method returns True if any observable field has been modified since
+        the proxy was created or since the last call to reset_dirty().
+
         Returns:
             True if any fields have been modified, False otherwise.
+
+        Examples:
+            ```python
+            # Create a proxy
+            user = User(name="Alice", age=30)
+            proxy = ObservableProxy(user)
+
+            # Check if dirty initially
+            print(proxy.is_dirty())  # Prints: False
+
+            # Make a change
+            proxy.observable(str, "name").set("Bob")
+
+            # Check if dirty after change
+            print(proxy.is_dirty())  # Prints: True
+
+            # Reset dirty state
+            proxy.reset_dirty()
+
+            # Check if dirty after reset
+            print(proxy.is_dirty())  # Prints: False
+            ```
         """
         return bool(self._dirty_fields)
 
@@ -278,8 +519,26 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Get the set of field names that have been modified.
 
+        This method returns a set containing the names of all fields that have been
+        modified since the proxy was created or since the last call to reset_dirty().
+
         Returns:
             A set of field names that have been modified.
+
+        Examples:
+            ```python
+            # Create a proxy
+            user = User(name="Alice", age=30, active=True)
+            proxy = ObservableProxy(user)
+
+            # Make some changes
+            proxy.observable(str, "name").set("Bob")
+            proxy.observable(int, "age").set(31)
+
+            # Get the dirty fields
+            dirty = proxy.dirty_fields()
+            print(dirty)  # Prints: {'name', 'age'}
+            ```
         """
         return set(self._dirty_fields)
 
@@ -300,10 +559,36 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Register a computed property that depends on other observables.
 
+        Computed properties are read-only observables that automatically update
+        when their dependencies change. They can depend on scalar fields, list fields,
+        dictionary fields, or other computed properties.
+
         Args:
             name: The name of the computed property.
             compute: A function that returns the computed value.
             dependencies: List of field names that this computed property depends on.
+
+        Examples:
+            ```python
+            # Create a proxy for a user object
+            user = User(name="Alice", age=30)
+            proxy = ObservableProxy(user)
+
+            # Register a computed property for the user's greeting
+            proxy.register_computed(
+                name="greeting",
+                compute=lambda: f"Hello, {proxy.observable(str, 'name').get()}!",
+                dependencies=["name"]
+            )
+
+            # Get the computed property
+            greeting_obs = proxy.computed(str, "greeting")
+            print(greeting_obs.get())  # Prints: "Hello, Alice!"
+
+            # When the name changes, the greeting updates automatically
+            proxy.observable(str, "name").set("Bob")
+            print(greeting_obs.get())  # Prints: "Hello, Bob!"
+            ```
         """
         # Create an observable for the computed property
         initial_value = compute()
@@ -376,10 +661,49 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Add a validator function for a field.
 
+        Validators are functions that check if a field value is valid.
+        Multiple validators can be added for the same field.
+        Validation errors are tracked and can be observed.
+
         Args:
             attr: The field name to validate.
             validator: A function that takes the field value and returns an error message
                        if invalid, or None if valid.
+
+        Examples:
+            ```python
+            # Create a proxy for a user object
+            user = User(name="Alice", age=30)
+            proxy = ObservableProxy(user)
+
+            # Add validators for the name field
+            proxy.add_validator(
+                "name",
+                lambda name: "Name cannot be empty" if not name else None
+            )
+            proxy.add_validator(
+                "name",
+                lambda name: "Name too long" if len(name) > 50 else None
+            )
+
+            # Add a validator for the age field
+            proxy.add_validator(
+                "age",
+                lambda age: "Age must be positive" if age < 0 else None
+            )
+
+            # Check if all fields are valid
+            is_valid = proxy.is_valid()
+            print(is_valid.get())  # Prints: True
+
+            # Set an invalid value
+            proxy.observable(str, "name").set("")
+            print(is_valid.get())  # Prints: False
+
+            # Get validation errors for a specific field
+            name_errors = proxy.validation_for("name")
+            print(name_errors.get())  # Prints: ["Name cannot be empty"]
+            ```
         """
         if attr not in self._validators:
             self._validators[attr] = []
@@ -546,11 +870,34 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Set the undo configuration for a specific field.
 
+        This method allows configuring undo/redo behavior for individual fields.
+        Each field can have its own undo history size and debounce timing.
+
         Args:
             attr: The field name to configure.
             enabled: Whether undo/redo functionality is enabled for this field.
-            undo_max: Maximum number of undo steps to store. None means unlimited.
-            undo_debounce_ms: Time window in milliseconds to group changes. None means no debouncing.
+                    If None, uses the default from the proxy.
+            undo_max: Maximum number of undo steps to store. None means use the default.
+                     A value of 0 means no limit.
+            undo_debounce_ms: Time window in milliseconds to group changes into a single undo step.
+                             None means use the default. A value of 0 means no debouncing.
+
+        Examples:
+            ```python
+            # Create a proxy with undo enabled
+            document = Document(title="Draft", content="Hello world")
+            proxy = ObservableProxy(document, undo=True)
+
+            # Configure undo for the content field
+            proxy.set_undo_config(
+                "content",
+                undo_max=100,       # Store up to 100 undo steps
+                undo_debounce_ms=500  # Group changes within 500ms
+            )
+
+            # Disable undo for the title field
+            proxy.set_undo_config("title", enabled=False)
+            ```
         """
         # Get the current config or create a new one
         config = self._field_undo_configs.get(attr, UndoConfig())
