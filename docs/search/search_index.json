@@ -1,0 +1,1671 @@
+{
+  "config": {
+    "lang": ["en"],
+    "separator": "[\\s\\-]+",
+    "pipeline": ["stopWordFilter"]
+  },
+  "docs": [
+    {
+      "location": "",
+      "title": "Observant",
+      "text": "<p>A reactive state management library for Python with observable objects, validation, undo/redo, and computed properties.</p>"
+    },
+    {
+      "location": "#what-is-observant",
+      "title": "What is Observant?",
+      "text": "<p>Observant is a Python library that brings reactive programming to your data models. It allows you to:</p> <ul> <li>Track changes to your data</li> <li>Validate data as it changes</li> <li>Implement undo/redo functionality</li> <li>Create computed properties that update automatically</li> <li>Keep track of \"dirty\" state for unsaved changes</li> </ul> <p>At its core, Observant provides observable objects that notify listeners when their values change, making it easy to build reactive applications.</p>"
+    },
+    {
+      "location": "#why-use-it",
+      "title": "Why Use It?",
+      "text": "<ul> <li>Simplify State Management: Stop writing boilerplate code to track changes and update dependent values.</li> <li>Improve Code Quality: Centralize validation logic and ensure data consistency.</li> <li>Enhance User Experience: Easily implement undo/redo and track unsaved changes.</li> <li>Reduce Bugs: Automatically update computed values when dependencies change.</li> </ul>"
+    },
+    { "location": "#key-features", "title": "Key Features", "text": "" },
+    {
+      "location": "#observable-objects",
+      "title": "Observable Objects",
+      "text": "<pre><code>from observant import Observable\n\n# Create an observable value\ncounter = Observable[int](0)\n\n# Listen for changes\ncounter.on_change(lambda value: print(f\"Counter changed to {value}\"))\n\n# Update the value\ncounter.set(1)  # Prints: \"Counter changed to 1\"\n</code></pre>"
+    },
+    {
+      "location": "#observable-collections",
+      "title": "Observable Collections",
+      "text": "<pre><code>from observant import ObservableList, ObservableDict\n\n# Observable list\ntasks = ObservableList[str]([\"Buy milk\"])\ntasks.on_change(lambda change: print(f\"Tasks changed: {change}\"))\ntasks.append(\"Write docs\")\n\n# Observable dictionary\nsettings = ObservableDict[str, str]({\"theme\": \"dark\"})\nsettings.on_change(lambda change: print(f\"Settings changed: {change}\"))\nsettings[\"language\"] = \"en\"\n</code></pre>"
+    },
+    {
+      "location": "#observable-proxy",
+      "title": "Observable Proxy",
+      "text": "<pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user)\n\n# Get observable for a field\nname_obs = proxy.observable(str, \"name\")\nname_obs.on_change(lambda value: print(f\"Name changed to {value}\"))\n\n# Update the field\nname_obs.set(\"Alicia\")  # Prints: \"Name changed to Alicia\"\n\n# Save changes back to the model\nproxy.save_to(user)\nprint(user.name)  # Prints: \"Alicia\"\n</code></pre>"
+    },
+    {
+      "location": "#validation",
+      "title": "Validation",
+      "text": "<pre><code>from observant import ObservableProxy\n\n# Add validators\nproxy.add_validator(\"age\", lambda age: \"Must be positive\" if age &lt;= 0 else None)\nproxy.add_validator(\"name\", lambda name: \"Name too short\" if len(name) &lt; 3 else None)\n\n# Check validation state\nprint(proxy.is_valid())  # True or False\nprint(proxy.validation_errors())  # Dictionary of field errors\n</code></pre>"
+    },
+    {
+      "location": "#undoredo",
+      "title": "Undo/Redo",
+      "text": "<pre><code>from observant import ObservableProxy\n\n# Enable undo\nproxy = ObservableProxy(user, undo=True)\n\n# Make changes\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.observable(int, \"age\").set(25)\n\n# Undo changes\nproxy.undo(\"name\")  # Reverts name to \"Alicia\"\nproxy.undo(\"age\")   # Reverts age to 30\n\n# Redo changes\nproxy.redo(\"name\")  # Sets name back to \"Bob\"\n</code></pre>"
+    },
+    {
+      "location": "#computed-properties",
+      "title": "Computed Properties",
+      "text": "<pre><code>from observant import ObservableProxy\n\n# Register a computed property\nproxy.register_computed(\n    \"full_name\",\n    lambda: f\"{proxy.observable(str, 'first_name').get()} {proxy.observable(str, 'last_name').get()}\",\n    dependencies=[\"first_name\", \"last_name\"]\n)\n\n# Access the computed value\nprint(proxy.computed(str, \"full_name\").get())\n</code></pre>"
+    },
+    {
+      "location": "#installation",
+      "title": "Installation",
+      "text": "<pre><code>pip install observant\n</code></pre>"
+    },
+    {
+      "location": "#quick-example",
+      "title": "Quick Example",
+      "text": "<pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass FormData:\n    username: str\n    email: str\n    age: int\n\n# Create a model and proxy\nform = FormData(username=\"\", email=\"\", age=0)\nproxy = ObservableProxy(form, undo=True)\n\n# Add validation\nproxy.add_validator(\"username\", lambda v: \"Required\" if not v else None)\nproxy.add_validator(\"email\", lambda v: \"Invalid email\" if \"@\" not in v else None)\nproxy.add_validator(\"age\", lambda v: \"Must be 18+\" if v &lt; 18 else None)\n\n# Update fields\nproxy.observable(str, \"username\").set(\"alice\")\nproxy.observable(str, \"email\").set(\"alice@example.com\")\nproxy.observable(int, \"age\").set(25)\n\n# Check if valid\nif proxy.is_valid():\n    # Save changes\n    proxy.save_to(form)\n    print(\"Form saved!\")\nelse:\n    # Show errors\n    print(\"Validation errors:\", proxy.validation_errors())\n</code></pre>"
+    },
+    {
+      "location": "#where-to-go-next",
+      "title": "Where to Go Next",
+      "text": "<ul> <li>Getting Started - Learn the basics</li> <li>Change Tracking - Understand how observables work</li> <li>API Reference - Detailed API documentation</li> </ul>"
+    },
+    {
+      "location": "getting_started/",
+      "title": "Getting Started",
+      "text": "<p>This guide will help you get started with Observant, a reactive state management library for Python.</p>"
+    },
+    {
+      "location": "getting_started/#installation",
+      "title": "Installation",
+      "text": "<p>Install Observant using pip:</p> <pre><code>pip install observant\n</code></pre>"
+    },
+    {
+      "location": "getting_started/#basic-concepts",
+      "title": "Basic Concepts",
+      "text": "<p>Before diving into code examples, let's understand the core concepts of Observant.</p>"
+    },
+    {
+      "location": "getting_started/#observable",
+      "title": "Observable",
+      "text": "<p>An <code>Observable</code> is a wrapper around a value that notifies listeners when the value changes. It's the simplest building block in Observant.</p> <pre><code>from observant import Observable\n\n# Create an observable with an initial value\nname = Observable[str](\"Alice\")\n\n# Register a callback to be notified when the value changes\nname.on_change(lambda value: print(f\"Name changed to: {value}\"))\n\n# Change the value\nname.set(\"Bob\")  # Prints: \"Name changed to: Bob\"\n\n# Get the current value\ncurrent_name = name.get()  # Returns: \"Bob\"\n</code></pre>"
+    },
+    {
+      "location": "getting_started/#observablelist-and-observabledict",
+      "title": "ObservableList and ObservableDict",
+      "text": "<p>Observant also provides observable collections that notify listeners when items are added, removed, or updated.</p> <pre><code>from observant import ObservableList, ObservableDict\n\n# Observable list\ntasks = ObservableList[str]([\"Task 1\"])\ntasks.on_change(lambda change: print(f\"Tasks changed: {change}\"))\ntasks.append(\"Task 2\")  # Notifies listeners\n\n# Observable dictionary\nsettings = ObservableDict[str, str]({\"theme\": \"dark\"})\nsettings.on_change(lambda change: print(f\"Settings changed: {change}\"))\nsettings[\"language\"] = \"en\"  # Notifies listeners\n</code></pre>"
+    },
+    {
+      "location": "getting_started/#observableproxy",
+      "title": "ObservableProxy",
+      "text": "<p>The <code>ObservableProxy</code> is the most powerful component in Observant. It wraps an object (typically a dataclass) and provides observable access to its fields.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n    email: str\n\n# Create a user and wrap it with a proxy\nuser = User(name=\"Alice\", age=30, email=\"alice@example.com\")\nproxy = ObservableProxy(user)\n\n# Get observables for individual fields\nname_obs = proxy.observable(str, \"name\")\nage_obs = proxy.observable(int, \"age\")\n\n# Register change listeners\nname_obs.on_change(lambda value: print(f\"Name changed to: {value}\"))\nage_obs.on_change(lambda value: print(f\"Age changed to: {value}\"))\n\n# Update fields\nname_obs.set(\"Alicia\")  # Prints: \"Name changed to: Alicia\"\nage_obs.set(31)         # Prints: \"Age changed to: 31\"\n\n# Save changes back to the original object\nproxy.save_to(user)\nprint(user.name)  # Prints: \"Alicia\"\nprint(user.age)   # Prints: 31\n</code></pre>"
+    },
+    {
+      "location": "getting_started/#minimal-example",
+      "title": "Minimal Example",
+      "text": "<p>Here's a complete example showing how to use Observant with a simple form:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass LoginForm:\n    username: str\n    password: str\n    remember_me: bool\n\n# Create a form and proxy\nform = LoginForm(username=\"\", password=\"\", remember_me=False)\nproxy = ObservableProxy(form)\n\n# Add validation\nproxy.add_validator(\"username\", lambda v: \"Username required\" if not v else None)\nproxy.add_validator(\"password\", lambda v: \"Password too short\" if len(v) &lt; 8 else None)\n\n# Track changes\nproxy.observable(str, \"username\").on_change(lambda v: print(f\"Username: {v}\"))\nproxy.observable(str, \"password\").on_change(lambda v: print(f\"Password: {'*' * len(v)}\"))\nproxy.observable(bool, \"remember_me\").on_change(lambda v: print(f\"Remember me: {v}\"))\n\n# Update fields\nproxy.observable(str, \"username\").set(\"alice\")\nproxy.observable(str, \"password\").set(\"securepassword\")\nproxy.observable(bool, \"remember_me\").set(True)\n\n# Check validation\nif proxy.is_valid():\n    print(\"Form is valid!\")\n    proxy.save_to(form)\nelse:\n    print(\"Validation errors:\", proxy.validation_errors())\n</code></pre>"
+    },
+    {
+      "location": "getting_started/#anatomy-of-a-proxy",
+      "title": "Anatomy of a Proxy",
+      "text": "<p>The <code>ObservableProxy</code> is the central component of Observant. Here's what it provides:</p> <ol> <li> <p>Field Observables: Access individual fields as observables    <pre><code>name_obs = proxy.observable(str, \"name\")\n</code></pre></p> </li> <li> <p>Collection Observables: Access lists and dictionaries as observable collections    <pre><code>tasks_list = proxy.observable_list(str, \"tasks\")\nsettings_dict = proxy.observable_dict((str, str), \"settings\")\n</code></pre></p> </li> <li> <p>Validation: Add validators to fields and check validation state    <pre><code>proxy.add_validator(\"email\", lambda v: \"Invalid email\" if \"@\" not in v else None)\nis_valid = proxy.is_valid()\nerrors = proxy.validation_errors()\n</code></pre></p> </li> <li> <p>Computed Properties: Define properties that depend on other fields    <pre><code>proxy.register_computed(\n    \"full_name\",\n    lambda: f\"{proxy.observable(str, 'first_name').get()} {proxy.observable(str, 'last_name').get()}\",\n    dependencies=[\"first_name\", \"last_name\"]\n)\nfull_name = proxy.computed(str, \"full_name\").get()\n</code></pre></p> </li> <li> <p>Undo/Redo: Track changes and undo/redo them    <pre><code>proxy = ObservableProxy(user, undo=True)\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.undo(\"name\")  # Reverts to previous value\n</code></pre></p> </li> <li> <p>Dirty Tracking: Track unsaved changes    <pre><code>is_dirty = proxy.is_dirty()\ndirty_fields = proxy.dirty_fields()\nproxy.reset_dirty()\n</code></pre></p> </li> <li> <p>Saving and Loading: Save changes back to the model or load from a dictionary    <pre><code>proxy.save_to(user)\nproxy.load_dict({\"name\": \"Charlie\", \"age\": 25})\n</code></pre></p> </li> </ol>"
+    },
+    {
+      "location": "getting_started/#next-steps",
+      "title": "Next Steps",
+      "text": "<p>Now that you understand the basics, you can explore more advanced features:</p> <ul> <li>Change Tracking: Learn more about observables and change notifications</li> <li>Validation: Add validation to your models</li> <li>Computed Properties: Create properties that depend on other fields</li> <li>Undo and Redo: Implement undo/redo functionality</li> <li>Dirty Tracking: Track unsaved changes</li> <li>Sync vs Non-Sync: Understand immediate vs. deferred updates</li> <li>Saving and Loading: Save changes and load data</li> </ul>"
+    },
+    {
+      "location": "api_reference/",
+      "title": "API Reference",
+      "text": "<p>This section provides detailed documentation for the Observant API. It covers all the classes, methods, and types available in the library.</p>"
+    },
+    {
+      "location": "api_reference/#how-to-read-this-section",
+      "title": "How to Read This Section",
+      "text": "<p>The API reference is organized by module, with each module containing related classes and functions. The main modules are:</p> <ul> <li><code>observable</code>: The base <code>Observable</code> class for scalar values</li> <li><code>observable_list</code>: The <code>ObservableList</code> class for lists</li> <li><code>observable_dict</code>: The <code>ObservableDict</code> class for dictionaries</li> <li><code>observable_proxy</code>: The <code>ObservableProxy</code> class for objects</li> <li><code>undoable_observable</code>: The <code>UndoableObservable</code> class for undo/redo functionality</li> <li><code>types</code>: Various types used throughout the library</li> <li><code>interfaces</code>: Interfaces that define the contract for observable objects</li> </ul>"
+    },
+    {
+      "location": "api_reference/#core-classes",
+      "title": "Core Classes",
+      "text": ""
+    },
+    {
+      "location": "api_reference/#observable",
+      "title": "Observable",
+      "text": "<p>The <code>Observable</code> class is the foundation of Observant. It wraps a single value and notifies listeners when that value changes.</p> <pre><code>from observant import Observable\n\n# Create an observable with an initial value\ncounter = Observable[int](0)\n\n# Register a callback to be notified when the value changes\ncounter.on_change(lambda value: print(f\"Counter changed to: {value}\"))\n\n# Change the value\ncounter.set(1)  # Prints: \"Counter changed to: 1\"\n\n# Get the current value\ncurrent_value = counter.get()  # Returns: 1\n</code></pre>"
+    },
+    {
+      "location": "api_reference/#observablelist",
+      "title": "ObservableList",
+      "text": "<p>The <code>ObservableList</code> class tracks changes to a list, including additions, removals, and modifications.</p> <pre><code>from observant import ObservableList\n\n# Create an observable list\ntasks = ObservableList[str]([\"Task 1\"])\n\n# Register a callback\ntasks.on_change(lambda change: print(f\"Tasks changed: {change}\"))\n\n# Add an item\ntasks.append(\"Task 2\")  # Notifies listeners\n</code></pre>"
+    },
+    {
+      "location": "api_reference/#observabledict",
+      "title": "ObservableDict",
+      "text": "<p>The <code>ObservableDict</code> class tracks changes to a dictionary, including additions, updates, and removals.</p> <pre><code>from observant import ObservableDict\n\n# Create an observable dictionary\nsettings = ObservableDict[str, str]({\"theme\": \"dark\"})\n\n# Register a callback\nsettings.on_change(lambda change: print(f\"Settings changed: {change}\"))\n\n# Add a new key\nsettings[\"language\"] = \"en\"  # Notifies listeners\n</code></pre>"
+    },
+    {
+      "location": "api_reference/#observableproxy",
+      "title": "ObservableProxy",
+      "text": "<p>The <code>ObservableProxy</code> class wraps an object (typically a dataclass) and provides observable access to its fields.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user)\n\n# Get observables for individual fields\nname_obs = proxy.observable(str, \"name\")\nage_obs = proxy.observable(int, \"age\")\n\n# Register change listeners\nname_obs.on_change(lambda value: print(f\"Name changed to: {value}\"))\n\n# Update fields\nname_obs.set(\"Alicia\")  # Notifies listeners\n</code></pre>"
+    },
+    {
+      "location": "api_reference/#undoableobservable",
+      "title": "UndoableObservable",
+      "text": "<p>The <code>UndoableObservable</code> class extends <code>Observable</code> with undo/redo functionality.</p> <pre><code>from observant import UndoableObservable\n\n# Create an undoable observable\ncounter = UndoableObservable[int](0)\n\n# Make changes\ncounter.set(1)\ncounter.set(2)\ncounter.set(3)\n\n# Undo changes\ncounter.undo()  # Reverts to 2\ncounter.undo()  # Reverts to 1\n\n# Redo changes\ncounter.redo()  # Sets back to 2\n</code></pre>"
+    },
+    { "location": "api_reference/#types", "title": "Types", "text": "" },
+    {
+      "location": "api_reference/#observablecollectionchangetype",
+      "title": "ObservableCollectionChangeType",
+      "text": "<p>An enum that represents the type of change that occurred in a collection:</p> <ul> <li><code>ADD</code>: An item was added to the collection</li> <li><code>REMOVE</code>: An item was removed from the collection</li> <li><code>UPDATE</code>: An item was updated in the collection</li> <li><code>CLEAR</code>: The collection was cleared</li> </ul>"
+    },
+    {
+      "location": "api_reference/#observablelistchange",
+      "title": "ObservableListChange",
+      "text": "<p>A class that represents a change to an observable list. It contains:</p> <ul> <li><code>type</code>: The type of change (ADD, REMOVE, CLEAR)</li> <li><code>index</code>: The index where the change occurred (for ADD and REMOVE)</li> <li><code>item</code>: The item that was added or removed (for single-item changes)</li> <li><code>items</code>: The items that were added or removed (for multi-item changes)</li> </ul>"
+    },
+    {
+      "location": "api_reference/#observabledictchange",
+      "title": "ObservableDictChange",
+      "text": "<p>A class that represents a change to an observable dictionary. It contains:</p> <ul> <li><code>type</code>: The type of change (ADD, UPDATE, REMOVE, CLEAR)</li> <li><code>key</code>: The key that was added, updated, or removed (for single-item changes)</li> <li><code>value</code>: The value that was added or updated (for single-item changes)</li> <li><code>items</code>: The items that were added, updated, or removed (for multi-item changes)</li> </ul>"
+    },
+    {
+      "location": "api_reference/#proxyfieldkey",
+      "title": "ProxyFieldKey",
+      "text": "<p>A class that represents a field key in an <code>ObservableProxy</code>. It's used internally to track fields.</p>"
+    },
+    {
+      "location": "api_reference/#undoconfig",
+      "title": "UndoConfig",
+      "text": "<p>A class that represents the configuration for undo/redo functionality. It contains:</p> <ul> <li><code>enabled</code>: Whether undo is enabled</li> <li><code>undo_max</code>: Maximum number of undo steps to store</li> <li><code>undo_debounce_ms</code>: Time in milliseconds to wait before recording a new undo step</li> </ul>"
+    },
+    {
+      "location": "api_reference/#interfaces",
+      "title": "Interfaces",
+      "text": ""
+    },
+    {
+      "location": "api_reference/#iobservable",
+      "title": "IObservable",
+      "text": "<p>An interface that defines the contract for observable objects. It includes methods for getting and setting values, and registering change listeners.</p>"
+    },
+    {
+      "location": "api_reference/#iobservablelist",
+      "title": "IObservableList",
+      "text": "<p>An interface that extends <code>IObservable</code> for lists. It includes methods for list operations like append, extend, insert, etc.</p>"
+    },
+    {
+      "location": "api_reference/#iobservabledict",
+      "title": "IObservableDict",
+      "text": "<p>An interface that extends <code>IObservable</code> for dictionaries. It includes methods for dictionary operations like setting and getting items, updating, etc.</p>"
+    },
+    {
+      "location": "api_reference/#iobservableproxy",
+      "title": "IObservableProxy",
+      "text": "<p>An interface that defines the contract for observable proxies. It includes methods for accessing fields, validation, undo/redo, etc.</p>"
+    },
+    {
+      "location": "api_reference/#auto-generated-documentation",
+      "title": "Auto-Generated Documentation",
+      "text": "<p>For more detailed information about each class, method, and type, refer to the auto-generated documentation:</p> <ul> <li>Observable</li> <li>ObservableList</li> <li>ObservableDict</li> <li>ObservableProxy</li> <li>UndoableObservable</li> <li>Types</li> <li>Interfaces</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable/",
+      "title": "Observable",
+      "text": "<p>The <code>Observable</code> class is the foundation of Observant. It wraps a single value and notifies listeners when that value changes.</p>"
+    },
+    {
+      "location": "api_reference/observable/#overview",
+      "title": "Overview",
+      "text": "<p><code>Observable</code> is a generic class that can wrap any type of value. It provides methods for getting and setting the value, and for registering callbacks that are called when the value changes.</p> <pre><code>from observant import Observable\n\n# Create an observable with an initial value\ncounter = Observable[int](0)\n\n# Register a callback to be notified when the value changes\ncounter.on_change(lambda value: print(f\"Counter changed to: {value}\"))\n\n# Change the value\ncounter.set(1)  # Prints: \"Counter changed to: 1\"\n\n# Get the current value\ncurrent_value = counter.get()  # Returns: 1\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable/#constructor",
+      "title": "Constructor",
+      "text": "<pre><code>Observable[T](initial_value: T)\n</code></pre> <p>Creates a new <code>Observable</code> with the specified initial value.</p>"
+    },
+    {
+      "location": "api_reference/observable/#parameters",
+      "title": "Parameters",
+      "text": "<ul> <li><code>initial_value</code>: The initial value of the observable.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable/#type-parameters",
+      "title": "Type Parameters",
+      "text": "<ul> <li><code>T</code>: The type of the value wrapped by the observable.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable/#methods",
+      "title": "Methods",
+      "text": ""
+    },
+    {
+      "location": "api_reference/observable/#get",
+      "title": "get",
+      "text": "<pre><code>get() -&gt; T\n</code></pre> <p>Returns the current value of the observable.</p>"
+    },
+    {
+      "location": "api_reference/observable/#set",
+      "title": "set",
+      "text": "<pre><code>set(value: T, notify: bool = True) -&gt; None\n</code></pre> <p>Sets the value of the observable and notifies listeners if <code>notify</code> is <code>True</code>.</p>"
+    },
+    {
+      "location": "api_reference/observable/#parameters_1",
+      "title": "Parameters",
+      "text": "<ul> <li><code>value</code>: The new value to set.</li> <li><code>notify</code>: Whether to notify listeners of the change. Default is <code>True</code>.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable/#on_change",
+      "title": "on_change",
+      "text": "<pre><code>on_change(callback: Callable[[T], None]) -&gt; None\n</code></pre> <p>Registers a callback to be called when the value changes.</p>"
+    },
+    {
+      "location": "api_reference/observable/#parameters_2",
+      "title": "Parameters",
+      "text": "<ul> <li><code>callback</code>: A function that takes the new value as its only argument.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable/#example",
+      "title": "Example",
+      "text": "<pre><code>from observant import Observable\n\n# Create an observable string\nname = Observable[str](\"Alice\")\n\n# Register a callback\nname.on_change(lambda value: print(f\"Name changed to: {value}\"))\n\n# Change the value\nname.set(\"Bob\")  # Prints: \"Name changed to: Bob\"\n\n# Get the current value\ncurrent_name = name.get()  # Returns: \"Bob\"\n\n# Change the value without notifying listeners\nname.set(\"Charlie\", notify=False)\n\n# The value is updated, but no callback is triggered\nprint(name.get())  # Prints: \"Charlie\"\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable/#multiple-callbacks",
+      "title": "Multiple Callbacks",
+      "text": "<p>You can register multiple callbacks for the same observable:</p> <pre><code>counter = Observable[int](0)\n\n# Register multiple callbacks\ncounter.on_change(lambda value: print(f\"Callback 1: {value}\"))\ncounter.on_change(lambda value: print(f\"Callback 2: {value}\"))\n\n# Change the value\ncounter.set(1)\n# Prints:\n# Callback 1: 1\n# Callback 2: 1\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable/#implementation-details",
+      "title": "Implementation Details",
+      "text": "<p>The <code>Observable</code> class implements the <code>IObservable</code> interface, which defines the contract for observable objects. This interface is used throughout Observant to ensure consistent behavior across different types of observables.</p> <p>For more details on the implementation, see the source code.</p>"
+    },
+    {
+      "location": "api_reference/observable/#see-also",
+      "title": "See Also",
+      "text": "<ul> <li>ObservableList: An observable list that notifies listeners when items are added, removed, or modified.</li> <li>ObservableDict: An observable dictionary that notifies listeners when items are added, updated, or removed.</li> <li>UndoableObservable: An observable that supports undo and redo operations.</li> <li>IObservable: The interface that defines the contract for observable objects.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/",
+      "title": "ObservableDict",
+      "text": "<p>The <code>ObservableDict</code> class is an observable collection that wraps a dictionary and notifies listeners when items are added, updated, or removed.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#overview",
+      "title": "Overview",
+      "text": "<p><code>ObservableDict</code> is a generic class that can wrap a dictionary with keys and values of any type. It provides methods for manipulating the dictionary and for registering callbacks that are called when the dictionary changes.</p> <pre><code>from observant import ObservableDict, ObservableCollectionChangeType\n\n# Create an observable dictionary with initial items\nsettings = ObservableDict[str, str]({\"theme\": \"dark\", \"language\": \"en\"})\n\n# Register a callback to be notified when the dictionary changes\ndef on_settings_change(change):\n    if change.type == ObservableCollectionChangeType.ADD:\n        print(f\"Added setting: {change.key} = {change.value}\")\n    elif change.type == ObservableCollectionChangeType.UPDATE:\n        print(f\"Updated setting: {change.key} = {change.value}\")\n    elif change.type == ObservableCollectionChangeType.REMOVE:\n        print(f\"Removed setting: {change.key}\")\n    elif change.type == ObservableCollectionChangeType.CLEAR:\n        print(f\"Cleared settings: {change.items}\")\n\nsettings.on_change(on_settings_change)\n\n# Add a new key\nsettings[\"font\"] = \"Arial\"  # Prints: \"Added setting: font = Arial\"\n\n# Update an existing key\nsettings[\"theme\"] = \"light\"  # Prints: \"Updated setting: theme = light\"\n\n# Remove a key\ndel settings[\"language\"]  # Prints: \"Removed setting: language\"\n\n# Clear the dictionary\nsettings.clear()  # Prints: \"Cleared settings: {'theme': 'light', 'font': 'Arial'}\"\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_dict/#constructor",
+      "title": "Constructor",
+      "text": "<pre><code>ObservableDict[K, V](initial_items: dict[K, V] = None)\n</code></pre> <p>Creates a new <code>ObservableDict</code> with the specified initial items.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#parameters",
+      "title": "Parameters",
+      "text": "<ul> <li><code>initial_items</code>: The initial items of the dictionary. Default is <code>None</code> (empty dictionary).</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#type-parameters",
+      "title": "Type Parameters",
+      "text": "<ul> <li><code>K</code>: The type of keys in the dictionary.</li> <li><code>V</code>: The type of values in the dictionary.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#methods",
+      "title": "Methods",
+      "text": ""
+    },
+    {
+      "location": "api_reference/observable_dict/#getitem",
+      "title": "getitem",
+      "text": "<pre><code>__getitem__(key: K) -&gt; V\n</code></pre> <p>Gets the value for the specified key.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#parameters_1",
+      "title": "Parameters",
+      "text": "<ul> <li><code>key</code>: The key to get the value for.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#returns",
+      "title": "Returns",
+      "text": "<p>The value for the specified key.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#raises",
+      "title": "Raises",
+      "text": "<ul> <li><code>KeyError</code>: If the key is not found in the dictionary.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#setitem",
+      "title": "setitem",
+      "text": "<pre><code>__setitem__(key: K, value: V) -&gt; None\n</code></pre> <p>Sets the value for the specified key.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#parameters_2",
+      "title": "Parameters",
+      "text": "<ul> <li><code>key</code>: The key to set the value for.</li> <li><code>value</code>: The value to set.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#delitem",
+      "title": "delitem",
+      "text": "<pre><code>__delitem__(key: K) -&gt; None\n</code></pre> <p>Removes the specified key and its value from the dictionary.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#parameters_3",
+      "title": "Parameters",
+      "text": "<ul> <li><code>key</code>: The key to remove.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#raises_1",
+      "title": "Raises",
+      "text": "<ul> <li><code>KeyError</code>: If the key is not found in the dictionary.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#get",
+      "title": "get",
+      "text": "<pre><code>get(key: K, default: V = None) -&gt; V\n</code></pre> <p>Gets the value for the specified key, or a default value if the key is not found.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#parameters_4",
+      "title": "Parameters",
+      "text": "<ul> <li><code>key</code>: The key to get the value for.</li> <li><code>default</code>: The default value to return if the key is not found. Default is <code>None</code>.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#returns_1",
+      "title": "Returns",
+      "text": "<p>The value for the specified key, or the default value if the key is not found.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#setdefault",
+      "title": "setdefault",
+      "text": "<pre><code>setdefault(key: K, default: V = None) -&gt; V\n</code></pre> <p>Gets the value for the specified key, or sets it to a default value if the key is not found.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#parameters_5",
+      "title": "Parameters",
+      "text": "<ul> <li><code>key</code>: The key to get or set the value for.</li> <li><code>default</code>: The default value to set if the key is not found. Default is <code>None</code>.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#returns_2",
+      "title": "Returns",
+      "text": "<p>The value for the specified key, or the default value if the key was not found.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#pop",
+      "title": "pop",
+      "text": "<pre><code>pop(key: K, default: V = None) -&gt; V\n</code></pre> <p>Removes the specified key and returns its value, or a default value if the key is not found.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#parameters_6",
+      "title": "Parameters",
+      "text": "<ul> <li><code>key</code>: The key to remove.</li> <li><code>default</code>: The default value to return if the key is not found. Default is <code>None</code>.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#returns_3",
+      "title": "Returns",
+      "text": "<p>The value for the specified key, or the default value if the key was not found.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#raises_2",
+      "title": "Raises",
+      "text": "<ul> <li><code>KeyError</code>: If the key is not found in the dictionary and no default value is provided.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#popitem",
+      "title": "popitem",
+      "text": "<pre><code>popitem() -&gt; tuple[K, V]\n</code></pre> <p>Removes and returns an arbitrary key-value pair from the dictionary.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#returns_4",
+      "title": "Returns",
+      "text": "<p>A tuple containing the key and value of the removed item.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#raises_3",
+      "title": "Raises",
+      "text": "<ul> <li><code>KeyError</code>: If the dictionary is empty.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#clear",
+      "title": "clear",
+      "text": "<pre><code>clear() -&gt; None\n</code></pre> <p>Removes all items from the dictionary.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#update",
+      "title": "update",
+      "text": "<pre><code>update(other: dict[K, V]) -&gt; None\n</code></pre> <p>Updates the dictionary with key-value pairs from another dictionary.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#parameters_7",
+      "title": "Parameters",
+      "text": "<ul> <li><code>other</code>: The dictionary to update from.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#on_change",
+      "title": "on_change",
+      "text": "<pre><code>on_change(callback: Callable[[ObservableDictChange[K, V]], None]) -&gt; None\n</code></pre> <p>Registers a callback to be called when the dictionary changes.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#parameters_8",
+      "title": "Parameters",
+      "text": "<ul> <li><code>callback</code>: A function that takes an <code>ObservableDictChange</code> object as its only argument.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_dict/#to_dict",
+      "title": "to_dict",
+      "text": "<pre><code>to_dict() -&gt; dict[K, V]\n</code></pre> <p>Returns a copy of the dictionary.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#observabledictchange",
+      "title": "ObservableDictChange",
+      "text": "<p>When a dictionary changes, the callback receives an <code>ObservableDictChange</code> object with the following properties:</p> <ul> <li><code>type</code>: The type of change (ADD, UPDATE, REMOVE, CLEAR)</li> <li><code>key</code>: The key that was added, updated, or removed (for single-item changes)</li> <li><code>value</code>: The value that was added or updated (for single-item changes)</li> <li><code>items</code>: The items that were added, updated, or removed (for multi-item changes)</li> </ul> <pre><code>from observant import ObservableDict, ObservableCollectionChangeType\n\n# Create an observable dictionary\nsettings = ObservableDict[str, str]({\"theme\": \"dark\"})\n\n# Register a callback\ndef on_settings_change(change):\n    print(f\"Change type: {change.type}\")\n    if hasattr(change, \"key\"):\n        print(f\"Key: {change.key}\")\n    if hasattr(change, \"value\"):\n        print(f\"Value: {change.value}\")\n    if hasattr(change, \"items\"):\n        print(f\"Items: {change.items}\")\n\nsettings.on_change(on_settings_change)\n\n# Add a new key\nsettings[\"language\"] = \"en\"\n# Prints:\n# Change type: ObservableCollectionChangeType.ADD\n# Key: language\n# Value: en\n\n# Update an existing key\nsettings[\"theme\"] = \"light\"\n# Prints:\n# Change type: ObservableCollectionChangeType.UPDATE\n# Key: theme\n# Value: light\n\n# Remove a key\ndel settings[\"theme\"]\n# Prints:\n# Change type: ObservableCollectionChangeType.REMOVE\n# Key: theme\n\n# Clear the dictionary\nsettings.clear()\n# Prints:\n# Change type: ObservableCollectionChangeType.CLEAR\n# Items: {'language': 'en'}\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_dict/#implementation-details",
+      "title": "Implementation Details",
+      "text": "<p>The <code>ObservableDict</code> class implements the <code>IObservableDict</code> interface, which extends the <code>IObservable</code> interface. This ensures that <code>ObservableDict</code> has all the functionality of <code>Observable</code> plus dictionary-specific operations.</p> <p>For more details on the implementation, see the source code.</p>"
+    },
+    {
+      "location": "api_reference/observable_dict/#see-also",
+      "title": "See Also",
+      "text": "<ul> <li>Observable: The base observable class for scalar values.</li> <li>ObservableList: An observable list that notifies listeners when items are added, removed, or modified.</li> <li>ObservableCollectionChangeType: An enum that represents the type of change that occurred in a collection.</li> <li>ObservableDictChange: A class that represents a change to an observable dictionary.</li> <li>IObservableDict: The interface that defines the contract for observable dictionaries.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_list/",
+      "title": "ObservableList",
+      "text": "<p>The <code>ObservableList</code> class is an observable collection that wraps a list and notifies listeners when items are added, removed, or modified.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#overview",
+      "title": "Overview",
+      "text": "<p><code>ObservableList</code> is a generic class that can wrap a list of any type. It provides methods for manipulating the list and for registering callbacks that are called when the list changes.</p> <pre><code>from observant import ObservableList, ObservableCollectionChangeType\n\n# Create an observable list with initial items\ntasks = ObservableList[str]([\"Task 1\", \"Task 2\"])\n\n# Register a callback to be notified when the list changes\ndef on_tasks_change(change):\n    if change.type == ObservableCollectionChangeType.ADD:\n        print(f\"Added task: {change.item}\")\n    elif change.type == ObservableCollectionChangeType.REMOVE:\n        print(f\"Removed task: {change.item}\")\n    elif change.type == ObservableCollectionChangeType.CLEAR:\n        print(f\"Cleared tasks: {change.items}\")\n\ntasks.on_change(on_tasks_change)\n\n# Add an item\ntasks.append(\"Task 3\")  # Prints: \"Added task: Task 3\"\n\n# Remove an item\ntasks.remove(\"Task 1\")  # Prints: \"Removed task: Task 1\"\n\n# Clear the list\ntasks.clear()  # Prints: \"Cleared tasks: ['Task 2', 'Task 3']\"\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_list/#constructor",
+      "title": "Constructor",
+      "text": "<pre><code>ObservableList[T](initial_items: list[T] = None)\n</code></pre> <p>Creates a new <code>ObservableList</code> with the specified initial items.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#parameters",
+      "title": "Parameters",
+      "text": "<ul> <li><code>initial_items</code>: The initial items of the list. Default is <code>None</code> (empty list).</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_list/#type-parameters",
+      "title": "Type Parameters",
+      "text": "<ul> <li><code>T</code>: The type of items in the list.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_list/#methods",
+      "title": "Methods",
+      "text": ""
+    },
+    {
+      "location": "api_reference/observable_list/#append",
+      "title": "append",
+      "text": "<pre><code>append(item: T) -&gt; None\n</code></pre> <p>Adds an item to the end of the list.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#parameters_1",
+      "title": "Parameters",
+      "text": "<ul> <li><code>item</code>: The item to add.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_list/#extend",
+      "title": "extend",
+      "text": "<pre><code>extend(items: list[T]) -&gt; None\n</code></pre> <p>Adds multiple items to the end of the list.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#parameters_2",
+      "title": "Parameters",
+      "text": "<ul> <li><code>items</code>: The items to add.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_list/#insert",
+      "title": "insert",
+      "text": "<pre><code>insert(index: int, item: T) -&gt; None\n</code></pre> <p>Inserts an item at the specified index.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#parameters_3",
+      "title": "Parameters",
+      "text": "<ul> <li><code>index</code>: The index at which to insert the item.</li> <li><code>item</code>: The item to insert.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_list/#remove",
+      "title": "remove",
+      "text": "<pre><code>remove(item: T) -&gt; None\n</code></pre> <p>Removes the first occurrence of the specified item from the list.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#parameters_4",
+      "title": "Parameters",
+      "text": "<ul> <li><code>item</code>: The item to remove.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_list/#pop",
+      "title": "pop",
+      "text": "<pre><code>pop(index: int = -1) -&gt; T\n</code></pre> <p>Removes and returns the item at the specified index.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#parameters_5",
+      "title": "Parameters",
+      "text": "<ul> <li><code>index</code>: The index of the item to remove. Default is <code>-1</code> (the last item).</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_list/#returns",
+      "title": "Returns",
+      "text": "<p>The removed item.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#clear",
+      "title": "clear",
+      "text": "<pre><code>clear() -&gt; None\n</code></pre> <p>Removes all items from the list.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#sort",
+      "title": "sort",
+      "text": "<pre><code>sort(key=None, reverse=False) -&gt; None\n</code></pre> <p>Sorts the list in place.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#parameters_6",
+      "title": "Parameters",
+      "text": "<ul> <li><code>key</code>: A function that takes an item and returns a key for sorting. Default is <code>None</code>.</li> <li><code>reverse</code>: Whether to sort in reverse order. Default is <code>False</code>.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_list/#reverse",
+      "title": "reverse",
+      "text": "<pre><code>reverse() -&gt; None\n</code></pre> <p>Reverses the list in place.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#on_change",
+      "title": "on_change",
+      "text": "<pre><code>on_change(callback: Callable[[ObservableListChange[T]], None]) -&gt; None\n</code></pre> <p>Registers a callback to be called when the list changes.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#parameters_7",
+      "title": "Parameters",
+      "text": "<ul> <li><code>callback</code>: A function that takes an <code>ObservableListChange</code> object as its only argument.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_list/#get",
+      "title": "get",
+      "text": "<pre><code>get() -&gt; list[T]\n</code></pre> <p>Returns a copy of the list.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#indexing-and-slicing",
+      "title": "Indexing and Slicing",
+      "text": "<p><code>ObservableList</code> supports indexing and slicing, just like a regular list:</p> <pre><code># Create an observable list\nnumbers = ObservableList[int]([1, 2, 3, 4, 5])\n\n# Get an item by index\nprint(numbers[0])  # Prints: 1\n\n# Set an item by index\nnumbers[0] = 10\nprint(numbers[0])  # Prints: 10\n\n# Delete an item by index\ndel numbers[0]\nprint(numbers.get())  # Prints: [2, 3, 4, 5]\n\n# Get a slice\nprint(numbers[1:3])  # Prints: [3, 4]\n\n# Set a slice\nnumbers[1:3] = [30, 40]\nprint(numbers.get())  # Prints: [2, 30, 40, 5]\n\n# Delete a slice\ndel numbers[1:3]\nprint(numbers.get())  # Prints: [2, 5]\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_list/#observablelistchange",
+      "title": "ObservableListChange",
+      "text": "<p>When a list changes, the callback receives an <code>ObservableListChange</code> object with the following properties:</p> <ul> <li><code>type</code>: The type of change (ADD, REMOVE, CLEAR)</li> <li><code>index</code>: The index where the change occurred (for ADD and REMOVE)</li> <li><code>item</code>: The item that was added or removed (for single-item changes)</li> <li><code>items</code>: The items that were added or removed (for multi-item changes)</li> </ul> <pre><code>from observant import ObservableList, ObservableCollectionChangeType\n\n# Create an observable list\ntasks = ObservableList[str]([\"Task 1\"])\n\n# Register a callback\ndef on_tasks_change(change):\n    print(f\"Change type: {change.type}\")\n    if hasattr(change, \"index\"):\n        print(f\"Index: {change.index}\")\n    if hasattr(change, \"item\"):\n        print(f\"Item: {change.item}\")\n    if hasattr(change, \"items\"):\n        print(f\"Items: {change.items}\")\n\ntasks.on_change(on_tasks_change)\n\n# Add an item\ntasks.append(\"Task 2\")\n# Prints:\n# Change type: ObservableCollectionChangeType.ADD\n# Index: 1\n# Item: Task 2\n\n# Remove an item\ntasks.remove(\"Task 1\")\n# Prints:\n# Change type: ObservableCollectionChangeType.REMOVE\n# Index: 0\n# Item: Task 1\n\n# Clear the list\ntasks.clear()\n# Prints:\n# Change type: ObservableCollectionChangeType.CLEAR\n# Items: ['Task 2']\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_list/#implementation-details",
+      "title": "Implementation Details",
+      "text": "<p>The <code>ObservableList</code> class implements the <code>IObservableList</code> interface, which extends the <code>IObservable</code> interface. This ensures that <code>ObservableList</code> has all the functionality of <code>Observable</code> plus list-specific operations.</p> <p>For more details on the implementation, see the source code.</p>"
+    },
+    {
+      "location": "api_reference/observable_list/#see-also",
+      "title": "See Also",
+      "text": "<ul> <li>Observable: The base observable class for scalar values.</li> <li>ObservableDict: An observable dictionary that notifies listeners when items are added, updated, or removed.</li> <li>ObservableCollectionChangeType: An enum that represents the type of change that occurred in a collection.</li> <li>ObservableListChange: A class that represents a change to an observable list.</li> <li>IObservableList: The interface that defines the contract for observable lists.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/",
+      "title": "ObservableProxy",
+      "text": "<p>The <code>ObservableProxy</code> class is the most powerful component in Observant. It wraps an object (typically a dataclass) and provides observable access to its fields, along with validation, undo/redo, computed properties, and dirty tracking.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#overview",
+      "title": "Overview",
+      "text": "<p><code>ObservableProxy</code> allows you to:</p> <ul> <li>Access fields as observables</li> <li>Validate field values</li> <li>Track changes to fields</li> <li>Implement undo/redo functionality</li> <li>Create computed properties</li> <li>Track dirty state</li> <li>Save changes back to the model</li> </ul> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n    email: str\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30, email=\"alice@example.com\")\nproxy = ObservableProxy(user)\n\n# Get observables for individual fields\nname_obs = proxy.observable(str, \"name\")\nage_obs = proxy.observable(int, \"age\")\n\n# Register change listeners\nname_obs.on_change(lambda value: print(f\"Name changed to: {value}\"))\nage_obs.on_change(lambda value: print(f\"Age changed to: {value}\"))\n\n# Update fields\nname_obs.set(\"Alicia\")  # Prints: \"Name changed to: Alicia\"\nage_obs.set(31)         # Prints: \"Age changed to: 31\"\n\n# Save changes back to the original object\nproxy.save_to(user)\nprint(user.name)  # Prints: \"Alicia\"\nprint(user.age)   # Prints: 31\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#constructor",
+      "title": "Constructor",
+      "text": "<pre><code>ObservableProxy(model: Any, sync: bool = False, undo: bool = False)\n</code></pre> <p>Creates a new <code>ObservableProxy</code> for the specified model.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters",
+      "title": "Parameters",
+      "text": "<ul> <li><code>model</code>: The model to wrap.</li> <li><code>sync</code>: Whether to synchronize changes to the model immediately. Default is <code>False</code>.</li> <li><code>undo</code>: Whether to enable undo/redo functionality for all fields. Default is <code>False</code>.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#field-access",
+      "title": "Field Access",
+      "text": ""
+    },
+    {
+      "location": "api_reference/observable_proxy/#observable",
+      "title": "observable",
+      "text": "<pre><code>observable(type_: Type[T], field: str) -&gt; Observable[T]\n</code></pre> <p>Gets an observable for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_1",
+      "title": "Parameters",
+      "text": "<ul> <li><code>type_</code>: The type of the field.</li> <li><code>field</code>: The name of the field.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns",
+      "title": "Returns",
+      "text": "<p>An <code>Observable</code> for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#observable_list",
+      "title": "observable_list",
+      "text": "<pre><code>observable_list(type_: Type[T], field: str) -&gt; ObservableList[T]\n</code></pre> <p>Gets an observable list for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_2",
+      "title": "Parameters",
+      "text": "<ul> <li><code>type_</code>: The type of items in the list.</li> <li><code>field</code>: The name of the field.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_1",
+      "title": "Returns",
+      "text": "<p>An <code>ObservableList</code> for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#observable_dict",
+      "title": "observable_dict",
+      "text": "<pre><code>observable_dict(type_: tuple[Type[K], Type[V]], field: str) -&gt; ObservableDict[K, V]\n</code></pre> <p>Gets an observable dictionary for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_3",
+      "title": "Parameters",
+      "text": "<ul> <li><code>type_</code>: A tuple containing the types of keys and values in the dictionary.</li> <li><code>field</code>: The name of the field.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_2",
+      "title": "Returns",
+      "text": "<p>An <code>ObservableDict</code> for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#validation",
+      "title": "Validation",
+      "text": ""
+    },
+    {
+      "location": "api_reference/observable_proxy/#add_validator",
+      "title": "add_validator",
+      "text": "<pre><code>add_validator(field: str, validator: Callable[[Any], str | None]) -&gt; None\n</code></pre> <p>Adds a validator for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_4",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the field to validate.</li> <li><code>validator</code>: A function that takes the field value and returns an error message if the value is invalid, or <code>None</code> if the value is valid.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#validation_for",
+      "title": "validation_for",
+      "text": "<pre><code>validation_for(field: str) -&gt; Observable[list[str]]\n</code></pre> <p>Gets an observable list of validation errors for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_5",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the field.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_3",
+      "title": "Returns",
+      "text": "<p>An <code>Observable</code> containing a list of validation error messages for the field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#validation_errors",
+      "title": "validation_errors",
+      "text": "<pre><code>validation_errors() -&gt; ObservableDict[str, list[str]]\n</code></pre> <p>Gets an observable dictionary of validation errors for all fields.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_4",
+      "title": "Returns",
+      "text": "<p>An <code>ObservableDict</code> where keys are field names and values are lists of validation error messages.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#is_valid",
+      "title": "is_valid",
+      "text": "<pre><code>is_valid() -&gt; Observable[bool]\n</code></pre> <p>Gets an observable boolean indicating whether all fields are valid.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_5",
+      "title": "Returns",
+      "text": "<p>An <code>Observable</code> containing a boolean value.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#reset_validation",
+      "title": "reset_validation",
+      "text": "<pre><code>reset_validation(field: str = None, revalidate: bool = True) -&gt; None\n</code></pre> <p>Resets the validation state for the specified field or for all fields.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_6",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the field to reset validation for. If <code>None</code>, resets validation for all fields. Default is <code>None</code>.</li> <li><code>revalidate</code>: Whether to re-run validators after resetting. Default is <code>True</code>.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#computed-properties",
+      "title": "Computed Properties",
+      "text": ""
+    },
+    {
+      "location": "api_reference/observable_proxy/#register_computed",
+      "title": "register_computed",
+      "text": "<pre><code>register_computed(field: str, compute: Callable[[], T], dependencies: list[str]) -&gt; None\n</code></pre> <p>Registers a computed property.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_7",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the computed property.</li> <li><code>compute</code>: A function that computes the value of the property.</li> <li><code>dependencies</code>: A list of field names that the computed property depends on.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#computed",
+      "title": "computed",
+      "text": "<pre><code>computed(type_: Type[T], field: str) -&gt; Observable[T]\n</code></pre> <p>Gets an observable for the specified computed property.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_8",
+      "title": "Parameters",
+      "text": "<ul> <li><code>type_</code>: The type of the computed property.</li> <li><code>field</code>: The name of the computed property.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_6",
+      "title": "Returns",
+      "text": "<p>An <code>Observable</code> for the specified computed property.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#undoredo",
+      "title": "Undo/Redo",
+      "text": ""
+    },
+    {
+      "location": "api_reference/observable_proxy/#set_undo_config",
+      "title": "set_undo_config",
+      "text": "<pre><code>set_undo_config(field: str, enabled: bool = True, undo_max: int = None, undo_debounce_ms: int = None) -&gt; None\n</code></pre> <p>Sets the undo configuration for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_9",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the field.</li> <li><code>enabled</code>: Whether undo is enabled for the field. Default is <code>True</code>.</li> <li><code>undo_max</code>: Maximum number of undo steps to store. Default is <code>None</code> (unlimited).</li> <li><code>undo_debounce_ms</code>: Time in milliseconds to wait before recording a new undo step. Default is <code>None</code> (no debounce).</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#undo",
+      "title": "undo",
+      "text": "<pre><code>undo(field: str) -&gt; None\n</code></pre> <p>Undoes the last change to the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_10",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the field.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#redo",
+      "title": "redo",
+      "text": "<pre><code>redo(field: str) -&gt; None\n</code></pre> <p>Redoes the last undone change to the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_11",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the field.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#can_undo",
+      "title": "can_undo",
+      "text": "<pre><code>can_undo(field: str) -&gt; Observable[bool]\n</code></pre> <p>Gets an observable boolean indicating whether undo is available for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_12",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the field.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_7",
+      "title": "Returns",
+      "text": "<p>An <code>Observable</code> containing a boolean value.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#can_redo",
+      "title": "can_redo",
+      "text": "<pre><code>can_redo(field: str) -&gt; Observable[bool]\n</code></pre> <p>Gets an observable boolean indicating whether redo is available for the specified field.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_13",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the field.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_8",
+      "title": "Returns",
+      "text": "<p>An <code>Observable</code> containing a boolean value.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#dirty-tracking",
+      "title": "Dirty Tracking",
+      "text": ""
+    },
+    {
+      "location": "api_reference/observable_proxy/#is_dirty",
+      "title": "is_dirty",
+      "text": "<pre><code>is_dirty() -&gt; Observable[bool]\n</code></pre> <p>Gets an observable boolean indicating whether any field is dirty.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_9",
+      "title": "Returns",
+      "text": "<p>An <code>Observable</code> containing a boolean value.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#dirty_fields",
+      "title": "dirty_fields",
+      "text": "<pre><code>dirty_fields() -&gt; Observable[list[str]]\n</code></pre> <p>Gets an observable list of dirty field names.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_10",
+      "title": "Returns",
+      "text": "<p>An <code>Observable</code> containing a list of field names.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#is_field_dirty",
+      "title": "is_field_dirty",
+      "text": "<pre><code>is_field_dirty(field: str) -&gt; Observable[bool]\n</code></pre> <p>Gets an observable boolean indicating whether the specified field is dirty.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_14",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the field.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#returns_11",
+      "title": "Returns",
+      "text": "<p>An <code>Observable</code> containing a boolean value.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#reset_dirty",
+      "title": "reset_dirty",
+      "text": "<pre><code>reset_dirty(field: str = None) -&gt; None\n</code></pre> <p>Resets the dirty state for the specified field or for all fields.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_15",
+      "title": "Parameters",
+      "text": "<ul> <li><code>field</code>: The name of the field to reset dirty state for. If <code>None</code>, resets dirty state for all fields. Default is <code>None</code>.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#saving-and-loading",
+      "title": "Saving and Loading",
+      "text": ""
+    },
+    {
+      "location": "api_reference/observable_proxy/#save_to",
+      "title": "save_to",
+      "text": "<pre><code>save_to(model: Any) -&gt; None\n</code></pre> <p>Saves the current state of the proxy to the specified model.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_16",
+      "title": "Parameters",
+      "text": "<ul> <li><code>model</code>: The model to save to.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#load_dict",
+      "title": "load_dict",
+      "text": "<pre><code>load_dict(data: dict[str, Any], reset_missing: bool = False) -&gt; None\n</code></pre> <p>Loads data from a dictionary into the proxy.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_17",
+      "title": "Parameters",
+      "text": "<ul> <li><code>data</code>: The dictionary to load data from.</li> <li><code>reset_missing</code>: Whether to reset fields that are not in the dictionary to their default values. Default is <code>False</code>.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#update",
+      "title": "update",
+      "text": "<pre><code>update(data: dict[str, Any]) -&gt; None\n</code></pre> <p>Updates specific fields in the proxy.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#parameters_18",
+      "title": "Parameters",
+      "text": "<ul> <li><code>data</code>: A dictionary where keys are field names and values are the new values to set.</li> </ul>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#examples",
+      "title": "Examples",
+      "text": ""
+    },
+    {
+      "location": "api_reference/observable_proxy/#basic-usage",
+      "title": "Basic Usage",
+      "text": "<pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user)\n\n# Get observables for individual fields\nname_obs = proxy.observable(str, \"name\")\nage_obs = proxy.observable(int, \"age\")\n\n# Update fields\nname_obs.set(\"Bob\")\nage_obs.set(31)\n\n# Save changes back to the model\nproxy.save_to(user)\nprint(user.name)  # \"Bob\"\nprint(user.age)   # 31\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#validation_1",
+      "title": "Validation",
+      "text": "<pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"\", age=0)\nproxy = ObservableProxy(user)\n\n# Add validators\nproxy.add_validator(\"name\", lambda v: \"Name required\" if not v else None)\nproxy.add_validator(\"age\", lambda v: \"Age must be positive\" if v &lt;= 0 else None)\n\n# Check validation\nprint(proxy.is_valid())  # False\nprint(proxy.validation_errors())  # {\"name\": [\"Name required\"], \"age\": [\"Age must be positive\"]}\n\n# Fix validation errors\nproxy.observable(str, \"name\").set(\"Alice\")\nproxy.observable(int, \"age\").set(30)\n\n# Check validation again\nprint(proxy.is_valid())  # True\nprint(proxy.validation_errors())  # {}\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#computed-properties_1",
+      "title": "Computed Properties",
+      "text": "<pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    first_name: str\n    last_name: str\n\n# Create a user and proxy\nuser = User(first_name=\"Alice\", last_name=\"Smith\")\nproxy = ObservableProxy(user)\n\n# Register a computed property\nproxy.register_computed(\n    \"full_name\",\n    lambda: f\"{proxy.observable(str, 'first_name').get()} {proxy.observable(str, 'last_name').get()}\",\n    dependencies=[\"first_name\", \"last_name\"]\n)\n\n# Get the computed value\nprint(proxy.computed(str, \"full_name\").get())  # \"Alice Smith\"\n\n# Update a dependency\nproxy.observable(str, \"first_name\").set(\"Bob\")\n\n# The computed value is automatically updated\nprint(proxy.computed(str, \"full_name\").get())  # \"Bob Smith\"\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#undoredo_1",
+      "title": "Undo/Redo",
+      "text": "<pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy with undo enabled\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, undo=True)\n\n# Make changes\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.observable(int, \"age\").set(31)\n\n# Undo changes\nproxy.undo(\"name\")  # Reverts name to \"Alice\"\nproxy.undo(\"age\")   # Reverts age to 30\n\n# Redo changes\nproxy.redo(\"name\")  # Sets name back to \"Bob\"\nproxy.redo(\"age\")   # Sets age back to 31\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#dirty-tracking_1",
+      "title": "Dirty Tracking",
+      "text": "<pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user)\n\n# Initially, no fields are dirty\nprint(proxy.is_dirty().get())  # False\nprint(proxy.dirty_fields().get())  # []\n\n# Modify a field\nproxy.observable(str, \"name\").set(\"Bob\")\n\n# Now the field is dirty\nprint(proxy.is_dirty().get())  # True\nprint(proxy.dirty_fields().get())  # [\"name\"]\n\n# Reset dirty state\nproxy.reset_dirty()\n\n# Now no fields are dirty again\nprint(proxy.is_dirty().get())  # False\nprint(proxy.dirty_fields().get())  # []\n</code></pre>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#implementation-details",
+      "title": "Implementation Details",
+      "text": "<p>The <code>ObservableProxy</code> class implements the <code>IObservableProxy</code> interface, which defines the contract for observable proxies. This interface is used throughout Observant to ensure consistent behavior across different types of proxies.</p> <p>For more details on the implementation, see the source code.</p>"
+    },
+    {
+      "location": "api_reference/observable_proxy/#see-also",
+      "title": "See Also",
+      "text": "<ul> <li>Observable: The base observable class for scalar values.</li> <li>ObservableList: An observable list that notifies listeners when items are added, removed, or modified.</li> <li>ObservableDict: An observable dictionary that notifies listeners when items are added, updated, or removed.</li> <li>UndoableObservable: An observable that supports undo and redo operations.</li> <li>IObservableProxy: The interface that defines the contract for observable proxies.</li> </ul>"
+    },
+    {
+      "location": "api_reference/undoable_observable/",
+      "title": "UndoableObservable",
+      "text": "<p>The <code>UndoableObservable</code> class extends <code>Observable</code> with undo and redo functionality. It allows you to track changes to a value and revert them if needed.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#overview",
+      "title": "Overview",
+      "text": "<p><code>UndoableObservable</code> is a generic class that can wrap any type of value. It provides all the functionality of <code>Observable</code>, plus methods for undoing and redoing changes.</p> <pre><code>from observant import UndoableObservable\n\n# Create an undoable observable with an initial value\ncounter = UndoableObservable[int](0)\n\n# Register a callback to be notified when the value changes\ncounter.on_change(lambda value: print(f\"Counter changed to: {value}\"))\n\n# Make changes\ncounter.set(1)  # Prints: \"Counter changed to: 1\"\ncounter.set(2)  # Prints: \"Counter changed to: 2\"\ncounter.set(3)  # Prints: \"Counter changed to: 3\"\n\n# Undo changes\ncounter.undo()  # Prints: \"Counter changed to: 2\"\ncounter.undo()  # Prints: \"Counter changed to: 1\"\n\n# Redo changes\ncounter.redo()  # Prints: \"Counter changed to: 2\"\n</code></pre>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#constructor",
+      "title": "Constructor",
+      "text": "<pre><code>UndoableObservable[T](initial_value: T, undo_max: int = None, undo_debounce_ms: int = None)\n</code></pre> <p>Creates a new <code>UndoableObservable</code> with the specified initial value.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#parameters",
+      "title": "Parameters",
+      "text": "<ul> <li><code>initial_value</code>: The initial value of the observable.</li> <li><code>undo_max</code>: Maximum number of undo steps to store. Default is <code>None</code> (unlimited).</li> <li><code>undo_debounce_ms</code>: Time in milliseconds to wait before recording a new undo step. Default is <code>None</code> (no debounce).</li> </ul>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#type-parameters",
+      "title": "Type Parameters",
+      "text": "<ul> <li><code>T</code>: The type of the value wrapped by the observable.</li> </ul>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#methods",
+      "title": "Methods",
+      "text": ""
+    },
+    {
+      "location": "api_reference/undoable_observable/#get",
+      "title": "get",
+      "text": "<pre><code>get() -&gt; T\n</code></pre> <p>Returns the current value of the observable.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#set",
+      "title": "set",
+      "text": "<pre><code>set(value: T, notify: bool = True) -&gt; None\n</code></pre> <p>Sets the value of the observable and notifies listeners if <code>notify</code> is <code>True</code>.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#parameters_1",
+      "title": "Parameters",
+      "text": "<ul> <li><code>value</code>: The new value to set.</li> <li><code>notify</code>: Whether to notify listeners of the change. Default is <code>True</code>.</li> </ul>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#on_change",
+      "title": "on_change",
+      "text": "<pre><code>on_change(callback: Callable[[T], None]) -&gt; None\n</code></pre> <p>Registers a callback to be called when the value changes.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#parameters_2",
+      "title": "Parameters",
+      "text": "<ul> <li><code>callback</code>: A function that takes the new value as its only argument.</li> </ul>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#undo",
+      "title": "undo",
+      "text": "<pre><code>undo() -&gt; None\n</code></pre> <p>Undoes the last change to the value.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#redo",
+      "title": "redo",
+      "text": "<pre><code>redo() -&gt; None\n</code></pre> <p>Redoes the last undone change to the value.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#can_undo",
+      "title": "can_undo",
+      "text": "<pre><code>can_undo() -&gt; bool\n</code></pre> <p>Returns whether undo is available.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#can_redo",
+      "title": "can_redo",
+      "text": "<pre><code>can_redo() -&gt; bool\n</code></pre> <p>Returns whether redo is available.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#example",
+      "title": "Example",
+      "text": "<pre><code>from observant import UndoableObservable\n\n# Create an undoable observable string\nname = UndoableObservable[str](\"Alice\")\n\n# Register a callback\nname.on_change(lambda value: print(f\"Name changed to: {value}\"))\n\n# Make changes\nname.set(\"Bob\")    # Prints: \"Name changed to: Bob\"\nname.set(\"Charlie\")  # Prints: \"Name changed to: Charlie\"\nname.set(\"Dave\")   # Prints: \"Name changed to: Dave\"\n\n# Check undo/redo availability\nprint(name.can_undo())  # True\nprint(name.can_redo())  # False\n\n# Undo changes\nname.undo()  # Prints: \"Name changed to: Charlie\"\nname.undo()  # Prints: \"Name changed to: Bob\"\n\n# Check undo/redo availability again\nprint(name.can_undo())  # True\nprint(name.can_redo())  # True\n\n# Redo changes\nname.redo()  # Prints: \"Name changed to: Charlie\"\n\n# Make a new change\nname.set(\"Eve\")  # Prints: \"Name changed to: Eve\"\n\n# The redo history is cleared\nprint(name.can_redo())  # False\n</code></pre>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#undo-configuration",
+      "title": "Undo Configuration",
+      "text": "<p>The <code>UndoableObservable</code> class provides two configuration options for undo behavior:</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#undo_max",
+      "title": "undo_max",
+      "text": "<p>The <code>undo_max</code> parameter limits the number of undo steps that are stored. This prevents the undo stack from growing too large and consuming too much memory.</p> <pre><code># Limit to 10 undo steps\ncounter = UndoableObservable[int](0, undo_max=10)\n</code></pre> <p>When the undo stack reaches the maximum size, the oldest undo step is discarded when a new one is added.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#undo_debounce_ms",
+      "title": "undo_debounce_ms",
+      "text": "<p>The <code>undo_debounce_ms</code> parameter adds debounce behavior to the undo system. If multiple changes are made within the debounce time, only the last change is recorded as an undo step.</p> <pre><code># Debounce undo steps by 500ms\nname = UndoableObservable[str](\"\", undo_debounce_ms=500)\n\n# These rapid changes will be combined into a single undo step\nname.set(\"A\")\nname.set(\"Al\")\nname.set(\"Ali\")\nname.set(\"Alic\")\nname.set(\"Alice\")\n\n# Only one undo step is created\nname.undo()  # Reverts directly to the original value\n</code></pre> <p>This is useful for fields that change rapidly, such as text fields during typing.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#implementation-details",
+      "title": "Implementation Details",
+      "text": "<p>The <code>UndoableObservable</code> class extends the <code>Observable</code> class and implements the <code>IObservable</code> interface. It maintains an undo stack and a redo stack to track changes to the value.</p> <p>For more details on the implementation, see the source code.</p>"
+    },
+    {
+      "location": "api_reference/undoable_observable/#see-also",
+      "title": "See Also",
+      "text": "<ul> <li>Observable: The base observable class for scalar values.</li> <li>ObservableProxy: An observable proxy that provides undo/redo functionality for object fields.</li> <li>UndoConfig: A class that represents the configuration for undo/redo functionality.</li> </ul>"
+    },
+    {
+      "location": "api_reference/interfaces/",
+      "title": "Interfaces",
+      "text": "<p>This section documents the interfaces that define the contract for observable objects in the Observant library. These interfaces ensure consistent behavior across different types of observables.</p>"
+    },
+    {
+      "location": "api_reference/interfaces/#iobservable",
+      "title": "IObservable",
+      "text": "<p>An interface that defines the contract for observable objects. It includes methods for getting and setting values, and registering change listeners.</p> <pre><code>from observant.interfaces import IObservable\n\n# This is typically used for type annotations\ndef process_observable(observable: IObservable[int]):\n    value = observable.get()\n    observable.set(value + 1)\n</code></pre>"
+    },
+    {
+      "location": "api_reference/interfaces/#iobservablelist",
+      "title": "IObservableList",
+      "text": "<p>An interface that extends <code>IObservable</code> for lists. It includes methods for list operations like append, extend, insert, etc.</p> <pre><code>from observant.interfaces import IObservableList\n\n# This is typically used for type annotations\ndef process_observable_list(observable_list: IObservableList[str]):\n    observable_list.append(\"New Item\")\n    items = observable_list.get()\n</code></pre>"
+    },
+    {
+      "location": "api_reference/interfaces/#iobservabledict",
+      "title": "IObservableDict",
+      "text": "<p>An interface that extends <code>IObservable</code> for dictionaries. It includes methods for dictionary operations like setting and getting items, updating, etc.</p> <pre><code>from observant.interfaces import IObservableDict\n\n# This is typically used for type annotations\ndef process_observable_dict(observable_dict: IObservableDict[str, int]):\n    observable_dict[\"key\"] = 42\n    value = observable_dict[\"key\"]\n</code></pre>"
+    },
+    {
+      "location": "api_reference/interfaces/#iobservableproxy",
+      "title": "IObservableProxy",
+      "text": "<p>An interface that defines the contract for observable proxies. It includes methods for accessing fields, validation, undo/redo, etc.</p> <pre><code>from observant.interfaces import IObservableProxy\n\n# This is typically used for type annotations\ndef process_observable_proxy(proxy: IObservableProxy):\n    name_obs = proxy.observable(str, \"name\")\n    name_obs.set(\"New Name\")\n</code></pre>"
+    },
+    {
+      "location": "api_reference/interfaces/#implementation-details",
+      "title": "Implementation Details",
+      "text": "<p>These interfaces are used throughout the Observant library to ensure consistent behavior across different types of observables. They are implemented by the following classes:</p> <ul> <li><code>Observable</code> implements <code>IObservable</code></li> <li><code>ObservableList</code> implements <code>IObservableList</code></li> <li><code>ObservableDict</code> implements <code>IObservableDict</code></li> <li><code>ObservableProxy</code> implements <code>IObservableProxy</code></li> </ul> <p>The interfaces are defined using Python's typing system, which allows for type checking and better IDE support.</p>"
+    },
+    {
+      "location": "api_reference/interfaces/#auto-generated-documentation",
+      "title": "Auto-Generated Documentation",
+      "text": "<p>For more detailed information about each interface, refer to the auto-generated documentation:</p> <ul> <li>IObservable</li> <li>IObservableList</li> <li>IObservableDict</li> <li>IObservableProxy</li> </ul>"
+    },
+    {
+      "location": "api_reference/types/",
+      "title": "Types",
+      "text": "<p>This section documents the various types used throughout the Observant library. These types define the structure of data and events in the library.</p>"
+    },
+    {
+      "location": "api_reference/types/#observablecollectionchangetype",
+      "title": "ObservableCollectionChangeType",
+      "text": "<p>An enum that represents the type of change that occurred in a collection:</p> <ul> <li><code>ADD</code>: An item was added to the collection</li> <li><code>REMOVE</code>: An item was removed from the collection</li> <li><code>UPDATE</code>: An item was updated in the collection</li> <li><code>CLEAR</code>: The collection was cleared</li> </ul> <pre><code>from observant import ObservableCollectionChangeType\n\n# Example usage\nif change.type == ObservableCollectionChangeType.ADD:\n    print(\"Item added\")\nelif change.type == ObservableCollectionChangeType.REMOVE:\n    print(\"Item removed\")\nelif change.type == ObservableCollectionChangeType.UPDATE:\n    print(\"Item updated\")\nelif change.type == ObservableCollectionChangeType.CLEAR:\n    print(\"Collection cleared\")\n</code></pre>"
+    },
+    {
+      "location": "api_reference/types/#observablelistchange",
+      "title": "ObservableListChange",
+      "text": "<p>A class that represents a change to an observable list. It contains:</p> <ul> <li><code>type</code>: The type of change (ADD, REMOVE, CLEAR)</li> <li><code>index</code>: The index where the change occurred (for ADD and REMOVE)</li> <li><code>item</code>: The item that was added or removed (for single-item changes)</li> <li><code>items</code>: The items that were added or removed (for multi-item changes)</li> </ul> <pre><code>from observant import ObservableList, ObservableListChange\n\n# Create an observable list\ntasks = ObservableList[str]([\"Task 1\"])\n\n# Register a callback\ndef on_tasks_change(change: ObservableListChange[str]):\n    print(f\"Change type: {change.type}\")\n    if hasattr(change, \"index\"):\n        print(f\"Index: {change.index}\")\n    if hasattr(change, \"item\"):\n        print(f\"Item: {change.item}\")\n    if hasattr(change, \"items\"):\n        print(f\"Items: {change.items}\")\n\ntasks.on_change(on_tasks_change)\n</code></pre>"
+    },
+    {
+      "location": "api_reference/types/#observabledictchange",
+      "title": "ObservableDictChange",
+      "text": "<p>A class that represents a change to an observable dictionary. It contains:</p> <ul> <li><code>type</code>: The type of change (ADD, UPDATE, REMOVE, CLEAR)</li> <li><code>key</code>: The key that was added, updated, or removed (for single-item changes)</li> <li><code>value</code>: The value that was added or updated (for single-item changes)</li> <li><code>items</code>: The items that were added, updated, or removed (for multi-item changes)</li> </ul> <pre><code>from observant import ObservableDict, ObservableDictChange\n\n# Create an observable dictionary\nsettings = ObservableDict[str, str]({\"theme\": \"dark\"})\n\n# Register a callback\ndef on_settings_change(change: ObservableDictChange[str, str]):\n    print(f\"Change type: {change.type}\")\n    if hasattr(change, \"key\"):\n        print(f\"Key: {change.key}\")\n    if hasattr(change, \"value\"):\n        print(f\"Value: {change.value}\")\n    if hasattr(change, \"items\"):\n        print(f\"Items: {change.items}\")\n\nsettings.on_change(on_settings_change)\n</code></pre>"
+    },
+    {
+      "location": "api_reference/types/#proxyfieldkey",
+      "title": "ProxyFieldKey",
+      "text": "<p>A class that represents a field key in an <code>ObservableProxy</code>. It's used internally to track fields.</p> <pre><code>from observant.types import ProxyFieldKey\n\n# This is typically used internally by ObservableProxy\nfield_key = ProxyFieldKey(\"name\")\n</code></pre>"
+    },
+    {
+      "location": "api_reference/types/#undoconfig",
+      "title": "UndoConfig",
+      "text": "<p>A class that represents the configuration for undo/redo functionality. It contains:</p> <ul> <li><code>enabled</code>: Whether undo is enabled</li> <li><code>undo_max</code>: Maximum number of undo steps to store</li> <li><code>undo_debounce_ms</code>: Time in milliseconds to wait before recording a new undo step</li> </ul> <pre><code>from observant.types import UndoConfig\n\n# Create an undo configuration\nconfig = UndoConfig(\n    enabled=True,\n    undo_max=10,\n    undo_debounce_ms=500\n)\n\n# This is typically used internally by ObservableProxy\nproxy.set_undo_config(\"name\", enabled=config.enabled, undo_max=config.undo_max, undo_debounce_ms=config.undo_debounce_ms)\n</code></pre>"
+    },
+    {
+      "location": "api_reference/types/#auto-generated-documentation",
+      "title": "Auto-Generated Documentation",
+      "text": "<p>For more detailed information about each type, refer to the auto-generated documentation:</p> <ul> <li>ObservableCollectionChangeType</li> <li>ObservableListChange</li> <li>ObservableDictChange</li> <li>ProxyFieldKey</li> <li>UndoConfig</li> </ul>"
+    },
+    {
+      "location": "features/change_tracking/",
+      "title": "Change Tracking",
+      "text": "<p>At the core of Observant is the ability to track changes to your data and react to those changes. This page explains how change tracking works in Observant.</p>"
+    },
+    {
+      "location": "features/change_tracking/#overview",
+      "title": "Overview",
+      "text": "<p>Observant provides three main types of observable objects:</p> <ol> <li>Observable: For tracking changes to scalar values (strings, numbers, booleans, etc.)</li> <li>ObservableList: For tracking changes to lists</li> <li>ObservableDict: For tracking changes to dictionaries</li> </ol> <p>Each of these objects allows you to register callbacks that are called when the value changes.</p>"
+    },
+    {
+      "location": "features/change_tracking/#scalar-observables",
+      "title": "Scalar Observables",
+      "text": "<p>The <code>Observable</code> class is the simplest form of change tracking in Observant. It wraps a single value and notifies listeners when that value changes.</p> <pre><code>from observant import Observable\n\n# Create an observable with an initial value\ncounter = Observable[int](0)\n\n# Register a callback to be notified when the value changes\ncounter.on_change(lambda value: print(f\"Counter changed to: {value}\"))\n\n# Change the value\ncounter.set(1)  # Prints: \"Counter changed to: 1\"\n\n# Get the current value\ncurrent_value = counter.get()  # Returns: 1\n</code></pre>"
+    },
+    {
+      "location": "features/change_tracking/#multiple-callbacks",
+      "title": "Multiple Callbacks",
+      "text": "<p>You can register multiple callbacks for the same observable:</p> <pre><code>counter = Observable[int](0)\n\n# Register multiple callbacks\ncounter.on_change(lambda value: print(f\"Callback 1: {value}\"))\ncounter.on_change(lambda value: print(f\"Callback 2: {value}\"))\n\n# Change the value\ncounter.set(1)  # Prints both callback messages\n</code></pre>"
+    },
+    {
+      "location": "features/change_tracking/#suppressing-notifications",
+      "title": "Suppressing Notifications",
+      "text": "<p>Sometimes you may want to update a value without triggering callbacks. You can do this by setting <code>notify=False</code>:</p> <pre><code>counter = Observable[int](0)\ncounter.on_change(lambda value: print(f\"Counter changed to: {value}\"))\n\n# Update without notification\ncounter.set(1, notify=False)  # No callback is triggered\n\n# The value is still updated\nprint(counter.get())  # Prints: 1\n</code></pre>"
+    },
+    {
+      "location": "features/change_tracking/#list-observables",
+      "title": "List Observables",
+      "text": "<p>The <code>ObservableList</code> class tracks changes to a list, including additions, removals, and modifications.</p> <pre><code>from observant import ObservableList, ObservableCollectionChangeType\n\n# Create an observable list\ntasks = ObservableList[str]([\"Task 1\"])\n\n# Register a callback\ndef on_tasks_change(change):\n    if change.type == ObservableCollectionChangeType.ADD:\n        if hasattr(change, \"item\"):\n            print(f\"Added task: {change.item}\")\n        else:\n            print(f\"Added tasks: {change.items}\")\n    elif change.type == ObservableCollectionChangeType.REMOVE:\n        if hasattr(change, \"item\"):\n            print(f\"Removed task: {change.item}\")\n        else:\n            print(f\"Removed tasks: {change.items}\")\n    elif change.type == ObservableCollectionChangeType.CLEAR:\n        print(f\"Cleared tasks: {change.items}\")\n\ntasks.on_change(on_tasks_change)\n\n# Add an item\ntasks.append(\"Task 2\")  # Prints: \"Added task: Task 2\"\n\n# Add multiple items\ntasks.extend([\"Task 3\", \"Task 4\"])  # Prints: \"Added tasks: ['Task 3', 'Task 4']\"\n\n# Remove an item\ntasks.remove(\"Task 1\")  # Prints: \"Removed task: Task 1\"\n\n# Clear the list\ntasks.clear()  # Prints: \"Cleared tasks: ['Task 2', 'Task 3', 'Task 4']\"\n</code></pre>"
+    },
+    {
+      "location": "features/change_tracking/#list-change-information",
+      "title": "List Change Information",
+      "text": "<p>When a list changes, the callback receives a <code>ObservableListChange</code> object with the following properties:</p> <ul> <li><code>type</code>: The type of change (ADD, REMOVE, CLEAR)</li> <li><code>index</code>: The index where the change occurred (for ADD and REMOVE)</li> <li><code>item</code>: The item that was added or removed (for single-item changes)</li> <li><code>items</code>: The items that were added or removed (for multi-item changes)</li> </ul>"
+    },
+    {
+      "location": "features/change_tracking/#list-operations",
+      "title": "List Operations",
+      "text": "<p><code>ObservableList</code> supports all standard Python list operations, including:</p> <ul> <li><code>append(item)</code>: Add an item to the end of the list</li> <li><code>extend(items)</code>: Add multiple items to the end of the list</li> <li><code>insert(index, item)</code>: Insert an item at a specific index</li> <li><code>remove(item)</code>: Remove an item from the list</li> <li><code>pop([index])</code>: Remove and return an item at a specific index (or the last item if no index is provided)</li> <li><code>clear()</code>: Remove all items from the list</li> <li><code>sort()</code>: Sort the list in place</li> <li><code>reverse()</code>: Reverse the list in place</li> <li><code>__getitem__(index)</code>: Access an item by index (<code>list[index]</code>)</li> <li><code>__setitem__(index, value)</code>: Set an item by index (<code>list[index] = value</code>)</li> <li><code>__delitem__(index)</code>: Delete an item by index (<code>del list[index]</code>)</li> </ul>"
+    },
+    {
+      "location": "features/change_tracking/#dict-observables",
+      "title": "Dict Observables",
+      "text": "<p>The <code>ObservableDict</code> class tracks changes to a dictionary, including additions, updates, and removals.</p> <pre><code>from observant import ObservableDict, ObservableCollectionChangeType\n\n# Create an observable dictionary\nsettings = ObservableDict[str, str]({\"theme\": \"dark\"})\n\n# Register a callback\ndef on_settings_change(change):\n    if change.type == ObservableCollectionChangeType.ADD:\n        if hasattr(change, \"key\"):\n            print(f\"Added setting: {change.key} = {change.value}\")\n        else:\n            print(f\"Added settings: {change.items}\")\n    elif change.type == ObservableCollectionChangeType.UPDATE:\n        if hasattr(change, \"key\"):\n            print(f\"Updated setting: {change.key} = {change.value}\")\n        else:\n            print(f\"Updated settings: {change.items}\")\n    elif change.type == ObservableCollectionChangeType.REMOVE:\n        if hasattr(change, \"key\"):\n            print(f\"Removed setting: {change.key}\")\n        else:\n            print(f\"Removed settings: {change.items}\")\n    elif change.type == ObservableCollectionChangeType.CLEAR:\n        print(f\"Cleared settings: {change.items}\")\n\nsettings.on_change(on_settings_change)\n\n# Add a new key\nsettings[\"language\"] = \"en\"  # Prints: \"Added setting: language = en\"\n\n# Update an existing key\nsettings[\"theme\"] = \"light\"  # Prints: \"Updated setting: theme = light\"\n\n# Remove a key\ndel settings[\"theme\"]  # Prints: \"Removed setting: theme\"\n\n# Update multiple keys at once\nsettings.update({\"theme\": \"dark\", \"font\": \"Arial\"})  # Prints appropriate messages\n\n# Clear the dictionary\nsettings.clear()  # Prints: \"Cleared settings: {'language': 'en'}\"\n</code></pre>"
+    },
+    {
+      "location": "features/change_tracking/#dict-change-information",
+      "title": "Dict Change Information",
+      "text": "<p>When a dictionary changes, the callback receives a <code>ObservableDictChange</code> object with the following properties:</p> <ul> <li><code>type</code>: The type of change (ADD, UPDATE, REMOVE, CLEAR)</li> <li><code>key</code>: The key that was added, updated, or removed (for single-item changes)</li> <li><code>value</code>: The value that was added or updated (for single-item changes)</li> <li><code>items</code>: The items that were added, updated, or removed (for multi-item changes)</li> </ul>"
+    },
+    {
+      "location": "features/change_tracking/#dict-operations",
+      "title": "Dict Operations",
+      "text": "<p><code>ObservableDict</code> supports all standard Python dictionary operations, including:</p> <ul> <li><code>__getitem__(key)</code>: Access a value by key (<code>dict[key]</code>)</li> <li><code>__setitem__(key, value)</code>: Set a value by key (<code>dict[key] = value</code>)</li> <li><code>__delitem__(key)</code>: Delete a key-value pair (<code>del dict[key]</code>)</li> <li><code>get(key, [default])</code>: Get a value by key, with an optional default value</li> <li><code>setdefault(key, [default])</code>: Get a value by key, or set it to a default value if the key doesn't exist</li> <li><code>pop(key, [default])</code>: Remove and return a value by key, with an optional default value</li> <li><code>popitem()</code>: Remove and return an arbitrary key-value pair</li> <li><code>clear()</code>: Remove all items from the dictionary</li> <li><code>update(other)</code>: Update the dictionary with key-value pairs from another dictionary</li> </ul>"
+    },
+    {
+      "location": "features/change_tracking/#on_change-callbacks",
+      "title": "on_change Callbacks",
+      "text": "<p>The <code>on_change</code> method is used to register callbacks that are called when the value changes. The callback function receives different arguments depending on the type of observable:</p> <ul> <li>For <code>Observable</code>, the callback receives the new value.</li> <li>For <code>ObservableList</code>, the callback receives a <code>ObservableListChange</code> object.</li> <li>For <code>ObservableDict</code>, the callback receives a <code>ObservableDictChange</code> object.</li> </ul>"
+    },
+    {
+      "location": "features/change_tracking/#callback-behavior",
+      "title": "Callback Behavior",
+      "text": "<p>Callbacks are called immediately after the value changes. If multiple callbacks are registered, they are called in the order they were registered.</p> <pre><code>counter = Observable[int](0)\n\n# Register callbacks\ncounter.on_change(lambda value: print(f\"First callback: {value}\"))\ncounter.on_change(lambda value: print(f\"Second callback: {value}\"))\n\n# Change the value\ncounter.set(1)\n# Prints:\n# First callback: 1\n# Second callback: 1\n</code></pre>"
+    },
+    {
+      "location": "features/change_tracking/#reentrant-callbacks",
+      "title": "Reentrant Callbacks",
+      "text": "<p>Callbacks can trigger other changes, which can in turn trigger other callbacks. This is known as \"reentrant\" behavior.</p> <pre><code>name = Observable[str](\"Alice\")\ngreeting = Observable[str](\"Hello, Alice!\")\n\n# Update greeting when name changes\nname.on_change(lambda value: greeting.set(f\"Hello, {value}!\"))\n\n# Register callbacks\nname.on_change(lambda value: print(f\"Name changed to: {value}\"))\ngreeting.on_change(lambda value: print(f\"Greeting changed to: {value}\"))\n\n# Change the name\nname.set(\"Bob\")\n# Prints:\n# Name changed to: Bob\n# Greeting changed to: Hello, Bob!\n</code></pre>"
+    },
+    {
+      "location": "features/change_tracking/#notes-on-performance",
+      "title": "Notes on Performance",
+      "text": "<p>While observables are powerful, they do come with some overhead. Here are some tips for optimizing performance:</p> <ul> <li>Minimize the number of observables: Create observables only for values that need to be tracked.</li> <li>Use batch updates: When making multiple changes, consider using batch operations like <code>extend()</code> for lists or <code>update()</code> for dictionaries, rather than individual operations.</li> <li>Be careful with reentrant callbacks: Complex chains of callbacks can lead to performance issues and hard-to-debug behavior.</li> <li>Use <code>notify=False</code> when appropriate: If you're making multiple changes and only care about the final state, consider using <code>notify=False</code> for intermediate changes.</li> </ul> <pre><code># Instead of this:\ntasks.append(\"Task 1\")\ntasks.append(\"Task 2\")\ntasks.append(\"Task 3\")\n\n# Consider this:\ntasks.extend([\"Task 1\", \"Task 2\", \"Task 3\"])\n</code></pre>"
+    },
+    {
+      "location": "features/change_tracking/#next-steps",
+      "title": "Next Steps",
+      "text": "<p>Now that you understand how change tracking works in Observant, you might want to explore:</p> <ul> <li>Validation: Add validation to your models</li> <li>Computed Properties: Create properties that depend on other fields</li> <li>Undo and Redo: Implement undo/redo functionality</li> </ul>"
+    },
+    {
+      "location": "features/computed/",
+      "title": "Computed Properties",
+      "text": "<p>Observant provides a powerful computed properties system that allows you to define properties that depend on other fields and automatically update when those fields change. This page explains how computed properties work in Observant.</p>"
+    },
+    {
+      "location": "features/computed/#overview",
+      "title": "Overview",
+      "text": "<p>Computed properties are virtual fields that derive their values from other fields. They are useful for:</p> <ul> <li>Combining multiple fields (e.g., full name from first and last name)</li> <li>Formatting data (e.g., formatted date from a timestamp)</li> <li>Calculating derived values (e.g., total price from quantity and unit price)</li> <li>Implementing complex business logic</li> </ul> <p>Key features of computed properties in Observant:</p> <ul> <li>Automatic dependency tracking</li> <li>Observable access to computed values</li> <li>Support for validation</li> <li>Integration with the undo system</li> </ul>"
+    },
+    {
+      "location": "features/computed/#registering-computed-fields",
+      "title": "Registering Computed Fields",
+      "text": "<p>You can register a computed property using the <code>register_computed</code> method of <code>ObservableProxy</code>. This method takes:</p> <ul> <li>The name of the computed property</li> <li>A function that calculates the value</li> <li>A list of field names that the computed property depends on</li> </ul> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    first_name: str\n    last_name: str\n\n# Create a user and proxy\nuser = User(first_name=\"Alice\", last_name=\"Smith\")\nproxy = ObservableProxy(user)\n\n# Register a computed property for full name\nproxy.register_computed(\n    \"full_name\",\n    lambda: f\"{proxy.observable(str, 'first_name').get()} {proxy.observable(str, 'last_name').get()}\",\n    dependencies=[\"first_name\", \"last_name\"]\n)\n\n# Access the computed value\nfull_name = proxy.computed(str, \"full_name\").get()\nprint(full_name)  # \"Alice Smith\"\n</code></pre>"
+    },
+    {
+      "location": "features/computed/#accessing-computed-values",
+      "title": "Accessing Computed Values",
+      "text": "<p>You can access a computed value using the <code>computed</code> method, which returns an observable:</p> <pre><code># Get the computed value as an observable\nfull_name_obs = proxy.computed(str, \"full_name\")\n\n# Register a callback to be notified when the computed value changes\nfull_name_obs.on_change(lambda value: print(f\"Full name changed to: {value}\"))\n\n# Get the current value\ncurrent_full_name = full_name_obs.get()\n</code></pre>"
+    },
+    {
+      "location": "features/computed/#updating-dependencies",
+      "title": "Updating Dependencies",
+      "text": "<p>When a dependency of a computed property changes, the computed property is automatically recalculated:</p> <pre><code># Change a dependency\nproxy.observable(str, \"first_name\").set(\"Bob\")\n\n# The computed property is automatically updated\nprint(proxy.computed(str, \"full_name\").get())  # \"Bob Smith\"\n</code></pre>"
+    },
+    {
+      "location": "features/computed/#dependency-tracking",
+      "title": "Dependency Tracking",
+      "text": "<p>Observant tracks dependencies between computed properties and their source fields. When a source field changes, all computed properties that depend on it are automatically recalculated.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass Product:\n    name: str\n    price: float\n    quantity: int\n\n# Create a product and proxy\nproduct = Product(name=\"Widget\", price=10.0, quantity=2)\nproxy = ObservableProxy(product)\n\n# Register a computed property for total price\nproxy.register_computed(\n    \"total_price\",\n    lambda: proxy.observable(float, \"price\").get() * proxy.observable(int, \"quantity\").get(),\n    dependencies=[\"price\", \"quantity\"]\n)\n\n# Access the computed value\nprint(proxy.computed(float, \"total_price\").get())  # 20.0\n\n# Update a dependency\nproxy.observable(int, \"quantity\").set(3)\n\n# The computed property is automatically updated\nprint(proxy.computed(float, \"total_price\").get())  # 30.0\n</code></pre>"
+    },
+    {
+      "location": "features/computed/#explicit-vs-implicit-dependencies",
+      "title": "Explicit vs. Implicit Dependencies",
+      "text": "<p>In the examples above, we explicitly listed the dependencies of each computed property. Observant also supports implicit dependency detection, where the dependencies are inferred from the fields accessed in the computation function.</p> <p>However, it's generally recommended to explicitly list dependencies for clarity and to avoid potential issues with complex computations.</p>"
+    },
+    {
+      "location": "features/computed/#chained-computed-fields",
+      "title": "Chained Computed Fields",
+      "text": "<p>Computed properties can depend on other computed properties, creating a chain of dependencies:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass Order:\n    price: float\n    quantity: int\n    tax_rate: float\n\n# Create an order and proxy\norder = Order(price=10.0, quantity=2, tax_rate=0.1)\nproxy = ObservableProxy(order)\n\n# Register a computed property for subtotal\nproxy.register_computed(\n    \"subtotal\",\n    lambda: proxy.observable(float, \"price\").get() * proxy.observable(int, \"quantity\").get(),\n    dependencies=[\"price\", \"quantity\"]\n)\n\n# Register a computed property for tax amount, which depends on subtotal\nproxy.register_computed(\n    \"tax_amount\",\n    lambda: proxy.computed(float, \"subtotal\").get() * proxy.observable(float, \"tax_rate\").get(),\n    dependencies=[\"subtotal\", \"tax_rate\"]\n)\n\n# Register a computed property for total, which depends on subtotal and tax amount\nproxy.register_computed(\n    \"total\",\n    lambda: proxy.computed(float, \"subtotal\").get() + proxy.computed(float, \"tax_amount\").get(),\n    dependencies=[\"subtotal\", \"tax_amount\"]\n)\n\n# Access the computed values\nprint(proxy.computed(float, \"subtotal\").get())    # 20.0\nprint(proxy.computed(float, \"tax_amount\").get())  # 2.0\nprint(proxy.computed(float, \"total\").get())       # 22.0\n\n# Update a dependency\nproxy.observable(int, \"quantity\").set(3)\n\n# All computed properties are automatically updated\nprint(proxy.computed(float, \"subtotal\").get())    # 30.0\nprint(proxy.computed(float, \"tax_amount\").get())  # 3.0\nprint(proxy.computed(float, \"total\").get())       # 33.0\n</code></pre> <p>In this example, changing the <code>quantity</code> field triggers updates to <code>subtotal</code>, which in turn triggers updates to <code>tax_amount</code> and <code>total</code>.</p>"
+    },
+    {
+      "location": "features/computed/#shadowing-real-fields",
+      "title": "Shadowing Real Fields",
+      "text": "<p>Computed properties can shadow real fields, meaning they can have the same name as a field in the underlying model. This can be useful for adding formatting or validation to existing fields.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"alice\", age=30)\nproxy = ObservableProxy(user)\n\n# Register a computed property that shadows the 'name' field\nproxy.register_computed(\n    \"name\",\n    lambda: proxy.observable(str, \"name\").get().capitalize(),\n    dependencies=[\"name\"]\n)\n\n# Access the computed value\nprint(proxy.computed(str, \"name\").get())  # \"Alice\"\n\n# The original field is still accessible\nprint(proxy.observable(str, \"name\").get())  # \"alice\"\n</code></pre> <p>When shadowing a field, you need to be careful to avoid infinite recursion. In the example above, the computed property accesses the original field using <code>proxy.observable(str, \"name\")</code>, not <code>proxy.computed(str, \"name\")</code>.</p>"
+    },
+    {
+      "location": "features/computed/#circular-dependencies",
+      "title": "Circular Dependencies",
+      "text": "<p>Observant detects circular dependencies between computed properties and raises an error if it finds any:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass Circular:\n    value: int\n\n# Create a model and proxy\ncircular = Circular(value=0)\nproxy = ObservableProxy(circular)\n\n# Register computed properties with a circular dependency\nproxy.register_computed(\n    \"a\",\n    lambda: proxy.computed(int, \"b\").get() + 1,\n    dependencies=[\"b\"]\n)\n\n# This will raise an error because it creates a circular dependency\nproxy.register_computed(\n    \"b\",\n    lambda: proxy.computed(int, \"a\").get() + 1,\n    dependencies=[\"a\"]\n)\n</code></pre> <p>To avoid circular dependencies, make sure that your computed properties form a directed acyclic graph (DAG), where each property only depends on properties that don't depend on it, directly or indirectly.</p>"
+    },
+    {
+      "location": "features/computed/#validation-of-computed-fields",
+      "title": "Validation of Computed Fields",
+      "text": "<p>Computed properties can be validated just like regular fields:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    first_name: str\n    last_name: str\n\n# Create a user and proxy\nuser = User(first_name=\"\", last_name=\"\")\nproxy = ObservableProxy(user)\n\n# Register a computed property for full name\nproxy.register_computed(\n    \"full_name\",\n    lambda: f\"{proxy.observable(str, 'first_name').get()} {proxy.observable(str, 'last_name').get()}\",\n    dependencies=[\"first_name\", \"last_name\"]\n)\n\n# Add a validator to the computed field\nproxy.add_validator(\"full_name\", lambda v: \"Full name too short\" if len(v.strip()) &lt; 5 else None)\n\n# Check validation\nprint(proxy.is_valid())  # False\nprint(proxy.validation_for(\"full_name\").get())  # [\"Full name too short\"]\n\n# Update the dependencies\nproxy.observable(str, \"first_name\").set(\"Alice\")\nproxy.observable(str, \"last_name\").set(\"Smith\")\n\n# Validation is automatically updated\nprint(proxy.is_valid())  # True\nprint(proxy.validation_for(\"full_name\").get())  # []\n</code></pre> <p>When a dependency of a computed property changes, the computed property is recalculated and its validators are re-run.</p>"
+    },
+    {
+      "location": "features/computed/#computed-fields-and-undo",
+      "title": "Computed Fields and Undo",
+      "text": "<p>Computed properties are not directly undoable, since their values are derived from other fields. However, when you undo changes to a field that a computed property depends on, the computed property will update accordingly:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    first_name: str\n    last_name: str\n\n# Create a user and proxy\nuser = User(first_name=\"Alice\", last_name=\"Smith\")\nproxy = ObservableProxy(user, undo=True)\n\n# Register a computed property for full name\nproxy.register_computed(\n    \"full_name\",\n    lambda: f\"{proxy.observable(str, 'first_name').get()} {proxy.observable(str, 'last_name').get()}\",\n    dependencies=[\"first_name\", \"last_name\"]\n)\n\n# Make a change\nproxy.observable(str, \"first_name\").set(\"Bob\")\nprint(proxy.computed(str, \"full_name\").get())  # \"Bob Smith\"\n\n# Undo the change\nproxy.undo(\"first_name\")\nprint(proxy.computed(str, \"full_name\").get())  # \"Alice Smith\"\n</code></pre>"
+    },
+    {
+      "location": "features/computed/#next-steps",
+      "title": "Next Steps",
+      "text": "<p>Now that you understand how computed properties work in Observant, you might want to explore:</p> <ul> <li>Dirty Tracking: Track unsaved changes</li> <li>Sync vs Non-Sync: Understand immediate vs. deferred updates</li> <li>Saving and Loading: Save changes and load data</li> </ul>"
+    },
+    {
+      "location": "features/dirty/",
+      "title": "Dirty Tracking",
+      "text": "<p>Observant provides a dirty tracking system that allows you to track which fields have been modified since the last save or reset. This page explains how dirty tracking works in Observant.</p>"
+    },
+    {
+      "location": "features/dirty/#overview",
+      "title": "Overview",
+      "text": "<p>Dirty tracking is useful for:</p> <ul> <li>Knowing which fields have been modified</li> <li>Enabling/disabling save buttons based on whether there are unsaved changes</li> <li>Prompting users to save changes before navigating away</li> <li>Optimizing save operations by only saving modified fields</li> </ul> <p>Key features of dirty tracking in Observant:</p> <ul> <li>Field-level dirty tracking</li> <li>Observable dirty state</li> <li>Integration with undo/redo</li> <li>Exclusion of computed fields</li> </ul>"
+    },
+    {
+      "location": "features/dirty/#what-is-dirty",
+      "title": "What is Dirty?",
+      "text": "<p>In Observant, a field is considered \"dirty\" if its value has been changed since the last save or reset. The dirty state is tracked at the field level, so you can see exactly which fields have been modified.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user)\n\n# Initially, no fields are dirty\nprint(proxy.is_dirty())  # False\nprint(proxy.dirty_fields())  # []\n\n# Modify a field\nproxy.observable(str, \"name\").set(\"Bob\")\n\n# Now the field is dirty\nprint(proxy.is_dirty())  # True\nprint(proxy.dirty_fields())  # [\"name\"]\n\n# Modify another field\nproxy.observable(int, \"age\").set(31)\n\n# Now both fields are dirty\nprint(proxy.is_dirty())  # True\nprint(proxy.dirty_fields())  # [\"name\", \"age\"]\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#tracking-dirty-fields",
+      "title": "Tracking Dirty Fields",
+      "text": "<p>Observant provides several methods for tracking dirty fields:</p> <ul> <li><code>is_dirty()</code>: Returns whether any field is dirty</li> <li><code>dirty_fields()</code>: Returns a list of dirty field names</li> <li><code>is_field_dirty(field)</code>: Returns whether a specific field is dirty</li> </ul>"
+    },
+    {
+      "location": "features/dirty/#is_dirty",
+      "title": "is_dirty()",
+      "text": "<p>The <code>is_dirty()</code> method returns an observable boolean indicating whether any field is dirty:</p> <pre><code># Check if any field is dirty\nis_dirty = proxy.is_dirty()\nprint(is_dirty.get())  # True or False\n\n# Listen for changes to the dirty state\nis_dirty.on_change(lambda dirty: print(f\"Dirty state changed: {dirty}\"))\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#dirty_fields",
+      "title": "dirty_fields()",
+      "text": "<p>The <code>dirty_fields()</code> method returns an observable list of dirty field names:</p> <pre><code># Get a list of dirty fields\ndirty_fields = proxy.dirty_fields()\nprint(dirty_fields.get())  # [\"name\", \"age\"]\n\n# Listen for changes to the dirty fields\ndirty_fields.on_change(lambda fields: print(f\"Dirty fields changed: {fields}\"))\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#is_field_dirtyfield",
+      "title": "is_field_dirty(field)",
+      "text": "<p>The <code>is_field_dirty(field)</code> method returns an observable boolean indicating whether a specific field is dirty:</p> <pre><code># Check if a specific field is dirty\nis_name_dirty = proxy.is_field_dirty(\"name\")\nprint(is_name_dirty.get())  # True or False\n\n# Listen for changes to the field's dirty state\nis_name_dirty.on_change(lambda dirty: print(f\"Name dirty state changed: {dirty}\"))\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#reset_dirty",
+      "title": "reset_dirty()",
+      "text": "<p>The <code>reset_dirty()</code> method resets the dirty state for all fields or for a specific field:</p> <pre><code># Reset dirty state for all fields\nproxy.reset_dirty()\n\n# Reset dirty state for a specific field\nproxy.reset_dirty(\"name\")\n</code></pre> <p>After resetting the dirty state, the current values become the new baseline for dirty tracking. Any subsequent changes will mark the fields as dirty again.</p> <pre><code># Initially, no fields are dirty\nprint(proxy.is_dirty())  # False\n\n# Modify a field\nproxy.observable(str, \"name\").set(\"Bob\")\n\n# Now the field is dirty\nprint(proxy.is_dirty())  # True\n\n# Reset dirty state\nproxy.reset_dirty()\n\n# Now no fields are dirty again\nprint(proxy.is_dirty())  # False\n\n# Modify the field again\nproxy.observable(str, \"name\").set(\"Charlie\")\n\n# Now the field is dirty again\nprint(proxy.is_dirty())  # True\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#interaction-with-undo",
+      "title": "Interaction with Undo",
+      "text": "<p>The dirty tracking system integrates with the undo system. When you undo or redo a change, the dirty state is updated accordingly:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, undo=True)\n\n# Initially, no fields are dirty\nprint(proxy.is_dirty())  # False\n\n# Modify a field\nproxy.observable(str, \"name\").set(\"Bob\")\n\n# Now the field is dirty\nprint(proxy.is_dirty())  # True\nprint(proxy.dirty_fields())  # [\"name\"]\n\n# Undo the change\nproxy.undo(\"name\")\n\n# The field is no longer dirty\nprint(proxy.is_dirty())  # False\nprint(proxy.dirty_fields())  # []\n\n# Redo the change\nproxy.redo(\"name\")\n\n# The field is dirty again\nprint(proxy.is_dirty())  # True\nprint(proxy.dirty_fields())  # [\"name\"]\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#undo-to-original-value",
+      "title": "Undo to Original Value",
+      "text": "<p>If you make multiple changes to a field and then undo back to the original value, the field is no longer considered dirty:</p> <pre><code># Initially, no fields are dirty\nprint(proxy.is_dirty())  # False\n\n# Modify a field multiple times\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.observable(str, \"name\").set(\"Charlie\")\nproxy.observable(str, \"name\").set(\"Dave\")\n\n# Now the field is dirty\nprint(proxy.is_dirty())  # True\n\n# Undo all changes\nproxy.undo(\"name\")  # Reverts to \"Charlie\"\nproxy.undo(\"name\")  # Reverts to \"Bob\"\nproxy.undo(\"name\")  # Reverts to \"Alice\" (original value)\n\n# The field is no longer dirty\nprint(proxy.is_dirty())  # False\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#computed-fields-and-dirty-state",
+      "title": "Computed Fields and Dirty State",
+      "text": "<p>Computed fields are not included in dirty tracking, since their values are derived from other fields. When a dependency of a computed field changes, the computed field itself is not marked as dirty.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    first_name: str\n    last_name: str\n\n# Create a user and proxy\nuser = User(first_name=\"Alice\", last_name=\"Smith\")\nproxy = ObservableProxy(user)\n\n# Register a computed property for full name\nproxy.register_computed(\n    \"full_name\",\n    lambda: f\"{proxy.observable(str, 'first_name').get()} {proxy.observable(str, 'last_name').get()}\",\n    dependencies=[\"first_name\", \"last_name\"]\n)\n\n# Initially, no fields are dirty\nprint(proxy.is_dirty())  # False\nprint(proxy.dirty_fields())  # []\n\n# Modify a dependency\nproxy.observable(str, \"first_name\").set(\"Bob\")\n\n# Only the dependency is marked as dirty, not the computed field\nprint(proxy.is_dirty())  # True\nprint(proxy.dirty_fields())  # [\"first_name\"]\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#practical-use-cases",
+      "title": "Practical Use Cases",
+      "text": ""
+    },
+    {
+      "location": "features/dirty/#enablingdisabling-save-buttons",
+      "title": "Enabling/Disabling Save Buttons",
+      "text": "<p>You can use the dirty state to enable or disable save buttons in a UI:</p> <pre><code># In a UI framework\nsave_button.disabled = not proxy.is_dirty().get()\n\n# Listen for changes to the dirty state\nproxy.is_dirty().on_change(lambda dirty: save_button.disabled = not dirty)\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#prompting-to-save-changes",
+      "title": "Prompting to Save Changes",
+      "text": "<p>You can use the dirty state to prompt users to save changes before navigating away:</p> <pre><code>def on_navigate_away():\n    if proxy.is_dirty().get():\n        # Show a confirmation dialog\n        if confirm(\"You have unsaved changes. Save before leaving?\"):\n            save_changes()\n    # Navigate away\n    navigate_to_next_page()\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#optimizing-save-operations",
+      "title": "Optimizing Save Operations",
+      "text": "<p>You can use the dirty fields to optimize save operations by only saving modified fields:</p> <pre><code>def save_changes():\n    dirty = proxy.dirty_fields().get()\n    if not dirty:\n        return  # Nothing to save\n\n    # Create a dictionary with only the dirty fields\n    data = {}\n    for field in dirty:\n        if field == \"name\":\n            data[field] = proxy.observable(str, field).get()\n        elif field == \"age\":\n            data[field] = proxy.observable(int, field).get()\n\n    # Save only the dirty fields\n    api.update_user(user_id, data)\n\n    # Reset dirty state\n    proxy.reset_dirty()\n</code></pre>"
+    },
+    {
+      "location": "features/dirty/#next-steps",
+      "title": "Next Steps",
+      "text": "<p>Now that you understand how dirty tracking works in Observant, you might want to explore:</p> <ul> <li>Sync vs Non-Sync: Understand immediate vs. deferred updates</li> <li>Saving and Loading: Save changes and load data</li> <li>API Reference: Detailed API documentation</li> </ul>"
+    },
+    {
+      "location": "features/save_load/",
+      "title": "Saving and Loading",
+      "text": "<p>Observant provides methods for saving changes back to the model and loading data from external sources. This page explains how saving and loading work in Observant.</p>"
+    },
+    {
+      "location": "features/save_load/#overview",
+      "title": "Overview",
+      "text": "<p>When working with <code>ObservableProxy</code>, you often need to:</p> <ul> <li>Save changes back to the original model</li> <li>Load data from external sources (e.g., API responses, user input)</li> <li>Update multiple fields at once</li> </ul> <p>Observant provides several methods for these operations:</p> <ul> <li><code>save_to()</code>: Save changes back to a model</li> <li><code>load_dict()</code>: Load data from a dictionary</li> <li><code>update()</code>: Update specific fields</li> </ul>"
+    },
+    {
+      "location": "features/save_load/#save_to",
+      "title": "save_to()",
+      "text": "<p>The <code>save_to()</code> method saves the current state of the proxy back to a model:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, sync=False)\n\n# Make changes\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.observable(int, \"age\").set(31)\n\n# Save changes back to the model\nproxy.save_to(user)\n\n# The model is updated\nprint(user.name)  # \"Bob\"\nprint(user.age)   # 31\n</code></pre>"
+    },
+    {
+      "location": "features/save_load/#saving-to-a-different-model",
+      "title": "Saving to a Different Model",
+      "text": "<p>You can save changes to a different model instance, as long as it has the same structure:</p> <pre><code># Create two user instances\nuser1 = User(name=\"Alice\", age=30)\nuser2 = User(name=\"Charlie\", age=32)\n\n# Create a proxy for user1\nproxy = ObservableProxy(user1, sync=False)\n\n# Make changes\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.observable(int, \"age\").set(31)\n\n# Save changes to user2\nproxy.save_to(user2)\n\n# user2 is updated\nprint(user2.name)  # \"Bob\"\nprint(user2.age)   # 31\n\n# user1 is unchanged\nprint(user1.name)  # \"Alice\"\nprint(user1.age)   # 30\n</code></pre> <p>This can be useful when you want to:</p> <ul> <li>Create a copy of a model with modifications</li> <li>Apply changes to multiple models</li> <li>Implement a \"reset to original\" feature</li> </ul>"
+    },
+    {
+      "location": "features/save_load/#saving-and-dirty-state",
+      "title": "Saving and Dirty State",
+      "text": "<p>When you call <code>save_to()</code>, the dirty state is not automatically reset. If you want to reset the dirty state, you need to call <code>reset_dirty()</code> explicitly:</p> <pre><code># Make changes\nproxy.observable(str, \"name\").set(\"Bob\")\n\n# The field is dirty\nprint(proxy.is_dirty())  # True\n\n# Save changes\nproxy.save_to(user)\n\n# The field is still dirty\nprint(proxy.is_dirty())  # True\n\n# Reset dirty state\nproxy.reset_dirty()\n\n# Now the field is not dirty\nprint(proxy.is_dirty())  # False\n</code></pre> <p>This behavior allows you to track whether changes have been saved to a specific model, even if you save to multiple models.</p>"
+    },
+    {
+      "location": "features/save_load/#load_dict",
+      "title": "load_dict()",
+      "text": "<p>The <code>load_dict()</code> method loads data from a dictionary into the proxy:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, sync=False)\n\n# Load data from a dictionary\nproxy.load_dict({\n    \"name\": \"Bob\",\n    \"age\": 31\n})\n\n# The proxy is updated\nprint(proxy.observable(str, \"name\").get())  # \"Bob\"\nprint(proxy.observable(int, \"age\").get())  # 31\n\n# The model is not updated yet\nprint(user.name)  # \"Alice\"\nprint(user.age)   # 30\n\n# Save changes to the model\nproxy.save_to(user)\n\n# Now the model is updated\nprint(user.name)  # \"Bob\"\nprint(user.age)   # 31\n</code></pre>"
+    },
+    {
+      "location": "features/save_load/#reset_missing",
+      "title": "reset_missing",
+      "text": "<p>The <code>load_dict()</code> method has an optional <code>reset_missing</code> parameter. When set to <code>True</code>, fields that are not in the dictionary are reset to their default values:</p> <pre><code># Load data with reset_missing=True\nproxy.load_dict({\n    \"name\": \"Charlie\"\n}, reset_missing=True)\n\n# Fields not in the dictionary are reset\nprint(proxy.observable(str, \"name\").get())  # \"Charlie\"\nprint(proxy.observable(int, \"age\").get())  # 0 (default value for int)\n</code></pre> <p>When <code>reset_missing=False</code> (the default), fields not in the dictionary are left unchanged:</p> <pre><code># Load data with reset_missing=False\nproxy.load_dict({\n    \"name\": \"Dave\"\n}, reset_missing=False)\n\n# Fields not in the dictionary are unchanged\nprint(proxy.observable(str, \"name\").get())  # \"Dave\"\nprint(proxy.observable(int, \"age\").get())  # 31 (unchanged)\n</code></pre>"
+    },
+    {
+      "location": "features/save_load/#validation-and-load_dict",
+      "title": "Validation and load_dict()",
+      "text": "<p>When you call <code>load_dict()</code>, validation is automatically triggered for the fields that are updated:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, sync=False)\n\n# Add validators\nproxy.add_validator(\"name\", lambda v: \"Name required\" if not v else None)\nproxy.add_validator(\"age\", lambda v: \"Age must be positive\" if v &lt;= 0 else None)\n\n# Load valid data\nproxy.load_dict({\n    \"name\": \"Bob\",\n    \"age\": 31\n})\n\n# Validation passes\nprint(proxy.is_valid())  # True\n\n# Load invalid data\nproxy.load_dict({\n    \"name\": \"\",\n    \"age\": -1\n})\n\n# Validation fails\nprint(proxy.is_valid())  # False\nprint(proxy.validation_errors())  # {\"name\": [\"Name required\"], \"age\": [\"Age must be positive\"]}\n</code></pre>"
+    },
+    {
+      "location": "features/save_load/#update",
+      "title": "update()",
+      "text": "<p>The <code>update()</code> method updates specific fields in the proxy:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n    email: str\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30, email=\"alice@example.com\")\nproxy = ObservableProxy(user, sync=False)\n\n# Update specific fields\nproxy.update({\n    \"name\": \"Bob\",\n    \"age\": 31\n})\n\n# Only the specified fields are updated\nprint(proxy.observable(str, \"name\").get())  # \"Bob\"\nprint(proxy.observable(int, \"age\").get())  # 31\nprint(proxy.observable(str, \"email\").get())  # \"alice@example.com\" (unchanged)\n</code></pre>"
+    },
+    {
+      "location": "features/save_load/#update-vs-load_dict",
+      "title": "update() vs load_dict()",
+      "text": "<p>The main differences between <code>update()</code> and <code>load_dict()</code> are:</p> <ol> <li><code>update()</code> only updates the fields that are provided in the dictionary</li> <li><code>load_dict()</code> can optionally reset fields that are not in the dictionary</li> <li><code>update()</code> does not have a <code>reset_missing</code> parameter</li> </ol> <pre><code># update() only updates the specified fields\nproxy.update({\n    \"name\": \"Charlie\"\n})\nprint(proxy.observable(str, \"name\").get())  # \"Charlie\"\nprint(proxy.observable(int, \"age\").get())  # 31 (unchanged)\n\n# load_dict() with reset_missing=True resets unspecified fields\nproxy.load_dict({\n    \"name\": \"Dave\"\n}, reset_missing=True)\nprint(proxy.observable(str, \"name\").get())  # \"Dave\"\nprint(proxy.observable(int, \"age\").get())  # 0 (reset to default)\n</code></pre>"
+    },
+    {
+      "location": "features/save_load/#saving-to-different-models",
+      "title": "Saving to Different Models",
+      "text": "<p>One powerful feature of Observant is the ability to save changes to different models. This can be useful for:</p> <ul> <li>Creating copies of a model with modifications</li> <li>Applying changes to multiple models</li> <li>Implementing a \"reset to original\" feature</li> </ul> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create original user\noriginal_user = User(name=\"Alice\", age=30)\n\n# Create a proxy\nproxy = ObservableProxy(original_user, sync=False)\n\n# Make changes\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.observable(int, \"age\").set(31)\n\n# Create a modified copy\nmodified_user = User(name=\"\", age=0)\nproxy.save_to(modified_user)\n\n# original_user is unchanged\nprint(original_user.name)  # \"Alice\"\nprint(original_user.age)   # 30\n\n# modified_user has the changes\nprint(modified_user.name)  # \"Bob\"\nprint(modified_user.age)   # 31\n</code></pre>"
+    },
+    {
+      "location": "features/save_load/#saving-to-models-with-different-fields",
+      "title": "Saving to Models with Different Fields",
+      "text": "<p>When saving to a model with a different structure, only the fields that exist in both the proxy and the target model are updated:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n    email: str\n\n@dataclass\nclass SimpleUser:\n    name: str\n    age: int\n\n# Create a user and proxy\nuser = User(name=\"Alice\", age=30, email=\"alice@example.com\")\nproxy = ObservableProxy(user, sync=False)\n\n# Make changes\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.observable(int, \"age\").set(31)\nproxy.observable(str, \"email\").set(\"bob@example.com\")\n\n# Create a simple user\nsimple_user = SimpleUser(name=\"\", age=0)\n\n# Save changes to the simple user\nproxy.save_to(simple_user)\n\n# Only the fields that exist in SimpleUser are updated\nprint(simple_user.name)  # \"Bob\"\nprint(simple_user.age)   # 31\n# simple_user doesn't have an email field\n</code></pre>"
+    },
+    {
+      "location": "features/save_load/#reusing-proxies",
+      "title": "Reusing Proxies",
+      "text": "<p>You can reuse a proxy with different models by calling <code>save_to()</code> and then creating a new proxy:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create users\nuser1 = User(name=\"Alice\", age=30)\nuser2 = User(name=\"Bob\", age=31)\n\n# Create a proxy for user1\nproxy1 = ObservableProxy(user1, sync=False)\n\n# Make changes\nproxy1.observable(str, \"name\").set(\"Charlie\")\n\n# Save changes to user1\nproxy1.save_to(user1)\n\n# Create a new proxy for user2\nproxy2 = ObservableProxy(user2, sync=False)\n\n# Make changes\nproxy2.observable(int, \"age\").set(32)\n\n# Save changes to user2\nproxy2.save_to(user2)\n\n# Both users are updated\nprint(user1.name)  # \"Charlie\"\nprint(user1.age)   # 30\nprint(user2.name)  # \"Bob\"\nprint(user2.age)   # 32\n</code></pre> <p>This approach is useful when you want to work with multiple models sequentially.</p>"
+    },
+    {
+      "location": "features/save_load/#next-steps",
+      "title": "Next Steps",
+      "text": "<p>Now that you understand how saving and loading work in Observant, you might want to explore:</p> <ul> <li>API Reference: Detailed API documentation</li> <li>Sync vs Non-Sync: Understand immediate vs. deferred updates</li> <li>Dirty Tracking: Track unsaved changes</li> </ul>"
+    },
+    {
+      "location": "features/sync/",
+      "title": "Sync vs Non-Sync",
+      "text": "<p>Observant provides two modes of operation for <code>ObservableProxy</code>: sync mode and non-sync mode. This page explains the differences between these modes and when to use each.</p>"
+    },
+    {
+      "location": "features/sync/#overview",
+      "title": "Overview",
+      "text": "<p>When you create an <code>ObservableProxy</code>, you can specify whether changes to the proxy should be immediately synchronized with the underlying model:</p> <ul> <li><code>sync=True</code>: Changes to the proxy are immediately applied to the underlying model</li> <li><code>sync=False</code>: Changes to the proxy are only applied to the underlying model when you call <code>save_to()</code></li> </ul> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\n# Create a user\nuser = User(name=\"Alice\", age=30)\n\n# Create a proxy with sync=True\nproxy_sync = ObservableProxy(user, sync=True)\n\n# Create a proxy with sync=False\nproxy_non_sync = ObservableProxy(user, sync=False)\n</code></pre>"
+    },
+    {
+      "location": "features/sync/#synctrue-vs-syncfalse",
+      "title": "sync=True vs sync=False",
+      "text": ""
+    },
+    {
+      "location": "features/sync/#synctrue",
+      "title": "sync=True",
+      "text": "<p>When <code>sync=True</code>, any changes you make to the proxy are immediately applied to the underlying model:</p> <pre><code># Create a user and proxy with sync=True\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, sync=True)\n\n# Change a field\nproxy.observable(str, \"name\").set(\"Bob\")\n\n# The change is immediately applied to the user object\nprint(user.name)  # \"Bob\"\n</code></pre> <p>This mode is useful when:</p> <ul> <li>You want to keep the model and proxy in sync at all times</li> <li>You're working with a model that needs to reflect changes immediately</li> <li>You don't need to validate or review changes before applying them</li> </ul>"
+    },
+    {
+      "location": "features/sync/#syncfalse",
+      "title": "sync=False",
+      "text": "<p>When <code>sync=False</code>, changes to the proxy are not automatically applied to the underlying model. You need to explicitly call <code>save_to()</code> to apply the changes:</p> <pre><code># Create a user and proxy with sync=False\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, sync=False)\n\n# Change a field\nproxy.observable(str, \"name\").set(\"Bob\")\n\n# The change is not applied to the user object yet\nprint(user.name)  # \"Alice\"\n\n# Apply the changes\nproxy.save_to(user)\n\n# Now the change is applied\nprint(user.name)  # \"Bob\"\n</code></pre> <p>This mode is useful when:</p> <ul> <li>You want to validate changes before applying them</li> <li>You need to support undo/redo functionality</li> <li>You want to track dirty state</li> <li>You need to review or confirm changes before saving</li> </ul>"
+    },
+    {
+      "location": "features/sync/#when-to-use-each",
+      "title": "When to Use Each",
+      "text": ""
+    },
+    {
+      "location": "features/sync/#use-synctrue-when",
+      "title": "Use sync=True When",
+      "text": "<ul> <li>You need immediate synchronization between the proxy and the model</li> <li>You're working with a model that needs to reflect changes in real-time</li> <li>You don't need undo/redo functionality</li> <li>You don't need to track dirty state</li> </ul>"
+    },
+    {
+      "location": "features/sync/#use-syncfalse-when",
+      "title": "Use sync=False When",
+      "text": "<ul> <li>You need to validate changes before applying them</li> <li>You want to support undo/redo functionality</li> <li>You want to track dirty state</li> <li>You need to review or confirm changes before saving</li> <li>You want to optimize performance by batching updates</li> </ul>"
+    },
+    {
+      "location": "features/sync/#save_to-and-load_dict",
+      "title": "save_to() and load_dict()",
+      "text": "<p>When using <code>sync=False</code>, you need to explicitly apply changes to the model using <code>save_to()</code>:</p> <pre><code># Create a user and proxy with sync=False\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, sync=False)\n\n# Make changes\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.observable(int, \"age\").set(31)\n\n# Validate changes\nif proxy.is_valid():\n    # Apply changes\n    proxy.save_to(user)\nelse:\n    # Show validation errors\n    print(\"Validation errors:\", proxy.validation_errors())\n</code></pre> <p>You can also load data into the proxy from a dictionary using <code>load_dict()</code>:</p> <pre><code># Load data from a dictionary\nproxy.load_dict({\n    \"name\": \"Charlie\",\n    \"age\": 32\n})\n\n# The changes are not applied to the user object yet\nprint(user.name)  # \"Bob\" (or \"Alice\" if save_to() wasn't called)\n\n# Apply the changes\nproxy.save_to(user)\n\n# Now the changes are applied\nprint(user.name)  # \"Charlie\"\n</code></pre>"
+    },
+    {
+      "location": "features/sync/#update-vs-load_dict",
+      "title": "update() vs load_dict()",
+      "text": "<p>Observant provides two methods for updating multiple fields at once: <code>update()</code> and <code>load_dict()</code>. The main difference is that <code>update()</code> only updates the fields that are provided, while <code>load_dict()</code> updates all fields in the dictionary.</p>"
+    },
+    {
+      "location": "features/sync/#update",
+      "title": "update()",
+      "text": "<p>The <code>update()</code> method updates only the fields that are provided in the dictionary:</p> <pre><code># Create a user and proxy\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, sync=False)\n\n# Update specific fields\nproxy.update({\n    \"name\": \"Bob\"\n})\n\n# Only the specified fields are updated\nprint(proxy.observable(str, \"name\").get())  # \"Bob\"\nprint(proxy.observable(int, \"age\").get())  # 30 (unchanged)\n</code></pre>"
+    },
+    {
+      "location": "features/sync/#load_dict",
+      "title": "load_dict()",
+      "text": "<p>The <code>load_dict()</code> method updates all fields in the dictionary, and can optionally reset fields that are not in the dictionary:</p> <pre><code># Create a user and proxy\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, sync=False)\n\n# Load a dictionary\nproxy.load_dict({\n    \"name\": \"Bob\"\n}, reset_missing=False)\n\n# Only the specified fields are updated\nprint(proxy.observable(str, \"name\").get())  # \"Bob\"\nprint(proxy.observable(int, \"age\").get())  # 30 (unchanged)\n\n# Load a dictionary with reset_missing=True\nproxy.load_dict({\n    \"name\": \"Charlie\"\n}, reset_missing=True)\n\n# Fields not in the dictionary are reset to their default values\nprint(proxy.observable(str, \"name\").get())  # \"Charlie\"\nprint(proxy.observable(int, \"age\").get())  # 0 (reset to default)\n</code></pre>"
+    },
+    {
+      "location": "features/sync/#performance-considerations",
+      "title": "Performance Considerations",
+      "text": "<p>The choice between <code>sync=True</code> and <code>sync=False</code> can affect performance:</p> <ul> <li><code>sync=True</code> may be slower if you're making many changes, since each change triggers an update to the model</li> <li><code>sync=False</code> may be faster for bulk updates, since you can batch changes and apply them all at once</li> </ul> <pre><code># sync=True: Each change triggers an update\nproxy_sync = ObservableProxy(user, sync=True)\nfor i in range(1000):\n    proxy_sync.observable(int, \"age\").set(i)  # 1000 updates to the model\n\n# sync=False: Changes are batched\nproxy_non_sync = ObservableProxy(user, sync=False)\nfor i in range(1000):\n    proxy_non_sync.observable(int, \"age\").set(i)  # No updates to the model yet\nproxy_non_sync.save_to(user)  # 1 update to the model\n</code></pre>"
+    },
+    {
+      "location": "features/sync/#sync-and-undo",
+      "title": "Sync and Undo",
+      "text": "<p>The <code>sync</code> and <code>undo</code> options can be used together, but this can lead to unexpected behavior. When <code>sync=True</code>, changes are immediately applied to the underlying model, which means that undo operations will not affect the model until you call <code>save_to</code>.</p> <pre><code>user = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, sync=True, undo=True)\n\n# Make a change\nproxy.observable(str, \"name\").set(\"Bob\")\nprint(user.name)  # \"Bob\" (sync=True applies changes immediately)\n\n# Undo the change\nproxy.undo(\"name\")\nprint(proxy.observable(str, \"name\").get())  # \"Alice\"\nprint(user.name)  # Still \"Bob\" until save_to is called\n\n# Save changes back to the model\nproxy.save_to(user)\nprint(user.name)  # Now \"Alice\"\n</code></pre> <p>For this reason, it's generally recommended to use <code>sync=False</code> when using undo functionality.</p>"
+    },
+    {
+      "location": "features/sync/#next-steps",
+      "title": "Next Steps",
+      "text": "<p>Now that you understand the difference between sync and non-sync modes in Observant, you might want to explore:</p> <ul> <li>Saving and Loading: Learn more about saving changes and loading data</li> <li>Dirty Tracking: Track unsaved changes</li> <li>Undo and Redo: Implement undo/redo functionality</li> </ul>"
+    },
+    {
+      "location": "features/undo/",
+      "title": "Undo and Redo",
+      "text": "<p>Observant provides built-in undo and redo functionality, allowing you to track changes to your data and revert them if needed. This page explains how the undo/redo system works in Observant.</p>"
+    },
+    {
+      "location": "features/undo/#overview",
+      "title": "Overview",
+      "text": "<p>The undo/redo system in Observant is field-based, meaning you can undo changes to individual fields independently. This gives you fine-grained control over which changes to revert.</p> <p>Key features of the undo/redo system:</p> <ul> <li>Per-field undo/redo</li> <li>Configurable undo stack size</li> <li>Debounce support for rapid changes</li> <li>Integration with validation and dirty tracking</li> </ul>"
+    },
+    {
+      "location": "features/undo/#enabling-undo",
+      "title": "Enabling Undo",
+      "text": "<p>To enable undo functionality, you can either:</p> <ol> <li>Enable it globally when creating the proxy</li> <li>Enable it for specific fields after creating the proxy</li> </ol>"
+    },
+    {
+      "location": "features/undo/#global-undo",
+      "title": "Global Undo",
+      "text": "<p>To enable undo globally, set <code>undo=True</code> when creating the proxy:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, undo=True)  # Enable undo for all fields\n</code></pre>"
+    },
+    {
+      "location": "features/undo/#per-field-undo",
+      "title": "Per-Field Undo",
+      "text": "<p>To enable undo for specific fields, use the <code>set_undo_config</code> method:</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n    email: str\n\nuser = User(name=\"Alice\", age=30, email=\"alice@example.com\")\nproxy = ObservableProxy(user)  # Undo disabled by default\n\n# Enable undo for specific fields\nproxy.set_undo_config(\"name\", enabled=True)\nproxy.set_undo_config(\"age\", enabled=True)\n# email field will not have undo enabled\n</code></pre>"
+    },
+    {
+      "location": "features/undo/#undo-configuration",
+      "title": "Undo Configuration",
+      "text": "<p>The undo system can be configured with several options:</p> <ul> <li><code>enabled</code>: Whether undo is enabled for a field</li> <li><code>undo_max</code>: Maximum number of undo steps to store</li> <li><code>undo_debounce_ms</code>: Time in milliseconds to wait before recording a new undo step</li> </ul>"
+    },
+    {
+      "location": "features/undo/#undo_max",
+      "title": "undo_max",
+      "text": "<p>The <code>undo_max</code> option limits the number of undo steps that are stored for a field. This prevents the undo stack from growing too large and consuming too much memory.</p> <pre><code># Limit to 10 undo steps\nproxy.set_undo_config(\"name\", enabled=True, undo_max=10)\n</code></pre>"
+    },
+    {
+      "location": "features/undo/#undo_debounce_ms",
+      "title": "undo_debounce_ms",
+      "text": "<p>The <code>undo_debounce_ms</code> option adds debounce behavior to the undo system. If multiple changes are made to a field within the debounce time, only the last change is recorded as an undo step.</p> <p>This is useful for fields that change rapidly, such as text fields during typing:</p> <pre><code># Debounce undo steps by 500ms\nproxy.set_undo_config(\"name\", enabled=True, undo_debounce_ms=500)\n\n# These rapid changes will be combined into a single undo step\nproxy.observable(str, \"name\").set(\"A\")\nproxy.observable(str, \"name\").set(\"Al\")\nproxy.observable(str, \"name\").set(\"Ali\")\nproxy.observable(str, \"name\").set(\"Alic\")\nproxy.observable(str, \"name\").set(\"Alice\")\n\n# Only one undo step is created\nproxy.undo(\"name\")  # Reverts directly to the original value\n</code></pre>"
+    },
+    {
+      "location": "features/undo/#undoredo-api",
+      "title": "Undo/Redo API",
+      "text": "<p>Once undo is enabled, you can use the following methods to undo and redo changes:</p> <ul> <li><code>undo(field)</code>: Undo the last change to a field</li> <li><code>redo(field)</code>: Redo the last undone change to a field</li> <li><code>can_undo(field)</code>: Check if there are any undo steps available for a field</li> <li><code>can_redo(field)</code>: Check if there are any redo steps available for a field</li> </ul>"
+    },
+    {
+      "location": "features/undo/#basic-undoredo",
+      "title": "Basic Undo/Redo",
+      "text": "<pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\nuser = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, undo=True)\n\n# Make some changes\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.observable(int, \"age\").set(25)\n\n# Undo changes\nproxy.undo(\"name\")  # Reverts name to \"Alice\"\nproxy.undo(\"age\")   # Reverts age to 30\n\n# Redo changes\nproxy.redo(\"name\")  # Sets name back to \"Bob\"\nproxy.redo(\"age\")   # Sets age back to 25\n</code></pre>"
+    },
+    {
+      "location": "features/undo/#checking-undoredo-availability",
+      "title": "Checking Undo/Redo Availability",
+      "text": "<p>You can check if undo or redo is available for a field using the <code>can_undo</code> and <code>can_redo</code> methods:</p> <pre><code># Check if undo is available\nif proxy.can_undo(\"name\"):\n    proxy.undo(\"name\")\n\n# Check if redo is available\nif proxy.can_redo(\"name\"):\n    proxy.redo(\"name\")\n</code></pre> <p>These methods return observables, so you can also listen for changes:</p> <pre><code># Listen for changes to undo availability\nproxy.can_undo(\"name\").on_change(lambda can_undo: \n    print(f\"Undo available for name: {can_undo}\"))\n\n# Listen for changes to redo availability\nproxy.can_redo(\"name\").on_change(lambda can_redo: \n    print(f\"Redo available for name: {can_redo}\"))\n</code></pre>"
+    },
+    {
+      "location": "features/undo/#per-field-vs-global-undo",
+      "title": "Per-Field vs Global Undo",
+      "text": "<p>Observant's undo system is field-based, meaning each field has its own undo stack. This allows you to undo changes to one field without affecting others.</p> <pre><code># Make changes to multiple fields\nproxy.observable(str, \"name\").set(\"Bob\")\nproxy.observable(int, \"age\").set(25)\n\n# Undo only the name change\nproxy.undo(\"name\")  # Reverts name to \"Alice\"\n\n# Age remains changed\nprint(proxy.observable(int, \"age\").get())  # 25\n</code></pre> <p>This field-based approach gives you more control over which changes to undo, but it also means you need to undo each field separately if you want to undo all changes.</p> <p>If you need to undo all changes at once, you can iterate over the fields:</p> <pre><code># Undo all fields\nfor field in [\"name\", \"age\", \"email\"]:\n    if proxy.can_undo(field).get():\n        proxy.undo(field)\n</code></pre>"
+    },
+    {
+      "location": "features/undo/#limitations-and-gotchas",
+      "title": "Limitations and Gotchas",
+      "text": ""
+    },
+    {
+      "location": "features/undo/#sync-and-undo",
+      "title": "Sync and Undo",
+      "text": "<p>The <code>sync</code> and <code>undo</code> options can be used together, but this can lead to unexpected behavior. When <code>sync=True</code>, changes are immediately applied to the underlying model, which means that undo operations will not affect the model until you call <code>save_to</code>.</p> <pre><code>user = User(name=\"Alice\", age=30)\nproxy = ObservableProxy(user, sync=True, undo=True)\n\n# Make a change\nproxy.observable(str, \"name\").set(\"Bob\")\nprint(user.name)  # \"Bob\" (sync=True applies changes immediately)\n\n# Undo the change\nproxy.undo(\"name\")\nprint(proxy.observable(str, \"name\").get())  # \"Alice\"\nprint(user.name)  # Still \"Bob\" until save_to is called\n\n# Save changes back to the model\nproxy.save_to(user)\nprint(user.name)  # Now \"Alice\"\n</code></pre> <p>For this reason, it's generally recommended to use <code>sync=False</code> when using undo functionality.</p>"
+    },
+    {
+      "location": "features/undo/#collection-fields",
+      "title": "Collection Fields",
+      "text": "<p>For list and dictionary fields, undo/redo works on the entire collection, not individual elements. This means that if you make multiple changes to a collection, undoing will revert all of those changes at once.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass TodoList:\n    tasks: list[str]\n\ntodo_list = TodoList(tasks=[\"Buy milk\"])\nproxy = ObservableProxy(todo_list, undo=True)\n\n# Get the observable list\ntasks = proxy.observable_list(str, \"tasks\")\n\n# Make multiple changes\ntasks.append(\"Write docs\")\ntasks.append(\"Fix bugs\")\ntasks.remove(\"Buy milk\")\n\n# Undo all changes at once\nproxy.undo(\"tasks\")  # Reverts to [\"Buy milk\"]\n</code></pre>"
+    },
+    {
+      "location": "features/undo/#computed-fields",
+      "title": "Computed Fields",
+      "text": "<p>Computed fields are not directly undoable, since their values are derived from other fields. However, when you undo changes to a field that a computed field depends on, the computed field will update accordingly.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    first_name: str\n    last_name: str\n\nuser = User(first_name=\"Alice\", last_name=\"Smith\")\nproxy = ObservableProxy(user, undo=True)\n\n# Register a computed property\nproxy.register_computed(\n    \"full_name\",\n    lambda: f\"{proxy.observable(str, 'first_name').get()} {proxy.observable(str, 'last_name').get()}\",\n    dependencies=[\"first_name\", \"last_name\"]\n)\n\n# Make a change\nproxy.observable(str, \"first_name\").set(\"Bob\")\nprint(proxy.computed(str, \"full_name\").get())  # \"Bob Smith\"\n\n# Undo the change\nproxy.undo(\"first_name\")\nprint(proxy.computed(str, \"full_name\").get())  # \"Alice Smith\"\n</code></pre>"
+    },
+    {
+      "location": "features/undo/#validation-and-undo",
+      "title": "Validation and Undo",
+      "text": "<p>When you undo a change, validation is automatically re-run for the affected field. This means that if you undo a change that makes a field invalid, the validation errors will be updated accordingly.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    username: str\n\nuser = User(username=\"\")\nproxy = ObservableProxy(user, undo=True)\n\n# Add a validator\nproxy.add_validator(\"username\", lambda v: \"Username required\" if not v else None)\n\n# Set a valid value\nproxy.observable(str, \"username\").set(\"alice\")\nprint(proxy.is_valid())  # True\n\n# Undo the change\nproxy.undo(\"username\")\nprint(proxy.is_valid())  # False\nprint(proxy.validation_for(\"username\").get())  # [\"Username required\"]\n</code></pre>"
+    },
+    {
+      "location": "features/undo/#next-steps",
+      "title": "Next Steps",
+      "text": "<p>Now that you understand how undo and redo work in Observant, you might want to explore:</p> <ul> <li>Computed Properties: Create properties that depend on other fields</li> <li>Dirty Tracking: Track unsaved changes</li> <li>Sync vs Non-Sync: Understand immediate vs. deferred updates</li> </ul>"
+    },
+    {
+      "location": "features/validation/",
+      "title": "Validation",
+      "text": "<p>Observant provides a powerful validation system that allows you to validate your data as it changes. This page explains how validation works in Observant.</p>"
+    },
+    {
+      "location": "features/validation/#overview",
+      "title": "Overview",
+      "text": "<p>Validation in Observant is field-based, meaning you can add validators to individual fields of your model. Validators are functions that check if a field's value is valid and return an error message if it's not.</p> <p>The validation system provides:</p> <ul> <li>Field-level validation</li> <li>Multiple validators per field</li> <li>Observable validation state</li> <li>Validation for computed fields</li> <li>Exception handling in validators</li> </ul>"
+    },
+    {
+      "location": "features/validation/#adding-validators",
+      "title": "Adding Validators",
+      "text": "<p>You can add validators to a field using the <code>add_validator</code> method of <code>ObservableProxy</code>. A validator is a function that takes the field's value as input and returns either:</p> <ul> <li><code>None</code> if the value is valid</li> <li>A string error message if the value is invalid</li> </ul> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    username: str\n    email: str\n    age: int\n\n# Create a user and proxy\nuser = User(username=\"\", email=\"\", age=0)\nproxy = ObservableProxy(user)\n\n# Add validators\nproxy.add_validator(\"username\", lambda v: \"Username required\" if not v else None)\nproxy.add_validator(\"email\", lambda v: \"Invalid email\" if \"@\" not in v else None)\nproxy.add_validator(\"age\", lambda v: \"Must be positive\" if v &lt;= 0 else None)\n</code></pre>"
+    },
+    {
+      "location": "features/validation/#multiple-validators",
+      "title": "Multiple Validators",
+      "text": "<p>You can add multiple validators to the same field. All validators will run, and all error messages will be collected.</p> <pre><code># Add multiple validators to the same field\nproxy.add_validator(\"username\", lambda v: \"Username required\" if not v else None)\nproxy.add_validator(\"username\", lambda v: \"Too short\" if len(v) &lt; 3 else None)\nproxy.add_validator(\"username\", lambda v: \"No spaces allowed\" if \" \" in v else None)\n\n# Set an invalid value\nproxy.observable(str, \"username\").set(\"a\")\n\n# Check validation errors\nerrors = proxy.validation_for(\"username\").get()\nprint(errors)  # ['Too short']\n</code></pre>"
+    },
+    {
+      "location": "features/validation/#complex-validators",
+      "title": "Complex Validators",
+      "text": "<p>Validators can be as simple or complex as needed. Here's an example of a more complex validator:</p> <pre><code>def validate_password(password: str) -&gt; str | None:\n    if len(password) &lt; 8:\n        return \"Password must be at least 8 characters\"\n    if not any(c.isupper() for c in password):\n        return \"Password must contain at least one uppercase letter\"\n    if not any(c.islower() for c in password):\n        return \"Password must contain at least one lowercase letter\"\n    if not any(c.isdigit() for c in password):\n        return \"Password must contain at least one digit\"\n    return None\n\nproxy.add_validator(\"password\", validate_password)\n</code></pre>"
+    },
+    {
+      "location": "features/validation/#validation_errors-and-validation_for",
+      "title": "validation_errors() and validation_for()",
+      "text": "<p>Observant provides two main methods for checking validation state:</p> <ul> <li><code>validation_errors()</code>: Returns an observable dictionary of all validation errors</li> <li><code>validation_for(field)</code>: Returns an observable list of validation errors for a specific field</li> </ul>"
+    },
+    {
+      "location": "features/validation/#validation_errors",
+      "title": "validation_errors()",
+      "text": "<p>The <code>validation_errors()</code> method returns an observable dictionary where:</p> <ul> <li>Keys are field names with validation errors</li> <li>Values are lists of error messages for each field</li> </ul> <pre><code># Check all validation errors\nerrors = proxy.validation_errors()\nprint(errors)  # {'username': ['Too short'], 'email': ['Invalid email'], 'age': ['Must be positive']}\n\n# The errors dictionary is observable\nerrors.on_change(lambda change: print(f\"Validation errors changed: {change}\"))\n\n# Fix the username\nproxy.observable(str, \"username\").set(\"alice\")\n# The errors dictionary will update automatically\n</code></pre>"
+    },
+    {
+      "location": "features/validation/#validation_for",
+      "title": "validation_for()",
+      "text": "<p>The <code>validation_for(field)</code> method returns an observable list of validation errors for a specific field:</p> <pre><code># Check validation errors for a specific field\nusername_errors = proxy.validation_for(\"username\").get()\nprint(username_errors)  # ['Too short']\n\n# The errors list is observable\nproxy.validation_for(\"username\").on_change(lambda errors: print(f\"Username errors: {errors}\"))\n\n# Fix the username\nproxy.observable(str, \"username\").set(\"alice\")\n# Prints: \"Username errors: []\"\n</code></pre>"
+    },
+    {
+      "location": "features/validation/#is_valid",
+      "title": "is_valid()",
+      "text": "<p>The <code>is_valid()</code> method returns an observable boolean indicating whether the entire model is valid:</p> <pre><code># Check if the model is valid\nis_valid = proxy.is_valid()\nprint(is_valid)  # False\n\n# The is_valid observable updates automatically\nproxy.is_valid().on_change(lambda valid: print(f\"Model is valid: {valid}\"))\n\n# Fix all validation errors\nproxy.observable(str, \"username\").set(\"alice\")\nproxy.observable(str, \"email\").set(\"alice@example.com\")\nproxy.observable(int, \"age\").set(30)\n# Prints: \"Model is valid: True\"\n</code></pre>"
+    },
+    {
+      "location": "features/validation/#resetting-validation",
+      "title": "Resetting Validation",
+      "text": "<p>Sometimes you may want to reset the validation state, for example when a form is submitted or when you want to clear all validation errors.</p>"
+    },
+    {
+      "location": "features/validation/#reset_validation",
+      "title": "reset_validation()",
+      "text": "<p>The <code>reset_validation()</code> method resets the validation state for all fields or for a specific field:</p> <pre><code># Reset validation for all fields\nproxy.reset_validation()\n\n# Reset validation for a specific field\nproxy.reset_validation(\"username\")\n</code></pre> <p>By default, <code>reset_validation()</code> also re-runs the validators. If you want to just clear the validation state without re-running the validators, you can set <code>revalidate=False</code>:</p> <pre><code># Reset validation without re-running validators\nproxy.reset_validation(revalidate=False)\n</code></pre>"
+    },
+    {
+      "location": "features/validation/#computed-field-validation",
+      "title": "Computed Field Validation",
+      "text": "<p>Observant also supports validation for computed fields. When a computed field's dependencies change, the computed field's validators are automatically re-run.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    first_name: str\n    last_name: str\n\n# Create a user and proxy\nuser = User(first_name=\"\", last_name=\"\")\nproxy = ObservableProxy(user)\n\n# Register a computed property for full name\nproxy.register_computed(\n    \"full_name\",\n    lambda: f\"{proxy.observable(str, 'first_name').get()} {proxy.observable(str, 'last_name').get()}\",\n    dependencies=[\"first_name\", \"last_name\"]\n)\n\n# Add a validator to the computed field\nproxy.add_validator(\"full_name\", lambda v: \"Full name too short\" if len(v.strip()) &lt; 5 else None)\n\n# Check validation\nprint(proxy.is_valid())  # False\nprint(proxy.validation_for(\"full_name\").get())  # ['Full name too short']\n\n# Update the dependencies\nproxy.observable(str, \"first_name\").set(\"Alice\")\nproxy.observable(str, \"last_name\").set(\"Smith\")\n\n# Validation is automatically updated\nprint(proxy.is_valid())  # True\nprint(proxy.validation_for(\"full_name\").get())  # []\n</code></pre>"
+    },
+    {
+      "location": "features/validation/#exception-handling-in-validators",
+      "title": "Exception Handling in Validators",
+      "text": "<p>Validators can sometimes raise exceptions, especially if they perform complex operations. Observant catches these exceptions and converts them to validation error messages.</p> <pre><code>from dataclasses import dataclass\nfrom observant import ObservableProxy\n\n@dataclass\nclass User:\n    username: str\n\n# Create a user and proxy\nuser = User(username=\"\")\nproxy = ObservableProxy(user)\n\n# Add a validator that might raise an exception\ndef buggy_validator(value):\n    if not value:\n        raise ValueError(\"Username cannot be empty\")\n    return None\n\nproxy.add_validator(\"username\", buggy_validator)\n\n# Check validation\nprint(proxy.is_valid())  # False\nprint(proxy.validation_for(\"username\").get())  # ['Username cannot be empty']\n\n# Fix the value\nproxy.observable(str, \"username\").set(\"alice\")\nprint(proxy.is_valid())  # True\n</code></pre> <p>This feature is particularly useful when:</p> <ul> <li>You're integrating with external validation libraries that might raise exceptions</li> <li>You want to use assert-style validation that raises exceptions</li> <li>You're performing complex validation that might fail unexpectedly</li> </ul>"
+    },
+    {
+      "location": "features/validation/#different-types-of-exceptions",
+      "title": "Different Types of Exceptions",
+      "text": "<p>Observant handles all types of exceptions in validators, not just <code>ValueError</code>:</p> <pre><code>def type_error_validator(value):\n    if not isinstance(value, str):\n        raise TypeError(\"Value must be a string\")\n    return None\n\ndef key_error_validator(value):\n    if value not in [\"admin\", \"user\", \"guest\"]:\n        raise KeyError(f\"Unknown role: {value}\")\n    return None\n\nproxy.add_validator(\"role\", type_error_validator)\nproxy.add_validator(\"role\", key_error_validator)\n</code></pre>"
+    },
+    {
+      "location": "features/validation/#next-steps",
+      "title": "Next Steps",
+      "text": "<p>Now that you understand how validation works in Observant, you might want to explore:</p> <ul> <li>Computed Properties: Create properties that depend on other fields</li> <li>Undo and Redo: Implement undo/redo functionality</li> <li>Dirty Tracking: Track unsaved changes</li> </ul>"
+    }
+  ]
+}

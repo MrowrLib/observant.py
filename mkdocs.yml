@@ -74,4 +74,14 @@ nav:
       - Dirty Tracking: features/dirty.md
       - Sync vs Non-Sync: features/sync.md
       - Saving and Loading: features/save_load.md
-  - API Reference: api_reference/index.md
+  - API Reference:
+      - Overview: api_reference/index.md
+      - Observable: api_reference/observable.md
+      - ObservableList: api_reference/observable_list.md
+      - ObservableDict: api_reference/observable_dict.md
+      - ObservableProxy: api_reference/observable_proxy.md
+      - UndoableObservable: api_reference/undoable_observable.md
+      - Types:
+          - Overview: api_reference/types/index.md
+      - Interfaces:
+          - Overview: api_reference/interfaces/index.md

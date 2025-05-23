@@ -29,7 +29,7 @@ class TestObservableProxyValidation:
         proxy = ObservableProxy(profile, sync=False)
 
         # Assert
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_errors()).is_empty()
         assert_that(proxy.validation_for("username").get()).is_empty()
 
@@ -43,13 +43,13 @@ class TestObservableProxyValidation:
         proxy.add_validator("username", lambda v: "Username too short" if len(v) < 5 else None)
 
         # Assert - initially valid
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
 
         # Act - set invalid value
         proxy.observable(str, "username").set("abc")
 
         # Assert - now invalid
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_errors()).contains_key("username")
         assert_that(proxy.validation_for("username").get()).contains("Username too short")
 
@@ -57,7 +57,7 @@ class TestObservableProxyValidation:
         proxy.observable(str, "username").set("valid_name")
 
         # Assert - valid again
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_errors()).does_not_contain_key("username")
         assert_that(proxy.validation_for("username").get()).is_empty()
 
@@ -72,21 +72,21 @@ class TestObservableProxyValidation:
         proxy.add_validator("age", lambda v: "Age must be under 120" if v > 120 else None)
 
         # Assert - initially invalid
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_for("age").get()).contains("Age must be positive")
 
         # Act - set another invalid value
         proxy.observable(int, "age").set(150)
 
         # Assert - still invalid but different error
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_for("age").get()).contains("Age must be under 120")
 
         # Act - set valid value
         proxy.observable(int, "age").set(30)
 
         # Assert - now valid
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_for("age").get()).is_empty()
 
     def test_list_field_validation(self) -> None:
@@ -99,7 +99,7 @@ class TestObservableProxyValidation:
         proxy.add_validator("books", lambda v: "Need at least 2 books" if len(v) < 2 else None)
 
         # Assert - initially invalid
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_for("books").get()).contains("Need at least 2 books")
 
         # Act - add a book
@@ -107,7 +107,7 @@ class TestObservableProxyValidation:
         books.append("Book2")
 
         # Assert - now valid
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_for("books").get()).is_empty()
 
     def test_dict_field_validation(self) -> None:
@@ -120,7 +120,7 @@ class TestObservableProxyValidation:
         proxy.add_validator("preferences", lambda v: "Missing language preference" if "language" not in v else None)
 
         # Assert - initially invalid
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_for("preferences").get()).contains("Missing language preference")
 
         # Act - add required key
@@ -128,7 +128,7 @@ class TestObservableProxyValidation:
         prefs["language"] = "en"
 
         # Assert - now valid
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_for("preferences").get()).is_empty()
 
     def test_validation_errors_observable(self) -> None:
@@ -170,7 +170,7 @@ class TestObservableProxyValidation:
         proxy.add_validator("username", buggy_validator)
 
         # Assert - validator error is captured
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_for("username").get()[0]).contains("Something went wrong")
 
     def test_different_exceptions_in_validators(self) -> None:
@@ -198,7 +198,7 @@ class TestObservableProxyValidation:
         proxy.add_validator("preferences", custom_error_validator)
 
         # Assert - all validator errors are captured with appropriate messages
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_for("username").get()[0]).contains("Type error occurred")
         assert_that(proxy.validation_for("age").get()[0]).contains("Missing key")
         assert_that(proxy.validation_for("preferences").get()[0]).contains("Custom error message")
@@ -215,7 +215,7 @@ class TestObservableProxyValidation:
         proxy.add_validator("username", lambda v: "No digits" if not any(c.isdigit() for c in v) else None)
 
         # Assert - all validators run and collect errors
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         username_errors = proxy.validation_for("username").get()
         assert_that(username_errors).is_length(3)
         assert_that(username_errors).contains("Too short")
@@ -226,7 +226,7 @@ class TestObservableProxyValidation:
         proxy.observable(str, "username").set("abc")
 
         # Assert - remaining validators still fail
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         username_errors = proxy.validation_for("username").get()
         assert_that(username_errors).is_length(2)
         assert_that(username_errors).contains("No uppercase")
@@ -236,7 +236,7 @@ class TestObservableProxyValidation:
         proxy.observable(str, "username").set("Abc")
 
         # Assert - only one validator still fails
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         username_errors = proxy.validation_for("username").get()
         assert_that(username_errors).is_length(1)
         assert_that(username_errors).contains("No digits")
@@ -245,7 +245,7 @@ class TestObservableProxyValidation:
         proxy.observable(str, "username").set("Abc1")
 
         # Assert - now valid
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_for("username").get()).is_empty()
 
     def test_validation_state_after_undo_redo(self) -> None:
@@ -261,20 +261,20 @@ class TestObservableProxyValidation:
         proxy.set_undo_config("username", enabled=True)
 
         # Assert - initially valid
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
 
         # Act - set invalid value
         proxy.observable(str, "username").set("abc")
 
         # Assert - now invalid
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_for("username").get()).contains("Username too short")
 
         # Act - undo the change
         proxy.undo("username")
 
         # Assert - validation state IS updated after undo (fixed behavior)
-        assert_that(proxy.is_valid().get()).is_true()  # Now valid again
+        assert_that(proxy.is_valid()).is_true()  # Now valid again
         assert_that(proxy.validation_for("username").get()).is_empty()  # No more errors
 
         # And the actual value is restored
@@ -284,7 +284,7 @@ class TestObservableProxyValidation:
         proxy.redo("username")
 
         # Assert - validation state IS updated after redo (fixed behavior)
-        assert_that(proxy.is_valid().get()).is_false()  # Now invalid again
+        assert_that(proxy.is_valid()).is_false()  # Now invalid again
         assert_that(proxy.validation_for("username").get()).contains("Username too short")
 
         # And the actual value is restored
@@ -303,7 +303,7 @@ class TestObservableProxyValidation:
         proxy.add_validator("full_name", lambda v: "Full name too short" if len(v) < 10 else None)
 
         # Assert - initially valid (since "user Smith" is 10 characters)
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_for("full_name").get()).is_empty()
 
         # Act - change username to make full name shorter
@@ -316,7 +316,7 @@ class TestObservableProxyValidation:
         assert_that(computed_value).is_equal_to("bob Smith")
 
         # Fixed behavior: validation IS triggered for computed fields when dependencies change
-        assert_that(proxy.is_valid().get()).is_false()  # Now invalid due to computed field
+        assert_that(proxy.is_valid()).is_false()  # Now invalid due to computed field
         assert_that(proxy.validation_errors()).contains_key("full_name")
         assert_that(proxy.validation_for("full_name").get()).contains("Full name too short")
 
@@ -330,13 +330,13 @@ class TestObservableProxyValidation:
         proxy.add_validator("username", lambda v: "Username too short" if len(v) < 5 else None)
 
         # Assert - initially valid
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
 
         # Act - load dict with invalid value
         proxy.load_dict({"username": "abc"})
 
         # Assert - validation triggered
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_errors()).contains_key("username")
         assert_that(proxy.validation_for("username").get()).contains("Username too short")
 
@@ -344,7 +344,7 @@ class TestObservableProxyValidation:
         proxy.load_dict({"username": "valid_name"})
 
         # Assert - validation passes
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_errors()).does_not_contain_key("username")
         assert_that(proxy.validation_for("username").get()).is_empty()
 
@@ -364,7 +364,7 @@ class TestObservableProxyValidation:
         proxy.observable(int, "age").set(10)  # Too young
 
         # Assert - validation errors are strings
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
 
         # Check username validation error
         username_errors = proxy.validation_for("username").get()

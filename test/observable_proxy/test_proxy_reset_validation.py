@@ -27,7 +27,7 @@ class TestObservableProxyResetValidation:
         proxy.add_validator("age", lambda v: "Must be 18+" if v < 18 else None)
 
         # Assert - all fields should have validation errors
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_errors()).is_not_empty()
         assert_that(proxy.validation_for("username").get()).is_not_empty()
         assert_that(proxy.validation_for("email").get()).is_not_empty()
@@ -37,7 +37,7 @@ class TestObservableProxyResetValidation:
         proxy.reset_validation()
 
         # Assert - all validation errors should be cleared
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_errors()).is_empty()
         assert_that(proxy.validation_for("username").get()).is_empty()
         assert_that(proxy.validation_for("email").get()).is_empty()
@@ -55,7 +55,7 @@ class TestObservableProxyResetValidation:
         proxy.add_validator("age", lambda v: "Must be 18+" if v < 18 else None)
 
         # Assert - all fields should have validation errors
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_errors()).is_not_empty()
 
         # Act - fix the validation issues
@@ -67,7 +67,7 @@ class TestObservableProxyResetValidation:
         proxy.reset_validation(revalidate=True)
 
         # Assert - validation should pass now
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_errors()).is_empty()
 
         # Act - make a field invalid again
@@ -77,14 +77,14 @@ class TestObservableProxyResetValidation:
         proxy.reset_validation(revalidate=False)
 
         # Assert - validation errors should be cleared even though the field is invalid
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_errors()).is_empty()
 
         # Act - reset validation with revalidate=True
         proxy.reset_validation(revalidate=True)
 
         # Assert - validation should fail again for the age field
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_errors()).is_not_empty()
         assert_that(proxy.validation_for("age").get()).is_not_empty()
         assert_that(proxy.validation_for("username").get()).is_empty()
@@ -102,7 +102,7 @@ class TestObservableProxyResetValidation:
         proxy.add_validator("age", lambda v: "Must be 18+" if v < 18 else None)
 
         # Assert - all fields should have validation errors
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_errors()).is_not_empty()
         assert_that(proxy.validation_for("username").get()).is_not_empty()
         assert_that(proxy.validation_for("email").get()).is_not_empty()
@@ -112,7 +112,7 @@ class TestObservableProxyResetValidation:
         proxy.reset_validation("username")
 
         # Assert - username validation errors should be cleared, others remain
-        assert_that(proxy.is_valid().get()).is_false()  # Still invalid due to other fields
+        assert_that(proxy.is_valid()).is_false()  # Still invalid due to other fields
         assert_that(proxy.validation_for("username").get()).is_empty()
         assert_that(proxy.validation_for("email").get()).is_not_empty()
         assert_that(proxy.validation_for("age").get()).is_not_empty()
@@ -135,5 +135,5 @@ class TestObservableProxyResetValidation:
         proxy.reset_validation("age", revalidate=True)
 
         # Assert - all validation should pass now
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_errors()).is_empty()

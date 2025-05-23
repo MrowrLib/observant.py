@@ -200,7 +200,7 @@ proxy.load_dict({
 })
 
 # Validation passes
-print(proxy.is_valid().get())  # True
+print(proxy.is_valid())  # True
 
 # Load invalid data
 proxy.load_dict({
@@ -209,7 +209,7 @@ proxy.load_dict({
 })
 
 # Validation fails
-print(proxy.is_valid().get())  # False
+print(proxy.is_valid())  # False
 print(proxy.validation_errors())  # {"name": ["Name required"], "age": ["Age must be positive"]}
 ```
 

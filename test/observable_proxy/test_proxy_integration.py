@@ -33,14 +33,14 @@ class TestObservableProxyIntegration:
         proxy.add_validator("full_info", lambda v: "Too long" if len(v) > 50 else None)
 
         # Assert - initially valid
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_errors()).is_empty()
 
         # Act - make the computed property invalid by changing a dependency
         proxy.observable(str, "name").set("Alice with a very long name that will make the full_info too long")
 
         # Assert - validation error should appear
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_errors()).is_not_empty()
         assert_that(proxy.validation_errors()).contains_key("full_info")
         assert_that(proxy.validation_for("full_info").get()).contains("Too long")
@@ -100,7 +100,7 @@ class TestObservableProxyIntegration:
         proxy.observable(str, "email").set("invalid-email")
 
         # Assert - field should be invalid and dirty
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.is_dirty()).is_true()
         assert_that(proxy.dirty_fields()).contains("email")
 
@@ -108,7 +108,7 @@ class TestObservableProxyIntegration:
         proxy.observable(str, "email").set("valid@example.com")
 
         # Assert - field should be valid but still dirty
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.is_dirty()).is_true()
         assert_that(proxy.dirty_fields()).contains("email")
 
@@ -116,7 +116,7 @@ class TestObservableProxyIntegration:
         proxy.reset_dirty()
 
         # Assert - field should be valid and not dirty
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.is_dirty()).is_false()
         assert_that(proxy.dirty_fields()).is_empty()
 
@@ -124,7 +124,7 @@ class TestObservableProxyIntegration:
         proxy.observable(int, "age").set(-5)
 
         # Assert - field should be invalid and dirty
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.is_dirty()).is_true()
         assert_that(proxy.dirty_fields()).contains("age")
 
@@ -132,7 +132,7 @@ class TestObservableProxyIntegration:
         proxy.reset_validation()
 
         # Assert - field should be valid (because validation was reset) but still dirty
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.is_dirty()).is_true()
         assert_that(proxy.dirty_fields()).contains("age")
 
@@ -223,13 +223,13 @@ class TestObservableProxyIntegration:
         proxy.add_validator("age", lambda v: "Must be positive" if v <= 0 else None)
 
         # Assert - initially valid
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
 
         # Act - load invalid values
         proxy.load_dict({"email": "invalid-email", "age": -5})
 
         # Assert - validation errors should be triggered
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_errors()).contains_key("email")
         assert_that(proxy.validation_errors()).contains_key("age")
         assert_that(proxy.validation_for("email").get()).contains("Invalid email")
@@ -239,7 +239,7 @@ class TestObservableProxyIntegration:
         proxy.load_dict({"email": "valid@example.com", "age": 25})
 
         # Assert - validation should pass
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.validation_errors()).is_empty()
 
     def test_reset_dirty_does_not_affect_validation(self) -> None:
@@ -255,7 +255,7 @@ class TestObservableProxyIntegration:
         proxy.observable(str, "email").set("invalid-email")
 
         # Assert - field should be invalid and dirty
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.is_dirty()).is_true()
         assert_that(proxy.validation_errors()).contains_key("email")
 
@@ -263,7 +263,7 @@ class TestObservableProxyIntegration:
         proxy.reset_dirty()
 
         # Assert - field should still be invalid but not dirty
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.is_dirty()).is_false()
         assert_that(proxy.validation_errors()).contains_key("email")
 
@@ -271,6 +271,6 @@ class TestObservableProxyIntegration:
         proxy.reset_validation()
 
         # Assert - field should be valid and not dirty
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.is_dirty()).is_false()
         assert_that(proxy.validation_errors()).is_empty()

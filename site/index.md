@@ -1,3 +1,5 @@
+<img src="assets/images/observant-py.png" width="300" />
+
 # Observant
 
 A reactive state management library for Python with observable objects, validation, undo/redo, and computed properties.
@@ -14,12 +16,11 @@ Observant is a Python library that brings reactive programming to your data mode
 
 At its core, Observant provides observable objects that notify listeners when their values change, making it easy to build reactive applications.
 
-## Why Use It?
+## Installation
 
-- **Simplify State Management**: Stop writing boilerplate code to track changes and update dependent values.
-- **Improve Code Quality**: Centralize validation logic and ensure data consistency.
-- **Enhance User Experience**: Easily implement undo/redo and track unsaved changes.
-- **Reduce Bugs**: Automatically update computed values when dependencies change.
+```bash
+pip install observant
+```
 
 ## Key Features
 
@@ -90,7 +91,7 @@ proxy.add_validator("age", lambda age: "Must be positive" if age <= 0 else None)
 proxy.add_validator("name", lambda name: "Name too short" if len(name) < 3 else None)
 
 # Check validation state
-print(proxy.is_valid().get())  # True or False
+print(proxy.is_valid())  # True or False
 print(proxy.validation_errors())  # Dictionary of field errors
 ```
 
@@ -130,11 +131,6 @@ proxy.register_computed(
 print(proxy.computed(str, "full_name").get())
 ```
 
-## Installation
-
-```bash
-pip install observant
-```
 
 ## Quick Example
 
@@ -163,7 +159,7 @@ proxy.observable(str, "email").set("alice@example.com")
 proxy.observable(int, "age").set(25)
 
 # Check if valid
-if proxy.is_valid().get():
+if proxy.is_valid():
     # Save changes
     proxy.save_to(form)
     print("Form saved!")

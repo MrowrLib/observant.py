@@ -128,7 +128,7 @@ The `is_valid()` method returns an observable boolean indicating whether the ent
 
 ```python
 # Check if the model is valid
-is_valid = proxy.is_valid().get()
+is_valid = proxy.is_valid()
 print(is_valid)  # False
 
 # The is_valid observable updates automatically
@@ -192,7 +192,7 @@ proxy.register_computed(
 proxy.add_validator("full_name", lambda v: "Full name too short" if len(v.strip()) < 5 else None)
 
 # Check validation
-print(proxy.is_valid().get())  # False
+print(proxy.is_valid())  # False
 print(proxy.validation_for("full_name").get())  # ['Full name too short']
 
 # Update the dependencies
@@ -200,7 +200,7 @@ proxy.observable(str, "first_name").set("Alice")
 proxy.observable(str, "last_name").set("Smith")
 
 # Validation is automatically updated
-print(proxy.is_valid().get())  # True
+print(proxy.is_valid())  # True
 print(proxy.validation_for("full_name").get())  # []
 ```
 
@@ -229,12 +229,12 @@ def buggy_validator(value):
 proxy.add_validator("username", buggy_validator)
 
 # Check validation
-print(proxy.is_valid().get())  # False
+print(proxy.is_valid())  # False
 print(proxy.validation_for("username").get())  # ['Username cannot be empty']
 
 # Fix the value
 proxy.observable(str, "username").set("alice")
-print(proxy.is_valid().get())  # True
+print(proxy.is_valid())  # True
 ```
 
 This feature is particularly useful when:

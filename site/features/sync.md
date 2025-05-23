@@ -112,7 +112,7 @@ proxy.observable(str, "name").set("Bob")
 proxy.observable(int, "age").set(31)
 
 # Validate changes
-if proxy.is_valid().get():
+if proxy.is_valid():
     # Apply changes
     proxy.save_to(user)
 else:

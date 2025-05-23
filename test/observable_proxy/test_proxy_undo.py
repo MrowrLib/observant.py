@@ -578,21 +578,21 @@ class TestObservableProxyUndo:
         proxy.add_validator("username", lambda value: "Username too short" if len(value) < 5 else None)
 
         # Assert - initially valid and no undo history
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.can_undo("username")).is_false()
 
         # Act - make a valid change
         proxy.observable(str, "username").set("valid_name")
 
         # Assert - valid and can undo
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.can_undo("username")).is_true()
 
         # Act - make an invalid change
         proxy.observable(str, "username").set("abc")  # Too short
 
         # Assert - invalid but can still undo
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.validation_for("username").get()).contains("Username too short")
         assert_that(proxy.can_undo("username")).is_true()
 
@@ -602,6 +602,6 @@ class TestObservableProxyUndo:
         # Assert - back to valid_name (the invalid change was added to the undo stack)
         # Validation state is now updated because undo sets values with notify=True
         assert_that(proxy.observable(str, "username").get()).is_equal_to("valid_name")
-        assert_that(proxy.is_valid().get()).is_true()  # Now valid again
+        assert_that(proxy.is_valid()).is_true()  # Now valid again
         assert_that(proxy.validation_for("username").get()).is_empty()  # No more errors
         assert_that(proxy.can_undo("username")).is_true()  # Can still undo to original

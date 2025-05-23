@@ -268,7 +268,7 @@ proxy.register_computed(
 proxy.add_validator("full_name", lambda v: "Full name too short" if len(v.strip()) < 5 else None)
 
 # Check validation
-print(proxy.is_valid().get())  # False
+print(proxy.is_valid())  # False
 print(proxy.validation_for("full_name").get())  # ["Full name too short"]
 
 # Update the dependencies
@@ -276,7 +276,7 @@ proxy.observable(str, "first_name").set("Alice")
 proxy.observable(str, "last_name").set("Smith")
 
 # Validation is automatically updated
-print(proxy.is_valid().get())  # True
+print(proxy.is_valid())  # True
 print(proxy.validation_for("full_name").get())  # []
 ```
 

@@ -159,7 +159,7 @@ class TestObservableProxyDirty:
         proxy.add_validator("username", lambda value: "Username too short" if len(value) < 5 else None)
 
         # Assert - initially valid and not dirty
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.is_dirty()).is_false()
         assert_that(proxy.dirty_fields()).is_empty()
 
@@ -167,7 +167,7 @@ class TestObservableProxyDirty:
         proxy.observable(str, "username").set("abc")  # Too short
 
         # Assert - now invalid but only username is dirty
-        assert_that(proxy.is_valid().get()).is_false()
+        assert_that(proxy.is_valid()).is_false()
         assert_that(proxy.is_dirty()).is_true()
         assert_that(proxy.dirty_fields()).contains("username")
         assert_that(proxy.dirty_fields()).is_length(1)  # Only username, not validation state
@@ -176,7 +176,7 @@ class TestObservableProxyDirty:
         proxy.observable(str, "username").set("valid_again")
 
         # Assert - now valid again but username is still dirty
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.is_dirty()).is_true()
         assert_that(proxy.dirty_fields()).contains("username")
         assert_that(proxy.dirty_fields()).is_length(1)
@@ -185,7 +185,7 @@ class TestObservableProxyDirty:
         proxy.reset_dirty()
 
         # Assert - still valid but no longer dirty
-        assert_that(proxy.is_valid().get()).is_true()
+        assert_that(proxy.is_valid()).is_true()
         assert_that(proxy.is_dirty()).is_false()
         assert_that(proxy.dirty_fields()).is_empty()
 

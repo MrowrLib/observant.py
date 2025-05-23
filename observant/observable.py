@@ -89,3 +89,32 @@ class Observable(Generic[T], IObservable[T]):
         """
         print("DEBUG: Observable.disable called")
         self._on_change_enabled = False
+
+    def __bool__(self) -> bool:
+        """
+        Convert the observable to a boolean.
+
+        Returns:
+            The boolean value of the current value.
+        """
+        return bool(self.get())
+
+    @override
+    def __str__(self) -> str:
+        """
+        Convert the observable to a string.
+
+        Returns:
+            The string representation of the current value.
+        """
+        return str(self.get())
+
+    @override
+    def __repr__(self) -> str:
+        """
+        Get the representation of the observable.
+
+        Returns:
+            A string representation of the observable.
+        """
+        return f"{self.__class__.__name__}({self.get()!r})"

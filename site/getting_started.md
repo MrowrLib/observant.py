@@ -121,7 +121,7 @@ proxy.observable(str, "password").set("securepassword")
 proxy.observable(bool, "remember_me").set(True)
 
 # Check validation
-if proxy.is_valid().get():
+if proxy.is_valid():
     print("Form is valid!")
     proxy.save_to(form)
 else:
@@ -146,7 +146,7 @@ The `ObservableProxy` is the central component of Observant. Here's what it prov
 3. **Validation**: Add validators to fields and check validation state
    ```python
    proxy.add_validator("email", lambda v: "Invalid email" if "@" not in v else None)
-   is_valid = proxy.is_valid().get()
+   is_valid = proxy.is_valid()
    errors = proxy.validation_errors()
    ```
 

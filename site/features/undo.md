@@ -292,11 +292,11 @@ proxy.add_validator("username", lambda v: "Username required" if not v else None
 
 # Set a valid value
 proxy.observable(str, "username").set("alice")
-print(proxy.is_valid().get())  # True
+print(proxy.is_valid())  # True
 
 # Undo the change
 proxy.undo("username")
-print(proxy.is_valid().get())  # False
+print(proxy.is_valid())  # False
 print(proxy.validation_for("username").get())  # ["Username required"]
 ```
 
