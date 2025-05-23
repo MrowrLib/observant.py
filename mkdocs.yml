@@ -12,8 +12,23 @@ repo_name: MrowrLib/observant.py
 theme:
   name: material
   palette:
-    primary: indigo
-    accent: indigo
+    
+    # Palette toggle for light mode
+    - scheme: 
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-7 # (2)!
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    
   features:
     - navigation.instant
     - navigation.tracking
