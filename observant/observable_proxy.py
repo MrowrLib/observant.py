@@ -546,6 +546,24 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
     def reset_dirty(self) -> None:
         """
         Reset the dirty state of all fields.
+
+        This method clears the dirty state of all fields, marking them as clean.
+        It's typically called after saving changes back to the model.
+
+        Examples:
+            ```python
+            # Create a proxy
+            user = User(name="Alice", age=30)
+            proxy = ObservableProxy(user)
+
+            # Make a change
+            proxy.observable(str, "name").set("Bob")
+            print(proxy.is_dirty())  # Prints: True
+
+            # Reset dirty state
+            proxy.reset_dirty()
+            print(proxy.is_dirty())  # Prints: False
+            ```
         """
         self._dirty_fields.clear()
 
@@ -716,6 +734,17 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
     def _validate_field_if_exists(self, attr: str) -> None:
         """
         Validate a field if it exists in any of the observable collections.
+
+        This method attempts to find the field in scalars, lists, or dicts collections,
+        and if found, validates it. If the field is not found in any observable collection,
+        it tries to get the value directly from the proxied object.
+
+        Args:
+            attr: The field name to validate.
+
+        Note:
+            This method is primarily used internally by the ObservableProxy class.
+            Users typically don't need to call this method directly.
         """
         # Check in scalars
         for key in self._scalars:
@@ -784,8 +813,34 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Get an observable that indicates whether all fields are valid.
 
+        This method returns an observable that emits True if all fields are valid
+        according to their validators, and False if any field has validation errors.
+        The observable updates automatically when field values change.
+
         Returns:
             An observable that emits True if all fields are valid, False otherwise.
+
+        Examples:
+            ```python
+            # Create a proxy with validation
+            user = User(name="Alice", age=30)
+            proxy = ObservableProxy(user)
+
+            # Add a validator
+            proxy.add_validator("age", lambda age: "Age must be positive" if age < 0 else None)
+
+            # Get the is_valid observable
+            is_valid = proxy.is_valid()
+
+            # Register a callback
+            is_valid.on_change(lambda valid: print(f"Form is valid: {valid}"))
+
+            # Initially valid
+            print(is_valid.get())  # Prints: True
+
+            # Make an invalid change
+            proxy.observable(int, "age").set(-5)  # Prints: "Form is valid: False"
+            ```
         """
         return self._is_valid_obs
 
@@ -794,8 +849,32 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Get an observable dictionary of validation errors.
 
+        This method returns an observable dictionary that maps field names to lists
+        of error messages. The dictionary is updated automatically when field values
+        change and validation is performed.
+
         Returns:
             An observable dictionary mapping field names to lists of error messages.
+            Fields with no errors are not included in the dictionary.
+
+        Examples:
+            ```python
+            # Create a proxy with validation
+            user = User(name="", age=-5)
+            proxy = ObservableProxy(user)
+
+            # Add validators
+            proxy.add_validator("name", lambda name: "Name cannot be empty" if not name else None)
+            proxy.add_validator("age", lambda age: "Age must be positive" if age < 0 else None)
+
+            # Get validation errors
+            errors = proxy.validation_errors()
+            print(dict(errors))  # Prints: {'name': ['Name cannot be empty'], 'age': ['Age must be positive']}
+
+            # Fix one error
+            proxy.observable(str, "name").set("Alice")
+            print(dict(errors))  # Prints: {'age': ['Age must be positive']}
+            ```
         """
         return self._validation_errors_dict
 
@@ -804,12 +883,35 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Get an observable list of validation errors for a specific field.
 
+        This method returns an observable that emits a list of error messages for
+        the specified field. The observable updates automatically when the field
+        value changes and validation is performed.
+
         Args:
             attr: The field name to get validation errors for.
 
         Returns:
             An observable that emits a list of error messages for the field.
             An empty list means the field is valid.
+
+        Examples:
+            ```python
+            # Create a proxy with validation
+            user = User(name="", age=30)
+            proxy = ObservableProxy(user)
+
+            # Add validators for the name field
+            proxy.add_validator("name", lambda name: "Name cannot be empty" if not name else None)
+            proxy.add_validator("name", lambda name: "Name too long" if len(name) > 50 else None)
+
+            # Get validation errors for the name field
+            name_errors = proxy.validation_for("name")
+            print(name_errors.get())  # Prints: ['Name cannot be empty']
+
+            # Fix the error
+            proxy.observable(str, "name").set("Alice")
+            print(name_errors.get())  # Prints: []
+            ```
         """
         if attr not in self._validation_for_cache:
             # Create a computed observable that depends on the validation errors dict
@@ -833,9 +935,41 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Reset validation errors for a specific field or all fields.
 
+        This method clears validation errors for the specified field or all fields.
+        It can optionally re-run validators after clearing errors.
+
         Args:
             attr: The field name to reset validation for. If None, reset all fields.
             revalidate: Whether to re-run validators after clearing errors.
+                       If True, validators will be run on the current field values.
+                       If False, fields will be marked as valid until the next change.
+
+        Examples:
+            ```python
+            # Create a proxy with validation
+            user = User(name="", age=-5)
+            proxy = ObservableProxy(user)
+
+            # Add validators
+            proxy.add_validator("name", lambda name: "Name cannot be empty" if not name else None)
+            proxy.add_validator("age", lambda age: "Age must be positive" if age < 0 else None)
+
+            # Check validation initially
+            print(proxy.is_valid().get())  # Prints: False
+
+            # Reset validation for all fields without revalidating
+            proxy.reset_validation()
+            print(proxy.is_valid().get())  # Prints: True
+
+            # Reset validation for all fields with revalidation
+            proxy.reset_validation(revalidate=True)
+            print(proxy.is_valid().get())  # Prints: False
+
+            # Reset validation for just the name field
+            proxy.reset_validation("name")
+            print(proxy.validation_for("name").get())  # Prints: []
+            print(proxy.validation_for("age").get())   # Prints: ['Age must be positive']
+            ```
         """
         if attr is None:
             # Reset all validation errors
@@ -956,9 +1090,17 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Track a change to a list field for undo/redo.
 
+        This method is called when a list field is modified. It creates undo and redo
+        functions based on the type of change (add, remove, clear) and adds them to
+        the undo stack.
+
         Args:
             attr: The field name.
-            change: The change object.
+            change: The change object containing details about the modification.
+
+        Note:
+            This method is primarily used internally by the ObservableProxy class.
+            Users typically don't need to call this method directly.
         """
         # Get the observable for this field
         obs = None
@@ -1060,9 +1202,17 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Track a change to a dict field for undo/redo.
 
+        This method is called when a dictionary field is modified. It creates undo and redo
+        functions based on the type of change (add, update, remove, clear) and adds them to
+        the undo stack.
+
         Args:
             attr: The field name.
-            change: The change object.
+            change: The change object containing details about the modification.
+
+        Note:
+            This method is primarily used internally by the ObservableProxy class.
+            Users typically don't need to call this method directly.
         """
         # Get the observable for this field
         obs = None
@@ -1192,11 +1342,19 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Add an undo/redo pair to the undo stack for a field.
 
+        This method manages the undo and redo stacks for a field. It handles debouncing
+        (grouping changes within a time window), enforces maximum stack size, and
+        manages the pending undo groups.
+
         Args:
             attr: The field name.
             undo_func: The function to call to undo the change.
             redo_func: The function to call to redo the change.
             from_undo: Whether this is being called from the undo method.
+
+        Note:
+            This method is primarily used internally by the ObservableProxy class.
+            Users typically don't need to call this method directly.
         """
         print(f"DEBUG: _add_to_undo_stack called for {attr}, from_undo={from_undo}")
 
@@ -1262,8 +1420,29 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Undo the most recent change to a field.
 
+        This method reverts the most recent change to the specified field by
+        popping the top function from the undo stack and executing it. If the
+        field has no changes to undo, this method does nothing.
+
         Args:
             attr: The field name to undo changes for.
+
+        Examples:
+            ```python
+            # Create a proxy with undo enabled
+            document = Document(title="Draft", content="Hello")
+            proxy = ObservableProxy(document, undo=True)
+
+            # Make some changes
+            proxy.observable(str, "content").set("Hello world")
+            proxy.observable(str, "content").set("Hello world!")
+
+            # Undo the last change
+            proxy.undo("content")  # Content is now "Hello world"
+
+            # Undo again
+            proxy.undo("content")  # Content is now "Hello"
+            ```
         """
         print(f"DEBUG: undo called for {attr}")
 
@@ -1325,8 +1504,28 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Redo the most recently undone change to a field.
 
+        This method reapplies the most recently undone change to the specified field
+        by popping the top function from the redo stack and executing it. If the
+        field has no changes to redo, this method does nothing.
+
         Args:
             attr: The field name to redo changes for.
+
+        Examples:
+            ```python
+            # Create a proxy with undo enabled
+            document = Document(title="Draft", content="Hello")
+            proxy = ObservableProxy(document, undo=True)
+
+            # Make a change
+            proxy.observable(str, "content").set("Hello world")
+
+            # Undo the change
+            proxy.undo("content")  # Content is now "Hello"
+
+            # Redo the change
+            proxy.redo("content")  # Content is now "Hello world" again
+            ```
         """
         print(f"DEBUG: redo called for {attr}")
         if attr not in self._redo_stacks or not self._redo_stacks[attr]:
@@ -1467,11 +1666,36 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Check if there are changes that can be undone for a field.
 
+        This method returns True if there are changes in the undo stack for the
+        specified field, and False otherwise.
+
         Args:
             attr: The field name to check.
 
         Returns:
             True if there are changes that can be undone, False otherwise.
+
+        Examples:
+            ```python
+            # Create a proxy with undo enabled
+            document = Document(title="Draft", content="Hello")
+            proxy = ObservableProxy(document, undo=True)
+
+            # Check if we can undo initially
+            print(proxy.can_undo("content"))  # Prints: False
+
+            # Make a change
+            proxy.observable(str, "content").set("Hello world")
+
+            # Check if we can undo after change
+            print(proxy.can_undo("content"))  # Prints: True
+
+            # Undo the change
+            proxy.undo("content")
+
+            # Check if we can undo after undoing
+            print(proxy.can_undo("content"))  # Prints: False
+            ```
         """
         return attr in self._undo_stacks and bool(self._undo_stacks[attr])
 
@@ -1480,11 +1704,39 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Check if there are changes that can be redone for a field.
 
+        This method returns True if there are changes in the redo stack for the
+        specified field, and False otherwise.
+
         Args:
             attr: The field name to check.
 
         Returns:
             True if there are changes that can be redone, False otherwise.
+
+        Examples:
+            ```python
+            # Create a proxy with undo enabled
+            document = Document(title="Draft", content="Hello")
+            proxy = ObservableProxy(document, undo=True)
+
+            # Make a change
+            proxy.observable(str, "content").set("Hello world")
+
+            # Check if we can redo initially
+            print(proxy.can_redo("content"))  # Prints: False
+
+            # Undo the change
+            proxy.undo("content")
+
+            # Check if we can redo after undoing
+            print(proxy.can_redo("content"))  # Prints: True
+
+            # Redo the change
+            proxy.redo("content")
+
+            # Check if we can redo after redoing
+            print(proxy.can_redo("content"))  # Prints: False
+            ```
         """
         return attr in self._redo_stacks and bool(self._redo_stacks[attr])
 
@@ -1493,10 +1745,17 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """
         Track a scalar change for undo/redo functionality.
 
+        This method is called by UndoableObservable when a scalar field value changes.
+        It creates undo and redo functions and adds them to the undo stack.
+
         Args:
             attr: The field name that changed.
             old_value: The old value before the change.
             new_value: The new value after the change.
+
+        Note:
+            This method is primarily used internally by the ObservableProxy class.
+            Users typically don't need to call this method directly.
         """
         print(f"DEBUG: track_scalar_change called for {attr} with old={old_value}, new={new_value}")
         if old_value == new_value:
