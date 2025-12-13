@@ -180,6 +180,15 @@ The `ObservableProxy` is the central component of Observant. Here's what it prov
    proxy.load_dict({"name": "Charlie", "age": 25})
    ```
 
+8. **Nested Paths**: Access deeply nested properties with dot notation
+   ```python
+   # Required nested path
+   city_obs = proxy.observable_for_path("address.city")
+
+   # Optional chaining (like JavaScript ?.)
+   city_obs = proxy.observable_for_path("address?.city")  # Returns None if address is None
+   ```
+
 ## Next Steps
 
 Now that you understand the basics, you can explore more advanced features:
@@ -191,3 +200,4 @@ Now that you understand the basics, you can explore more advanced features:
 - [Dirty Tracking](features/dirty.md): Track unsaved changes
 - [Sync vs Non-Sync](features/sync.md): Understand immediate vs. deferred updates
 - [Saving and Loading](features/save_load.md): Save changes and load data
+- [Nested Paths](features/nested_paths.md): Access deeply nested properties with optional chaining

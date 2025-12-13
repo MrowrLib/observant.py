@@ -19,6 +19,47 @@ TDictKey = TypeVar("TDictKey")
 TDictValue = TypeVar("TDictValue")
 
 
+class _PathObservable(IObservable[Any]):
+    """
+    Observable wrapper for nested paths with optional chaining support.
+    Provides two-way binding through the path.
+    """
+
+    def __init__(
+        self,
+        inner: Observable[Any],
+        proxy: "ObservableProxy[Any]",
+        segments: list[tuple[str, bool]],
+    ):
+        self._inner = inner
+        self._proxy = proxy
+        self._segments = segments
+
+    def get(self) -> Any:
+        return self._inner.get()
+
+    def set(self, value: Any, notify: bool = True) -> None:
+        # Try to set the value at the path
+        current_obj: Any = self._proxy._obj
+        for part, _ in self._segments[:-1]:
+            if current_obj is None:
+                return  # Can't set - path is broken
+            current_obj = getattr(current_obj, part, None)
+        if current_obj is None:
+            return  # Can't set - path is broken
+        setattr(current_obj, self._segments[-1][0], value)
+        self._inner.set(value, notify)
+
+    def on_change(self, callback: Callable[[Any], None]) -> None:
+        self._inner.on_change(callback)
+
+    def enable(self) -> None:
+        self._inner.enable()
+
+    def disable(self) -> None:
+        self._inner.disable()
+
+
 class ObservableProxy(Generic[T], IObservableProxy[T]):
     """
     Proxy for a data object that exposes its fields as Observable, ObservableList, or ObservableDict.
@@ -165,6 +206,9 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self._last_change_times: dict[str, float] = {}
         self._pending_undo_groups: dict[str, Callable[[], None] | None] = {}
         self._initial_values: dict[str, Any] = {}  # Store initial values for undo
+
+        # Nested proxy support for observable_for_path
+        self._nested_proxies: dict[str, "ObservableProxy[Any]"] = {}
 
     @override
     def observable(
@@ -1684,3 +1728,198 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         # Add to the undo stack
         self._add_to_undo_stack(attr, undo_func, redo_func)
+
+    def _parse_path_segments(self, path: str) -> list[tuple[str, bool]]:
+        """
+        Parse a path into segments with optional flags.
+
+        "habitat?.location?.city" -> [("habitat", True), ("location", True), ("city", False)]
+        "habitat.location.city" -> [("habitat", False), ("location", False), ("city", False)]
+
+        Args:
+            path: The dot-separated path, optionally with ?. for optional segments.
+
+        Returns:
+            List of (segment_name, is_optional) tuples.
+        """
+        segments: list[tuple[str, bool]] = []
+        raw_parts = path.replace("?.", "\x00").split(".")
+        for part in raw_parts:
+            if "\x00" in part:
+                sub_parts = part.split("\x00")
+                for j, sub in enumerate(sub_parts):
+                    if sub:
+                        is_optional = j < len(sub_parts) - 1
+                        segments.append((sub, is_optional))
+            else:
+                segments.append((part, False))
+        return segments
+
+    def _get_value_at_path(self, segments: list[tuple[str, bool]]) -> Any:
+        """
+        Get the current value at a path, returning None if any optional segment is None.
+
+        Args:
+            segments: List of (segment_name, is_optional) tuples.
+
+        Returns:
+            The value at the path, or None if path is broken.
+        """
+        current_obj: Any = self._obj
+        for part, is_optional in segments:
+            if current_obj is None:
+                return None
+            current_obj = getattr(current_obj, part, None)
+            if current_obj is None and is_optional:
+                return None
+        return current_obj
+
+    @override
+    def observable_for_path(
+        self,
+        path: str,
+        *,
+        sync: bool | None = None,
+    ) -> IObservable[Any]:
+        """
+        Get an observable for a nested path like "habitat.location.city".
+
+        Supports optional chaining with ?. syntax (like JavaScript):
+        - "habitat?.location" - if habitat is None, observable holds None
+        - "habitat.location?.city" - if location is None, observable holds None
+
+        When parent objects change from None to a value (or vice versa),
+        the observable automatically updates.
+
+        Args:
+            path: The dot-separated path to the field. Use ?. for optional segments.
+            sync: Whether to sync changes back to the model immediately.
+                 If None, uses the default sync setting from the proxy.
+
+        Returns:
+            An observable for the value at the path.
+
+        Examples:
+            ```python
+            # Simple nested path
+            city_obs = proxy.observable_for_path("address.city")
+
+            # Optional chaining - won't error if address is None
+            city_obs = proxy.observable_for_path("address?.city")
+
+            # Deep nesting with optional chaining
+            zip_obs = proxy.observable_for_path("user?.address?.zip_code")
+            ```
+        """
+        sync = self._sync_default if sync is None else sync
+
+        # Simple case: no dots means it's a direct attribute
+        if "." not in path and "?" not in path:
+            return self.observable(object, path, sync=sync)
+
+        segments = self._parse_path_segments(path)
+        has_optional = any(is_opt for _, is_opt in segments)
+
+        if not has_optional:
+            # No optional segments - use simple nested proxy approach
+            return self._observable_for_required_path(segments, sync)
+
+        # Optional segments - create reactive observable
+        return self._observable_for_optional_path(segments, sync)
+
+    def _observable_for_required_path(
+        self, segments: list[tuple[str, bool]], sync: bool
+    ) -> IObservable[Any]:
+        """
+        Handle paths without optional chaining - all segments must exist.
+
+        Args:
+            segments: List of (segment_name, is_optional) tuples.
+            sync: Whether to sync changes back to the model.
+
+        Returns:
+            An observable for the final value in the path.
+        """
+        current_obj: Any = self._obj
+        current_proxy: ObservableProxy[Any] = self
+
+        for i, (part, _) in enumerate(segments[:-1]):
+            cache_key = ".".join(seg[0] for seg in segments[: i + 1])
+            current_obj = getattr(current_obj, part)
+
+            if cache_key not in self._nested_proxies:
+                self._nested_proxies[cache_key] = ObservableProxy(
+                    current_obj, sync=sync
+                )
+            current_proxy = self._nested_proxies[cache_key]
+
+        final_attr = segments[-1][0]
+        return current_proxy.observable(object, final_attr, sync=sync)
+
+    def _observable_for_optional_path(
+        self, segments: list[tuple[str, bool]], sync: bool
+    ) -> IObservable[Any]:
+        """
+        Handle paths with optional chaining.
+        Creates a derived observable that reacts to changes in parent objects.
+
+        Args:
+            segments: List of (segment_name, is_optional) tuples.
+            sync: Whether to sync changes back to the model.
+
+        Returns:
+            A _PathObservable that wraps the value and reacts to parent changes.
+        """
+        # Create the result observable with current value
+        initial_value = self._get_value_at_path(segments)
+        result_obs: Observable[Any] = Observable(initial_value)
+
+        def setup_subscriptions() -> None:
+            # Walk the path and subscribe to each level
+            current_obj: Any = self._obj
+            current_proxy: ObservableProxy[Any] = self
+
+            for i, (part, _) in enumerate(segments[:-1]):
+                cache_key = ".".join(seg[0] for seg in segments[: i + 1])
+
+                # Get observable for this segment
+                part_obs = current_proxy.observable(object, part, sync=sync)
+
+                # Subscribe to changes at this level
+                def make_handler() -> Callable[[Any], None]:
+                    def handler(_: Any) -> None:
+                        new_value = self._get_value_at_path(segments)
+                        if result_obs.get() != new_value:
+                            result_obs.set(new_value)
+
+                    return handler
+
+                part_obs.on_change(make_handler())
+
+                # Navigate to next level
+                current_obj = getattr(current_obj, part, None)
+                if current_obj is None:
+                    # Path is broken, stop here but we've subscribed to parents
+                    return
+
+                # Create/get proxy for next level
+                if cache_key not in self._nested_proxies:
+                    self._nested_proxies[cache_key] = ObservableProxy(
+                        current_obj, sync=sync
+                    )
+                current_proxy = self._nested_proxies[cache_key]
+
+            # Subscribe to the final attribute
+            final_attr = segments[-1][0]
+            final_obs = current_proxy.observable(object, final_attr, sync=sync)
+
+            def final_handler(new_val: Any) -> None:
+                if result_obs.get() != new_val:
+                    result_obs.set(new_val)
+
+            final_obs.on_change(final_handler)
+
+        # Initial subscription setup
+        setup_subscriptions()
+
+        return _PathObservable(result_obs, self, segments)

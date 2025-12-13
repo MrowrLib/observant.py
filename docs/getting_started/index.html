@@ -440,6 +440,8 @@
       
         
       
+        
+      
     
     
     
@@ -624,6 +626,29 @@
   
   <span class="md-ellipsis">
     Saving and Loading
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/nested_paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Nested Paths
     
   </span>
   
@@ -1203,6 +1228,15 @@
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">proxy</span><span class="o">.</span><span class="n">load_dict</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Charlie&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="mi">25</span><span class="p">})</span>
 </code></pre></div></p>
 </li>
+<li>
+<p><strong>Nested Paths</strong>: Access deeply nested properties with dot notation
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Required nested path</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">city_obs</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable_for_path</span><span class="p">(</span><span class="s2">&quot;address.city&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Optional chaining (like JavaScript ?.)</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">city_obs</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">observable_for_path</span><span class="p">(</span><span class="s2">&quot;address?.city&quot;</span><span class="p">)</span>  <span class="c1"># Returns None if address is None</span>
+</code></pre></div></p>
+</li>
 </ol>
 <h2 id="next-steps">Next Steps</h2>
 <p>Now that you understand the basics, you can explore more advanced features:</p>
@@ -1214,6 +1248,7 @@
 <li><a href="../features/dirty/">Dirty Tracking</a>: Track unsaved changes</li>
 <li><a href="../features/sync/">Sync vs Non-Sync</a>: Understand immediate vs. deferred updates</li>
 <li><a href="../features/save_load/">Saving and Loading</a>: Save changes and load data</li>
+<li><a href="../features/nested_paths/">Nested Paths</a>: Access deeply nested properties with optional chaining</li>
 </ul>
 
 

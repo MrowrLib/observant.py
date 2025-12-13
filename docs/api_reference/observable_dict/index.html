@@ -320,6 +320,8 @@
       
         
       
+        
+      
     
     
     
@@ -504,6 +506,29 @@
   
   <span class="md-ellipsis">
     Saving and Loading
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/nested_paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Nested Paths
     
   </span>
   
@@ -2107,11 +2132,7 @@ to react to changes in the dictionary.</p>
 <span class="normal"><a href="#__codelineno-0-667">667</a></span>
 <span class="normal"><a href="#__codelineno-0-668">668</a></span>
 <span class="normal"><a href="#__codelineno-0-669">669</a></span>
-<span class="normal"><a href="#__codelineno-0-670">670</a></span>
-<span class="normal"><a href="#__codelineno-0-671">671</a></span>
-<span class="normal"><a href="#__codelineno-0-672">672</a></span>
-<span class="normal"><a href="#__codelineno-0-673">673</a></span>
-<span class="normal"><a href="#__codelineno-0-674">674</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="k">class</span><span class="w"> </span><span class="nc">ObservableDict</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TKey</span><span class="p">,</span> <span class="n">TValue</span><span class="p">],</span> <span class="n">IObservableDict</span><span class="p">[</span><span class="n">TKey</span><span class="p">,</span> <span class="n">TValue</span><span class="p">]):</span>
+<span class="normal"><a href="#__codelineno-0-670">670</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="k">class</span><span class="w"> </span><span class="nc">ObservableDict</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TKey</span><span class="p">,</span> <span class="n">TValue</span><span class="p">],</span> <span class="n">IObservableDict</span><span class="p">[</span><span class="n">TKey</span><span class="p">,</span> <span class="n">TValue</span><span class="p">]):</span>
 <a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="sd">    An observable implementation of Python&#39;s dictionary that notifies listeners of changes.</span>
 <a id="__codelineno-0-13" name="__codelineno-0-13"></a>
@@ -2709,73 +2730,69 @@ to react to changes in the dictionary.</p>
 <a id="__codelineno-0-605" name="__codelineno-0-605"></a><span class="sd">            key: The key that was removed.</span>
 <a id="__codelineno-0-606" name="__codelineno-0-606"></a><span class="sd">            value: The value that was removed.</span>
 <a id="__codelineno-0-607" name="__codelineno-0-607"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-608" name="__codelineno-0-608"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEBUG: ObservableDict._notify_remove called with key=</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">, value=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-609" name="__codelineno-0-609"></a>
-<a id="__codelineno-0-610" name="__codelineno-0-610"></a>        <span class="c1"># Call specific callbacks</span>
-<a id="__codelineno-0-611" name="__codelineno-0-611"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remove_callbacks</span><span class="p">:</span>
-<a id="__codelineno-0-612" name="__codelineno-0-612"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-<a id="__codelineno-0-613" name="__codelineno-0-613"></a>
-<a id="__codelineno-0-614" name="__codelineno-0-614"></a>        <span class="c1"># Create a dictionary with the single item for the items field</span>
-<a id="__codelineno-0-615" name="__codelineno-0-615"></a>        <span class="n">items_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span>
-<a id="__codelineno-0-616" name="__codelineno-0-616"></a>
-<a id="__codelineno-0-617" name="__codelineno-0-617"></a>        <span class="c1"># Call general change callbacks</span>
-<a id="__codelineno-0-618" name="__codelineno-0-618"></a>        <span class="n">change</span> <span class="o">=</span> <span class="n">ObservableDictChange</span><span class="p">(</span>
-<a id="__codelineno-0-619" name="__codelineno-0-619"></a>            <span class="nb">type</span><span class="o">=</span><span class="n">ObservableCollectionChangeType</span><span class="o">.</span><span class="n">REMOVE</span><span class="p">,</span>
-<a id="__codelineno-0-620" name="__codelineno-0-620"></a>            <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
-<a id="__codelineno-0-621" name="__codelineno-0-621"></a>            <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
-<a id="__codelineno-0-622" name="__codelineno-0-622"></a>            <span class="n">items</span><span class="o">=</span><span class="n">items_dict</span><span class="p">,</span>
-<a id="__codelineno-0-623" name="__codelineno-0-623"></a>        <span class="p">)</span>
-<a id="__codelineno-0-624" name="__codelineno-0-624"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEBUG: ObservableDict._notify_remove - Created change object: type=</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">, key=</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">, value=</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-625" name="__codelineno-0-625"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change_callbacks</span><span class="p">:</span>
-<a id="__codelineno-0-626" name="__codelineno-0-626"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
-<a id="__codelineno-0-627" name="__codelineno-0-627"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DEBUG: ObservableDict._notify_remove - Completed&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-608" name="__codelineno-0-608"></a>        <span class="c1"># Call specific callbacks</span>
+<a id="__codelineno-0-609" name="__codelineno-0-609"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remove_callbacks</span><span class="p">:</span>
+<a id="__codelineno-0-610" name="__codelineno-0-610"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+<a id="__codelineno-0-611" name="__codelineno-0-611"></a>
+<a id="__codelineno-0-612" name="__codelineno-0-612"></a>        <span class="c1"># Create a dictionary with the single item for the items field</span>
+<a id="__codelineno-0-613" name="__codelineno-0-613"></a>        <span class="n">items_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span>
+<a id="__codelineno-0-614" name="__codelineno-0-614"></a>
+<a id="__codelineno-0-615" name="__codelineno-0-615"></a>        <span class="c1"># Call general change callbacks</span>
+<a id="__codelineno-0-616" name="__codelineno-0-616"></a>        <span class="n">change</span> <span class="o">=</span> <span class="n">ObservableDictChange</span><span class="p">(</span>
+<a id="__codelineno-0-617" name="__codelineno-0-617"></a>            <span class="nb">type</span><span class="o">=</span><span class="n">ObservableCollectionChangeType</span><span class="o">.</span><span class="n">REMOVE</span><span class="p">,</span>
+<a id="__codelineno-0-618" name="__codelineno-0-618"></a>            <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+<a id="__codelineno-0-619" name="__codelineno-0-619"></a>            <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+<a id="__codelineno-0-620" name="__codelineno-0-620"></a>            <span class="n">items</span><span class="o">=</span><span class="n">items_dict</span><span class="p">,</span>
+<a id="__codelineno-0-621" name="__codelineno-0-621"></a>        <span class="p">)</span>
+<a id="__codelineno-0-622" name="__codelineno-0-622"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change_callbacks</span><span class="p">:</span>
+<a id="__codelineno-0-623" name="__codelineno-0-623"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+<a id="__codelineno-0-624" name="__codelineno-0-624"></a>
+<a id="__codelineno-0-625" name="__codelineno-0-625"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_notify_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">TKey</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">TValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-626" name="__codelineno-0-626"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-627" name="__codelineno-0-627"></a><span class="sd">        Notify all callbacks of an item being updated.</span>
 <a id="__codelineno-0-628" name="__codelineno-0-628"></a>
-<a id="__codelineno-0-629" name="__codelineno-0-629"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_notify_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">TKey</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">TValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-630" name="__codelineno-0-630"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-631" name="__codelineno-0-631"></a><span class="sd">        Notify all callbacks of an item being updated.</span>
-<a id="__codelineno-0-632" name="__codelineno-0-632"></a>
-<a id="__codelineno-0-633" name="__codelineno-0-633"></a><span class="sd">        This internal method is called by methods that update items in the dictionary.</span>
-<a id="__codelineno-0-634" name="__codelineno-0-634"></a><span class="sd">        It notifies both specific update callbacks and general change callbacks.</span>
-<a id="__codelineno-0-635" name="__codelineno-0-635"></a>
-<a id="__codelineno-0-636" name="__codelineno-0-636"></a><span class="sd">        Args:</span>
-<a id="__codelineno-0-637" name="__codelineno-0-637"></a><span class="sd">            key: The key that was updated.</span>
-<a id="__codelineno-0-638" name="__codelineno-0-638"></a><span class="sd">            value: The new value.</span>
-<a id="__codelineno-0-639" name="__codelineno-0-639"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-640" name="__codelineno-0-640"></a>        <span class="c1"># Call specific callbacks</span>
-<a id="__codelineno-0-641" name="__codelineno-0-641"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_callbacks</span><span class="p">:</span>
-<a id="__codelineno-0-642" name="__codelineno-0-642"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-<a id="__codelineno-0-643" name="__codelineno-0-643"></a>
-<a id="__codelineno-0-644" name="__codelineno-0-644"></a>        <span class="c1"># Create a dictionary with the single item for the items field</span>
-<a id="__codelineno-0-645" name="__codelineno-0-645"></a>        <span class="n">items_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span>
-<a id="__codelineno-0-646" name="__codelineno-0-646"></a>
-<a id="__codelineno-0-647" name="__codelineno-0-647"></a>        <span class="c1"># Call general change callbacks</span>
-<a id="__codelineno-0-648" name="__codelineno-0-648"></a>        <span class="n">change</span> <span class="o">=</span> <span class="n">ObservableDictChange</span><span class="p">(</span>
-<a id="__codelineno-0-649" name="__codelineno-0-649"></a>            <span class="nb">type</span><span class="o">=</span><span class="n">ObservableCollectionChangeType</span><span class="o">.</span><span class="n">UPDATE</span><span class="p">,</span>
-<a id="__codelineno-0-650" name="__codelineno-0-650"></a>            <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
-<a id="__codelineno-0-651" name="__codelineno-0-651"></a>            <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
-<a id="__codelineno-0-652" name="__codelineno-0-652"></a>            <span class="n">items</span><span class="o">=</span><span class="n">items_dict</span><span class="p">,</span>
-<a id="__codelineno-0-653" name="__codelineno-0-653"></a>        <span class="p">)</span>
-<a id="__codelineno-0-654" name="__codelineno-0-654"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change_callbacks</span><span class="p">:</span>
-<a id="__codelineno-0-655" name="__codelineno-0-655"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+<a id="__codelineno-0-629" name="__codelineno-0-629"></a><span class="sd">        This internal method is called by methods that update items in the dictionary.</span>
+<a id="__codelineno-0-630" name="__codelineno-0-630"></a><span class="sd">        It notifies both specific update callbacks and general change callbacks.</span>
+<a id="__codelineno-0-631" name="__codelineno-0-631"></a>
+<a id="__codelineno-0-632" name="__codelineno-0-632"></a><span class="sd">        Args:</span>
+<a id="__codelineno-0-633" name="__codelineno-0-633"></a><span class="sd">            key: The key that was updated.</span>
+<a id="__codelineno-0-634" name="__codelineno-0-634"></a><span class="sd">            value: The new value.</span>
+<a id="__codelineno-0-635" name="__codelineno-0-635"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-636" name="__codelineno-0-636"></a>        <span class="c1"># Call specific callbacks</span>
+<a id="__codelineno-0-637" name="__codelineno-0-637"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_callbacks</span><span class="p">:</span>
+<a id="__codelineno-0-638" name="__codelineno-0-638"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+<a id="__codelineno-0-639" name="__codelineno-0-639"></a>
+<a id="__codelineno-0-640" name="__codelineno-0-640"></a>        <span class="c1"># Create a dictionary with the single item for the items field</span>
+<a id="__codelineno-0-641" name="__codelineno-0-641"></a>        <span class="n">items_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span>
+<a id="__codelineno-0-642" name="__codelineno-0-642"></a>
+<a id="__codelineno-0-643" name="__codelineno-0-643"></a>        <span class="c1"># Call general change callbacks</span>
+<a id="__codelineno-0-644" name="__codelineno-0-644"></a>        <span class="n">change</span> <span class="o">=</span> <span class="n">ObservableDictChange</span><span class="p">(</span>
+<a id="__codelineno-0-645" name="__codelineno-0-645"></a>            <span class="nb">type</span><span class="o">=</span><span class="n">ObservableCollectionChangeType</span><span class="o">.</span><span class="n">UPDATE</span><span class="p">,</span>
+<a id="__codelineno-0-646" name="__codelineno-0-646"></a>            <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+<a id="__codelineno-0-647" name="__codelineno-0-647"></a>            <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+<a id="__codelineno-0-648" name="__codelineno-0-648"></a>            <span class="n">items</span><span class="o">=</span><span class="n">items_dict</span><span class="p">,</span>
+<a id="__codelineno-0-649" name="__codelineno-0-649"></a>        <span class="p">)</span>
+<a id="__codelineno-0-650" name="__codelineno-0-650"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change_callbacks</span><span class="p">:</span>
+<a id="__codelineno-0-651" name="__codelineno-0-651"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+<a id="__codelineno-0-652" name="__codelineno-0-652"></a>
+<a id="__codelineno-0-653" name="__codelineno-0-653"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_notify_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">TKey</span><span class="p">,</span> <span class="n">TValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-654" name="__codelineno-0-654"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-655" name="__codelineno-0-655"></a><span class="sd">        Notify all callbacks of the dictionary being cleared.</span>
 <a id="__codelineno-0-656" name="__codelineno-0-656"></a>
-<a id="__codelineno-0-657" name="__codelineno-0-657"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_notify_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">TKey</span><span class="p">,</span> <span class="n">TValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-658" name="__codelineno-0-658"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-659" name="__codelineno-0-659"></a><span class="sd">        Notify all callbacks of the dictionary being cleared.</span>
-<a id="__codelineno-0-660" name="__codelineno-0-660"></a>
-<a id="__codelineno-0-661" name="__codelineno-0-661"></a><span class="sd">        This internal method is called by the clear method.</span>
-<a id="__codelineno-0-662" name="__codelineno-0-662"></a><span class="sd">        It notifies both specific clear callbacks and general change callbacks.</span>
-<a id="__codelineno-0-663" name="__codelineno-0-663"></a>
-<a id="__codelineno-0-664" name="__codelineno-0-664"></a><span class="sd">        Args:</span>
-<a id="__codelineno-0-665" name="__codelineno-0-665"></a><span class="sd">            items: The items that were cleared.</span>
-<a id="__codelineno-0-666" name="__codelineno-0-666"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-667" name="__codelineno-0-667"></a>        <span class="c1"># Call specific callbacks</span>
-<a id="__codelineno-0-668" name="__codelineno-0-668"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clear_callbacks</span><span class="p">:</span>
-<a id="__codelineno-0-669" name="__codelineno-0-669"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
-<a id="__codelineno-0-670" name="__codelineno-0-670"></a>
-<a id="__codelineno-0-671" name="__codelineno-0-671"></a>        <span class="c1"># Call general change callbacks</span>
-<a id="__codelineno-0-672" name="__codelineno-0-672"></a>        <span class="n">change</span> <span class="o">=</span> <span class="n">ObservableDictChange</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">ObservableCollectionChangeType</span><span class="o">.</span><span class="n">CLEAR</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="n">items</span><span class="p">)</span>
-<a id="__codelineno-0-673" name="__codelineno-0-673"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change_callbacks</span><span class="p">:</span>
-<a id="__codelineno-0-674" name="__codelineno-0-674"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+<a id="__codelineno-0-657" name="__codelineno-0-657"></a><span class="sd">        This internal method is called by the clear method.</span>
+<a id="__codelineno-0-658" name="__codelineno-0-658"></a><span class="sd">        It notifies both specific clear callbacks and general change callbacks.</span>
+<a id="__codelineno-0-659" name="__codelineno-0-659"></a>
+<a id="__codelineno-0-660" name="__codelineno-0-660"></a><span class="sd">        Args:</span>
+<a id="__codelineno-0-661" name="__codelineno-0-661"></a><span class="sd">            items: The items that were cleared.</span>
+<a id="__codelineno-0-662" name="__codelineno-0-662"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-663" name="__codelineno-0-663"></a>        <span class="c1"># Call specific callbacks</span>
+<a id="__codelineno-0-664" name="__codelineno-0-664"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clear_callbacks</span><span class="p">:</span>
+<a id="__codelineno-0-665" name="__codelineno-0-665"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+<a id="__codelineno-0-666" name="__codelineno-0-666"></a>
+<a id="__codelineno-0-667" name="__codelineno-0-667"></a>        <span class="c1"># Call general change callbacks</span>
+<a id="__codelineno-0-668" name="__codelineno-0-668"></a>        <span class="n">change</span> <span class="o">=</span> <span class="n">ObservableDictChange</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">ObservableCollectionChangeType</span><span class="o">.</span><span class="n">CLEAR</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="n">items</span><span class="p">)</span>
+<a id="__codelineno-0-669" name="__codelineno-0-669"></a>        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change_callbacks</span><span class="p">:</span>
+<a id="__codelineno-0-670" name="__codelineno-0-670"></a>            <span class="n">callback</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 

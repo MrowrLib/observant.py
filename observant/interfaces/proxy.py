@@ -281,3 +281,42 @@ class IObservableProxy(Generic[T], ABC):
             new_value: The new value after the change.
         """
         ...
+
+    @abstractmethod
+    def observable_for_path(
+        self,
+        path: str,
+        *,
+        sync: bool | None = None,
+    ) -> IObservable[Any]:
+        """
+        Get an observable for a nested path like "habitat.location.city".
+
+        Supports optional chaining with ?. syntax (like JavaScript):
+        - "habitat?.location" - if habitat is None, observable holds None
+        - "habitat.location?.city" - if location is None, observable holds None
+
+        When parent objects change from None to a value (or vice versa),
+        the observable automatically updates.
+
+        Args:
+            path: The dot-separated path to the field. Use ?. for optional segments.
+            sync: Whether to sync changes back to the model immediately.
+                 If None, uses the default sync setting from the proxy.
+
+        Returns:
+            An observable for the value at the path.
+
+        Examples:
+            ```python
+            # Simple nested path
+            city_obs = proxy.observable_for_path("address.city")
+
+            # Optional chaining - won't error if address is None
+            city_obs = proxy.observable_for_path("address?.city")
+
+            # Deep nesting with optional chaining
+            zip_obs = proxy.observable_for_path("user?.address?.zip_code")
+            ```
+        """
+        ...

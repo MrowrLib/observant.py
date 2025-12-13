@@ -2,66 +2,70 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://mrowrlib.github.io/observant.py/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/getting_started/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/api_reference/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/api_reference/observable/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/api_reference/observable_dict/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/api_reference/observable_list/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/api_reference/observable_proxy/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/api_reference/interfaces/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/api_reference/types/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/features/change_tracking/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/features/computed/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/features/dirty/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
+    </url>
+    <url>
+         <loc>https://mrowrlib.github.io/observant.py/features/nested_paths/</loc>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/features/save_load/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/features/sync/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/features/undo/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
     <url>
          <loc>https://mrowrlib.github.io/observant.py/features/validation/</loc>
-         <lastmod>2025-05-23</lastmod>
+         <lastmod>2025-12-13</lastmod>
     </url>
 </urlset>

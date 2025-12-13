@@ -75,6 +75,7 @@ nav:
       - Dirty Tracking: features/dirty.md
       - Sync vs Non-Sync: features/sync.md
       - Saving and Loading: features/save_load.md
+      - Nested Paths: features/nested_paths.md
   - API Reference:
       - Overview: api_reference/index.md
       - Observable: api_reference/observable.md
