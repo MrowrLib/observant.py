@@ -46,11 +46,9 @@ class Observable(Generic[T], IObservable[T]):
             on_change: Optional callback function to register immediately.
             on_change_enabled: Whether callbacks should be enabled initially.
         """
-        print(f"DEBUG: Observable.__init__ called with value {value}")
         self._value = value
         self._callbacks = []
         self._on_change_enabled = on_change_enabled
-        print("DEBUG: Observable.__init__ - Initialized with empty callbacks list")
 
     @override
     def get(self) -> T:
@@ -92,19 +90,13 @@ class Observable(Generic[T], IObservable[T]):
             counter.set(2, notify=False)  # No output
             ```
         """
-        print(f"DEBUG: Observable.set called with value {value}")
         self._value = value
 
         if not notify or not self._on_change_enabled:
-            print("DEBUG: Observable.set - on_change is disabled, skipping callbacks")
             return
 
-        print(f"DEBUG: Observable.set - Notifying {len(self._callbacks)} callbacks")
-        for i, callback in enumerate(self._callbacks):
-            print(f"DEBUG: Observable.set - Calling callback {i}")
+        for callback in self._callbacks:
             callback(value)
-            print(f"DEBUG: Observable.set - Callback {i} completed")
-        print("DEBUG: Observable.set - Completed")
 
     @override
     def on_change(self, callback: Callable[[T], None]) -> None:
@@ -138,15 +130,12 @@ class Observable(Generic[T], IObservable[T]):
             # "Counter is now 1"
             ```
         """
-        print(f"DEBUG: Observable.on_change called, current callbacks: {len(self._callbacks)}")
         # Check if this callback is already registered to avoid duplicates
         for existing_cb in self._callbacks:
             if existing_cb == callback:
-                print("DEBUG: Observable.on_change - Callback already registered, skipping")
                 return
 
         self._callbacks.append(callback)
-        print(f"DEBUG: Observable.on_change - Added callback, now have {len(self._callbacks)} callbacks")
 
     @override
     def enable(self) -> None:
@@ -170,7 +159,6 @@ class Observable(Generic[T], IObservable[T]):
             counter.set(2)  # Prints: "Counter changed to 2"
             ```
         """
-        print("DEBUG: Observable.enable called")
         self._on_change_enabled = True
 
     @override
@@ -191,7 +179,6 @@ class Observable(Generic[T], IObservable[T]):
             counter.set(1)  # No output
             ```
         """
-        print("DEBUG: Observable.disable called")
         self._on_change_enabled = False
 
     def __bool__(self) -> bool:

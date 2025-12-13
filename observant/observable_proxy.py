@@ -1123,16 +1123,9 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         # Helper function to temporarily disable tracking
         def with_tracking_disabled(action: Callable[[], None]) -> None:
-            print(f"DEBUG: with_tracking_disabled - Disabling tracking for {attr}")
-            # Disable tracking during this operation
             tracking_enabled[0] = False
-            # Perform the action
-            print("DEBUG: with_tracking_disabled - Executing action")
             action()
-            print("DEBUG: with_tracking_disabled - Action executed")
-            # Re-enable tracking
             tracking_enabled[0] = True
-            print(f"DEBUG: with_tracking_disabled - Tracking re-enabled for {attr}")
 
         # Create undo/redo functions based on the change type
         if hasattr(change, "type") and change.type == ObservableCollectionChangeType.CLEAR:
@@ -1235,16 +1228,9 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
         # Helper function to temporarily disable tracking
         def with_tracking_disabled(action: Callable[[], None]) -> None:
-            print(f"DEBUG: dict with_tracking_disabled - Disabling tracking for {attr}")
-            # Disable tracking during this operation
             tracking_enabled[0] = False
-            # Perform the action
-            print("DEBUG: dict with_tracking_disabled - Executing action")
             action()
-            print("DEBUG: dict with_tracking_disabled - Action executed")
-            # Re-enable tracking
             tracking_enabled[0] = True
-            print(f"DEBUG: dict with_tracking_disabled - Tracking re-enabled for {attr}")
 
         # Create undo/redo functions based on the change type
         if hasattr(change, "key") and hasattr(change, "value") and hasattr(change, "old_value"):
@@ -1288,32 +1274,12 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             dict_key = change.key
             old_value = change.value
 
-            print(f"DEBUG: _track_dict_change - Creating undo/redo functions for key deletion: {dict_key}={old_value}")
-
             def undo_func() -> None:
-                print(f"DEBUG: dict undo_func - Starting undo for key {dict_key}")
-                print(f"DEBUG: dict undo_func - Observable dict: {obs}")
-                print(f"DEBUG: dict undo_func - Observable dict keys: {list(obs.keys())}")
-                print(f"DEBUG: dict undo_func - Setting key {dict_key} to value {old_value}")
-
-                # Directly set the key in the dictionary
                 obs[dict_key] = old_value
 
-                print(f"DEBUG: dict undo_func - After restore, keys: {list(obs.keys())}")
-                print(f"DEBUG: dict undo_func - Completed undo for key {dict_key}")
-
             def redo_func() -> None:
-                print(f"DEBUG: dict redo_func - Starting redo for key {dict_key}")
-                print(f"DEBUG: dict redo_func - Observable dict: {obs}")
-                print(f"DEBUG: dict redo_func - Observable dict keys: {list(obs.keys())}")
-                print(f"DEBUG: dict redo_func - Deleting key {dict_key}")
-
-                # Directly delete the key without using the action function
-                if dict_key in obs:  # Check if key exists
+                if dict_key in obs:
                     del obs[dict_key]
-
-                print(f"DEBUG: dict redo_func - After delete, keys: {list(obs.keys())}")
-                print(f"DEBUG: dict redo_func - Completed redo for key {dict_key}")
 
         elif hasattr(change, "old_items"):
             # This is a clear
@@ -1356,19 +1322,14 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             This method is primarily used internally by the ObservableProxy class.
             Users typically don't need to call this method directly.
         """
-        print(f"DEBUG: _add_to_undo_stack called for {attr}, from_undo={from_undo}")
-
         # Initialize stacks if they don't exist
         if attr not in self._undo_stacks:
             self._undo_stacks[attr] = []
-            print(f"DEBUG: _add_to_undo_stack - Initialized undo stack for {attr}")
         if attr not in self._redo_stacks:
             self._redo_stacks[attr] = []
-            print(f"DEBUG: _add_to_undo_stack - Initialized redo stack for {attr}")
 
         # Get the undo config for this field
         config = self._get_undo_config(attr)
-        print(f"DEBUG: _add_to_undo_stack - Got undo config for {attr}: undo_max={config.undo_max}, undo_debounce_ms={config.undo_debounce_ms}")
 
         # Check if we should debounce this change
         now = time.monotonic() * 1000  # Convert to milliseconds
@@ -1376,44 +1337,29 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         debounce_window = config.undo_debounce_ms
         time_since_last_change = now - last_change_time
 
-        print(f"DEBUG: _add_to_undo_stack - now={now}, last_change_time={last_change_time}, time_since_last_change={time_since_last_change}ms, debounce_window={debounce_window}ms")
-        print(f"DEBUG: _add_to_undo_stack - pending_undo_groups for {attr}: {attr in self._pending_undo_groups}")
-        if attr in self._pending_undo_groups:
-            print(f"DEBUG: _add_to_undo_stack - pending_undo_groups[{attr}] is None: {self._pending_undo_groups[attr] is None}")
-
         if debounce_window is not None and attr in self._pending_undo_groups and self._pending_undo_groups[attr] is not None and time_since_last_change < debounce_window:
             # We're within the debounce window, update the pending group
-            # The pending group is the redo function from the previous change
-            # We replace it with the new redo function
-            print(f"DEBUG: _add_to_undo_stack - Within debounce window, updating pending group for {attr}")
             self._pending_undo_groups[attr] = redo_func
         else:
             # We're outside the debounce window or there's no pending group
-            print(f"DEBUG: _add_to_undo_stack - Outside debounce window or no pending group for {attr}")
 
             # Clear the redo stack when a new change is made, but not if we're undoing
             if not from_undo:
                 self._redo_stacks[attr].clear()
-                print(f"DEBUG: _add_to_undo_stack - Cleared redo stack for {attr}")
 
             # Add the undo function to the stack
             self._undo_stacks[attr].append(undo_func)
-            print(f"DEBUG: _add_to_undo_stack - Added undo function to stack for {attr}, stack size: {len(self._undo_stacks[attr])}")
 
             # Enforce the max size
             if config.undo_max is not None:
                 while len(self._undo_stacks[attr]) > config.undo_max:
                     self._undo_stacks[attr].pop(0)
-                    print(f"DEBUG: _add_to_undo_stack - Enforced max size for {attr}, removed oldest undo function")
 
             # Set the pending group
             self._pending_undo_groups[attr] = redo_func
-            print(f"DEBUG: _add_to_undo_stack - Set pending group for {attr}")
 
         # Update the last change time
         self._last_change_times[attr] = now
-        print(f"DEBUG: _add_to_undo_stack - Updated last change time for {attr} to {now}")
-        print(f"DEBUG: _add_to_undo_stack - Completed for {attr}")
 
     @override
     def undo(self, attr: str) -> None:
@@ -1444,26 +1390,19 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             proxy.undo("content")  # Content is now "Hello"
             ```
         """
-        print(f"DEBUG: undo called for {attr}")
-
         if attr not in self._undo_stacks or not self._undo_stacks[attr]:
-            print(f"DEBUG: undo - Nothing to undo for {attr}")
             return  # Nothing to undo
 
         # Pop the most recent undo function
         undo_func = self._undo_stacks[attr].pop()
-        print(f"DEBUG: undo - Popped undo function from stack for {attr}, remaining: {len(self._undo_stacks[attr])}")
 
         # Get the pending redo function
         redo_func = self._pending_undo_groups.get(attr)
-        print(f"DEBUG: undo - Got pending redo function for {attr}: {redo_func is not None}")
 
         # Add to the redo stack if it exists
         if redo_func is not None:
             self._redo_stacks[attr].append(redo_func)
-            print(f"DEBUG: undo - Added redo function to stack for {attr}")
             self._pending_undo_groups[attr] = None
-            print(f"DEBUG: undo - Cleared pending undo group for {attr}")
 
         # Find the observable for this field to set the undoing flag
         obs = None
@@ -1471,10 +1410,6 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             if key.attr == attr:
                 obs = o
                 break
-
-        # Execute the undo function with undoing flag set
-        print(f"DEBUG: undo - Executing undo function for {attr}")
-        print(f"DEBUG: undo - undo_func: {undo_func}")
 
         # Set the undoing flag if we found the observable and it's a UndoableObservable
         from observant.undoable_observable import UndoableObservable
@@ -1489,14 +1424,11 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             if obs is not None and isinstance(obs, UndoableObservable):
                 obs.set_undoing(False)
 
-        print(f"DEBUG: undo - Completed for {attr}")
-
         # If sync is enabled for this field, update the model
         for key in self._scalars:
             if key.attr == attr and key.sync:
                 value = self._scalars[key].get()
                 setattr(self._obj, attr, value)
-                print(f"DEBUG: undo - Synced {attr} to model with value {value}")
                 break
 
     @override
@@ -1527,24 +1459,18 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             proxy.redo("content")  # Content is now "Hello world" again
             ```
         """
-        print(f"DEBUG: redo called for {attr}")
         if attr not in self._redo_stacks or not self._redo_stacks[attr]:
-            print(f"DEBUG: redo - Nothing to redo for {attr}")
             return  # Nothing to redo
 
         # Pop the most recent redo function
         redo_func = self._redo_stacks[attr].pop()
-        print(f"DEBUG: redo - Popped redo function from stack for {attr}, remaining: {len(self._redo_stacks[attr])}")
 
         # Get the undo function that will undo this redo operation
-        # This is the function that was popped from the undo stack when undo was called
         undo_func = None
         if attr in self._pending_undo_groups:
             undo_func = self._pending_undo_groups[attr]
-            print(f"DEBUG: redo - Got pending undo function for {attr}: {undo_func is not None}")
 
         # Find the observable for this field to manually track changes
-        # We need to do this because the redo function disables tracking
         obs_list = None
         obs_dict = None
 
@@ -1552,7 +1478,6 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         for key, o in self._lists.items():
             if key.attr == attr:
                 obs_list = o
-                print(f"DEBUG: redo - Found list observable for {attr}")
                 break
 
         # Check if this is a dict field
@@ -1560,10 +1485,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             for key, o in self._dicts.items():
                 if key.attr == attr:
                     obs_dict = o
-                    print(f"DEBUG: redo - Found dict observable for {attr}")
                     break
-
-        # We don't need to simulate change objects anymore
 
         # Find the scalar observable for this field to set the undoing flag
         obs_scalar = None
@@ -1571,9 +1493,6 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             if key.attr == attr:
                 obs_scalar = o
                 break
-
-        # Execute the redo function with undoing flag set
-        print(f"DEBUG: redo - Executing redo function for {attr}")
 
         # Set the undoing flag if we found the observable and it's a UndoableObservable
         from observant.undoable_observable import UndoableObservable
@@ -1588,77 +1507,50 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             if obs_scalar is not None and isinstance(obs_scalar, UndoableObservable):
                 obs_scalar.set_undoing(False)
 
-        print(f"DEBUG: redo - Redo function executed for {attr}")
-
         # Add the undo function back to the undo stack
-        # This is necessary because the redo function disables tracking
         if undo_func is not None:
             self._undo_stacks.setdefault(attr, []).append(undo_func)
-            print(f"DEBUG: redo - Added undo function back to stack for {attr}, stack size: {len(self._undo_stacks[attr])}")
-            # Clear the pending undo group since we've used it
             self._pending_undo_groups[attr] = None
-            print(f"DEBUG: redo - Cleared pending undo group for {attr}")
         else:
             # If we don't have an undo function from the pending group,
             # we need to create one based on the current state
-            print("DEBUG: redo - No pending undo function, creating one")
 
             # For scalar fields
             for key, o in self._scalars.items():
                 if key.attr == attr:
-                    # Create an undo function that will restore the current value
                     current_value = o.get()
 
                     def new_undo_func() -> None:
-                        print(f"DEBUG: new_undo_func called for {attr}")
                         o.set(current_value, notify=False)
-                        print(f"DEBUG: new_undo_func completed for {attr}")
 
-                    # Add it to the undo stack
                     self._undo_stacks.setdefault(attr, []).append(new_undo_func)
-                    print(f"DEBUG: redo - Created and added new undo function for scalar {attr}")
                     break
 
             # For list fields
             if obs_list is not None:
-                # Create an undo function that will restore the current list state
                 current_list = obs_list.copy()
 
                 def new_list_undo_func() -> None:
-                    print(f"DEBUG: new_list_undo_func called for {attr}")
-                    # Clear the list and add all items back
                     obs_list.clear()
                     obs_list.extend(current_list)
-                    print(f"DEBUG: new_list_undo_func completed for {attr}")
 
-                # Add it to the undo stack
                 self._undo_stacks.setdefault(attr, []).append(new_list_undo_func)
-                print(f"DEBUG: redo - Created and added new undo function for list {attr}")
 
             # For dict fields
             if obs_dict is not None:
-                # Create an undo function that will restore the current dict state
                 current_dict = obs_dict.copy()
 
                 def new_dict_undo_func() -> None:
-                    print(f"DEBUG: new_dict_undo_func called for {attr}")
-                    # Clear the dict and add all items back
                     obs_dict.clear()
                     obs_dict.update(current_dict)
-                    print(f"DEBUG: new_dict_undo_func completed for {attr}")
 
-                # Add it to the undo stack
                 self._undo_stacks.setdefault(attr, []).append(new_dict_undo_func)
-                print(f"DEBUG: redo - Created and added new undo function for dict {attr}")
-
-        print(f"DEBUG: redo - Completed for {attr}")
 
         # If sync is enabled for this field, update the model
         for key in self._scalars:
             if key.attr == attr and key.sync:
                 value = self._scalars[key].get()
                 setattr(self._obj, attr, value)
-                print(f"DEBUG: redo - Synced {attr} to model with value {value}")
                 break
 
     @override
@@ -1757,15 +1649,12 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             This method is primarily used internally by the ObservableProxy class.
             Users typically don't need to call this method directly.
         """
-        print(f"DEBUG: track_scalar_change called for {attr} with old={old_value}, new={new_value}")
         if old_value == new_value:
-            print("DEBUG: values are the same, skipping")
             return
 
         # Check if undo is enabled for this field
         config = self._get_undo_config(attr)
         if not config.enabled:
-            print(f"DEBUG: undo is disabled for {attr}, skipping")
             return
 
         # Get the observable for this field
@@ -1776,33 +1665,22 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
                 break
 
         if obs is None:
-            print(f"DEBUG: track_scalar_change - Field {attr} not found")
             return  # Field not found
 
         # Create undo/redo functions
         def undo_func() -> None:
-            print(f"DEBUG: undo_func called for {attr}, setting value to {old_value}")
-            # Set the old value with triggering callbacks to ensure computed properties update
             obs.set(old_value)
 
             # If we're undoing to the original value, clear the dirty state
             if old_value == self._initial_values.get(attr):
                 self._dirty_fields.discard(attr)
 
-            print(f"DEBUG: undo_func completed for {attr}")
-
         def redo_func() -> None:
-            print(f"DEBUG: redo_func called for {attr}, setting value to {new_value}")
-            # Set the new value with triggering callbacks to ensure computed properties update
             obs.set(new_value)
 
             # If we're redoing to a non-original value, mark as dirty
             if new_value != self._initial_values.get(attr):
                 self._dirty_fields.add(attr)
 
-            print(f"DEBUG: redo_func completed for {attr}")
-
         # Add to the undo stack
-        print(f"DEBUG: track_scalar_change - Calling _add_to_undo_stack for {attr}")
         self._add_to_undo_stack(attr, undo_func, redo_func)
-        print(f"DEBUG: track_scalar_change - Completed for {attr}")
