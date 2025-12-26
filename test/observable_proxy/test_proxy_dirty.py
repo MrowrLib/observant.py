@@ -225,3 +225,110 @@ class TestObservableProxyDirty:
         assert_that(proxy.observable(str, "username").get()).is_equal_to("original")
         assert_that(proxy.is_dirty()).is_true()  # Still dirty after undoing all changes
         assert_that(proxy.dirty_fields()).contains("username")
+
+
+class TestObservableProxyDirtyObservable:
+    """Unit tests for is_dirty_observable() in ObservableProxy class."""
+
+    def test_is_dirty_observable_initially_false(self) -> None:
+        """Test that is_dirty_observable() starts as False."""
+        # Arrange
+        profile = UserProfile(username="clean", preferences={}, age=25)
+        proxy = ObservableProxy(profile, sync=False)
+
+        # Act
+        dirty_obs = proxy.is_dirty_observable()
+
+        # Assert
+        assert_that(dirty_obs.get()).is_false()
+
+    def test_is_dirty_observable_becomes_true_when_field_changes(self) -> None:
+        """Test that is_dirty_observable() emits True when a field becomes dirty."""
+        # Arrange
+        profile = UserProfile(username="original", preferences={}, age=30)
+        proxy = ObservableProxy(profile, sync=False)
+        dirty_obs = proxy.is_dirty_observable()
+
+        # Act
+        proxy.observable(str, "username").set("modified")
+
+        # Assert
+        assert_that(dirty_obs.get()).is_true()
+
+    def test_is_dirty_observable_becomes_false_after_reset(self) -> None:
+        """Test that is_dirty_observable() emits False after reset_dirty()."""
+        # Arrange
+        profile = UserProfile(username="reset", preferences={}, age=60)
+        proxy = ObservableProxy(profile, sync=False)
+        dirty_obs = proxy.is_dirty_observable()
+        proxy.observable(str, "username").set("modified")
+        assert_that(dirty_obs.get()).is_true()
+
+        # Act
+        proxy.reset_dirty()
+
+        # Assert
+        assert_that(dirty_obs.get()).is_false()
+
+    def test_is_dirty_observable_becomes_false_after_save_to(self) -> None:
+        """Test that is_dirty_observable() emits False after save_to()."""
+        # Arrange
+        profile = UserProfile(username="save", preferences={}, age=70)
+        proxy = ObservableProxy(profile, sync=False)
+        dirty_obs = proxy.is_dirty_observable()
+        proxy.observable(str, "username").set("saved")
+        assert_that(dirty_obs.get()).is_true()
+
+        # Act
+        proxy.save_to(profile)
+
+        # Assert
+        assert_that(dirty_obs.get()).is_false()
+
+    def test_is_dirty_observable_callback_fires_on_change(self) -> None:
+        """Test that on_change callback fires when dirty state changes."""
+        # Arrange
+        profile = UserProfile(username="callback", preferences={}, age=40)
+        proxy = ObservableProxy(profile, sync=False)
+        dirty_obs = proxy.is_dirty_observable()
+
+        callback_values: list[bool] = []
+        dirty_obs.on_change(lambda v: callback_values.append(v))
+
+        # Act - make dirty
+        proxy.observable(str, "username").set("modified")
+
+        # Assert - callback fired with True
+        assert_that(callback_values).is_equal_to([True])
+
+        # Act - reset
+        proxy.reset_dirty()
+
+        # Assert - callback fired with False
+        assert_that(callback_values).is_equal_to([True, False])
+
+    def test_is_dirty_observable_with_list_field(self) -> None:
+        """Test that is_dirty_observable() works with list field changes."""
+        # Arrange
+        library = Library(title="SciFi", books=["Dune"])
+        proxy = ObservableProxy(library, sync=False)
+        dirty_obs = proxy.is_dirty_observable()
+
+        # Act
+        proxy.observable_list(str, "books").append("Foundation")
+
+        # Assert
+        assert_that(dirty_obs.get()).is_true()
+
+    def test_is_dirty_observable_with_dict_field(self) -> None:
+        """Test that is_dirty_observable() works with dict field changes."""
+        # Arrange
+        profile = UserProfile(username="user", preferences={"theme": "light"}, age=40)
+        proxy = ObservableProxy(profile, sync=False)
+        dirty_obs = proxy.is_dirty_observable()
+
+        # Act
+        proxy.observable_dict((str, str), "preferences")["language"] = "en"
+
+        # Assert
+        assert_that(dirty_obs.get()).is_true()

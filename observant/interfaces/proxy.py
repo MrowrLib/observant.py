@@ -94,6 +94,16 @@ class IObservableProxy(Generic[T], ABC):
         ...
 
     @abstractmethod
+    def is_dirty_observable(self) -> IObservable[bool]:
+        """
+        Get an observable that indicates whether any fields have been modified.
+
+        Returns:
+            An observable that emits True if any fields are dirty, False otherwise.
+        """
+        ...
+
+    @abstractmethod
     def dirty_fields(self) -> set[str]:
         """
         Get the set of field names that have been modified.

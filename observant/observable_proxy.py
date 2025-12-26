@@ -191,6 +191,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self._dicts: dict[ProxyFieldKey, ObservableDict[Any, Any]] = {}
         self._computeds: dict[str, Observable[Any]] = {}
         self._dirty_fields: set[str] = set()
+        self._is_dirty_obs = Observable[bool](False)
 
         # Validation related fields
         self._validators: dict[str, list[Callable[[Any], str | None]]] = {}
@@ -273,7 +274,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             if sync:
                 obs.on_change(lambda v: setattr(self._obj, attr, v))
             # Register dirty tracking callback
-            obs.on_change(lambda _: self._dirty_fields.add(attr))
+            obs.on_change(lambda _, a=attr: self._mark_field_dirty(a))
             # Register validation callback
             obs.on_change(lambda v: self._validate_field(attr, v))
             # Undo tracking is now handled by UndoableObservable
@@ -343,7 +344,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             if sync:
                 obs.on_change(lambda _: setattr(self._obj, attr, obs.copy()))
             # Register dirty tracking callback
-            obs.on_change(lambda _: self._dirty_fields.add(attr))
+            obs.on_change(lambda _, a=attr: self._mark_field_dirty(a))
             # Register validation callback
             obs.on_change(lambda _: self._validate_field(attr, obs.copy()))
             # Register undo tracking callback
@@ -407,7 +408,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             if sync:
                 obs.on_change(lambda _: setattr(self._obj, attr, obs.copy()))
             # Register dirty tracking callback
-            obs.on_change(lambda _: self._dirty_fields.add(attr))
+            obs.on_change(lambda _, a=attr: self._mark_field_dirty(a))
             # Register validation callback
             obs.on_change(lambda _: self._validate_field(attr, obs.copy()))
             # Register undo tracking callback
@@ -610,6 +611,44 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             ```
         """
         self._dirty_fields.clear()
+        self._is_dirty_obs.set(False)
+
+    def _mark_field_dirty(self, attr: str) -> None:
+        """Mark a field as dirty and update the dirty observable."""
+        self._dirty_fields.add(attr)
+        self._is_dirty_obs.set(True)
+
+    @override
+    def is_dirty_observable(self) -> IObservable[bool]:
+        """
+        Get an observable that indicates whether any fields have been modified.
+
+        This observable emits True when any field becomes dirty, and False
+        when all fields are clean (after reset_dirty() or save_to()).
+
+        Returns:
+            An observable that emits True if any fields are dirty, False otherwise.
+
+        Examples:
+            ```python
+            # Create a proxy
+            user = User(name="Alice", age=30)
+            proxy = ObservableProxy(user)
+
+            # Get the dirty observable
+            dirty_obs = proxy.is_dirty_observable()
+
+            # Listen for changes
+            dirty_obs.on_change(lambda dirty: print(f"Dirty: {dirty}"))
+
+            # Make a change - callback fires with True
+            proxy.observable(str, "name").set("Bob")
+
+            # Reset - callback fires with False
+            proxy.reset_dirty()
+            ```
+        """
+        return self._is_dirty_obs
 
     @override
     def register_computed(
@@ -1724,7 +1763,7 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
             # If we're redoing to a non-original value, mark as dirty
             if new_value != self._initial_values.get(attr):
-                self._dirty_fields.add(attr)
+                self._mark_field_dirty(attr)
 
         # Add to the undo stack
         self._add_to_undo_stack(attr, undo_func, redo_func)
