@@ -525,15 +525,17 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self.reset_dirty()
 
     @override
-    def is_dirty(self) -> bool:
+    def is_dirty(self) -> IObservable[bool]:
         """
-        Check if any fields have been modified since initialization or last reset.
+        Get an observable indicating whether any fields have been modified.
 
-        This method returns True if any observable field has been modified since
-        the proxy was created or since the last call to reset_dirty().
+        This observable emits True when any field becomes dirty, and False
+        when all fields are clean (after reset_dirty() or save_to()).
+
+        Can be used directly as a bool: `if proxy.is_dirty(): ...`
 
         Returns:
-            True if any fields have been modified, False otherwise.
+            An observable that emits True if any fields are dirty, False otherwise.
 
         Examples:
             ```python
@@ -541,23 +543,21 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             user = User(name="Alice", age=30)
             proxy = ObservableProxy(user)
 
-            # Check if dirty initially
-            print(proxy.is_dirty())  # Prints: False
+            # Use as bool
+            if proxy.is_dirty():
+                print("Has changes")
 
-            # Make a change
+            # Or listen for changes
+            proxy.is_dirty().on_change(lambda dirty: print(f"Dirty: {dirty}"))
+
+            # Make a change - callback fires with True
             proxy.observable(str, "name").set("Bob")
 
-            # Check if dirty after change
-            print(proxy.is_dirty())  # Prints: True
-
-            # Reset dirty state
+            # Reset - callback fires with False
             proxy.reset_dirty()
-
-            # Check if dirty after reset
-            print(proxy.is_dirty())  # Prints: False
             ```
         """
-        return bool(self._dirty_fields)
+        return self._is_dirty_obs
 
     @override
     def dirty_fields(self) -> set[str]:
@@ -617,38 +617,6 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         """Mark a field as dirty and update the dirty observable."""
         self._dirty_fields.add(attr)
         self._is_dirty_obs.set(True)
-
-    @override
-    def is_dirty_observable(self) -> IObservable[bool]:
-        """
-        Get an observable that indicates whether any fields have been modified.
-
-        This observable emits True when any field becomes dirty, and False
-        when all fields are clean (after reset_dirty() or save_to()).
-
-        Returns:
-            An observable that emits True if any fields are dirty, False otherwise.
-
-        Examples:
-            ```python
-            # Create a proxy
-            user = User(name="Alice", age=30)
-            proxy = ObservableProxy(user)
-
-            # Get the dirty observable
-            dirty_obs = proxy.is_dirty_observable()
-
-            # Listen for changes
-            dirty_obs.on_change(lambda dirty: print(f"Dirty: {dirty}"))
-
-            # Make a change - callback fires with True
-            proxy.observable(str, "name").set("Bob")
-
-            # Reset - callback fires with False
-            proxy.reset_dirty()
-            ```
-        """
-        return self._is_dirty_obs
 
     @override
     def register_computed(

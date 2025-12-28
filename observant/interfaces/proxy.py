@@ -84,22 +84,13 @@ class IObservableProxy(Generic[T], ABC):
         ...
 
     @abstractmethod
-    def is_dirty(self) -> bool:
-        """
-        Check if any fields have been modified since initialization or last reset.
-
-        Returns:
-            True if any fields have been modified, False otherwise.
-        """
-        ...
-
-    @abstractmethod
-    def is_dirty_observable(self) -> IObservable[bool]:
+    def is_dirty(self) -> IObservable[bool]:
         """
         Get an observable that indicates whether any fields have been modified.
 
         Returns:
             An observable that emits True if any fields are dirty, False otherwise.
+            Can be used as a bool directly (e.g., `if proxy.is_dirty(): ...`).
         """
         ...
 
@@ -175,6 +166,8 @@ class IObservableProxy(Generic[T], ABC):
     def is_valid(self) -> IObservable[bool]:
         """
         Get an observable that indicates whether all fields are valid.
+
+        Can be used directly as a bool: `if proxy.is_valid(): ...`
 
         Returns:
             An observable that emits True if all fields are valid, False otherwise.
