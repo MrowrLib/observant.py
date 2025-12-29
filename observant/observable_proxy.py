@@ -194,7 +194,12 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         self._is_dirty_obs = Observable[bool](False)
 
         # Validation related fields
-        self._validators: dict[str, list[Callable[[Any], str | None]]] = {}
+        # key -> [(path, validator_fn), ...] - validators grouped by error key
+        self._validators: dict[str, list[tuple[str, Callable[[Any], str | None]]]] = {}
+        # Tracks which paths we've subscribed to for validation
+        self._validator_path_subscriptions: set[str] = set()
+        # Tracks paths that need subscription when their observable is created
+        self._pending_validator_subscriptions: set[str] = set()
         self._validation_errors_dict = ObservableDict[str, list[str]]({})
         self._validation_for_cache: dict[str, Observable[list[str]]] = {}
         self._is_valid_obs = Observable[bool](True)
@@ -275,8 +280,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
                 obs.on_change(lambda v: setattr(self._obj, attr, v))
             # Register dirty tracking callback
             obs.on_change(lambda _, a=attr: self._mark_field_dirty(a))
-            # Register validation callback
-            obs.on_change(lambda v: self._validate_field(attr, v))
+            # Set up any pending validator subscriptions
+            self._setup_pending_validator_subscription(attr, obs)
             # Undo tracking is now handled by UndoableObservable
 
             # Initial value tracking is now handled by UndoableObservable
@@ -345,8 +350,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
                 obs.on_change(lambda _: setattr(self._obj, attr, obs.copy()))
             # Register dirty tracking callback
             obs.on_change(lambda _, a=attr: self._mark_field_dirty(a))
-            # Register validation callback
-            obs.on_change(lambda _: self._validate_field(attr, obs.copy()))
+            # Set up any pending validator subscriptions
+            self._setup_pending_validator_subscription(attr, obs)
             # Register undo tracking callback
             obs.on_change(lambda c: self._track_list_change(attr, c))
             self._lists[key] = obs
@@ -409,8 +414,8 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
                 obs.on_change(lambda _: setattr(self._obj, attr, obs.copy()))
             # Register dirty tracking callback
             obs.on_change(lambda _, a=attr: self._mark_field_dirty(a))
-            # Register validation callback
-            obs.on_change(lambda _: self._validate_field(attr, obs.copy()))
+            # Set up any pending validator subscriptions
+            self._setup_pending_validator_subscription(attr, obs)
             # Register undo tracking callback
             obs.on_change(lambda c: self._track_dict_change(attr, c))
             self._dicts[key] = obs
@@ -664,6 +669,9 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
         obs = Observable(initial_value)
         self._computeds[name] = obs
 
+        # Set up any pending validator subscriptions
+        self._setup_pending_validator_subscription(name, obs)
+
         # Register callbacks for each dependency
         for dep in dependencies:
             # For scalar dependencies
@@ -693,13 +701,6 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             if dep in self._computeds:
                 self._computeds[dep].on_change(update_computed)
 
-        # Validate the computed property when it changes
-        def validate_computed(_: Any) -> None:
-            value = compute()
-            self._validate_field(name, value)
-
-        obs.on_change(validate_computed)
-
     @override
     def computed(
         self,
@@ -724,20 +725,29 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
     @override
     def add_validator(
         self,
-        attr: str,
-        validator: Callable[[Any], str | None],
+        key: str,
+        path_or_validator: str | Callable[[Any], str | None],
+        validator: Callable[[Any], str | None] | None = None,
     ) -> None:
         """
-        Add a validator function for a field.
+        Add a validator function for a field or nested path.
 
-        Validators are functions that check if a field value is valid.
-        Multiple validators can be added for the same field.
-        Validation errors are tracked and can be observed.
+        Can be called in two ways:
+        - add_validator(key, validator) - key is both the error key and the field name
+        - add_validator(key, path, validator) - key is the error key, path is the observable path
+
+        The path can be a simple field name or a nested path with optional chaining:
+        - "name" - simple field
+        - "address.city" - nested path
+        - "address?.city" - optional chaining (returns None if address is None)
 
         Args:
-            attr: The field name to validate.
-            validator: A function that takes the field value and returns an error message
-                       if invalid, or None if valid.
+            key: The key under which validation errors are collected.
+            path_or_validator: Either the observable path (str) or the validator function
+                              if using the 2-argument form.
+            validator: The validator function when using the 3-argument form.
+                      A function that takes the field value and returns an error message
+                      if invalid, or None if valid.
 
         Examples:
             ```python
@@ -745,116 +755,219 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
             user = User(name="Alice", age=30)
             proxy = ObservableProxy(user)
 
-            # Add validators for the name field
+            # Simple usage - key is also the field name
             proxy.add_validator(
                 "name",
                 lambda name: "Name cannot be empty" if not name else None
             )
+
+            # Separate key from path - errors grouped under "address_info"
             proxy.add_validator(
-                "name",
-                lambda name: "Name too long" if len(name) > 50 else None
+                "address_info",
+                "address.city",
+                lambda city: "City required" if not city else None
+            )
+            proxy.add_validator(
+                "address_info",
+                "address.zip",
+                lambda zip: "Zip required" if not zip else None
             )
 
-            # Add a validator for the age field
+            # Nested path with optional chaining
             proxy.add_validator(
-                "age",
-                lambda age: "Age must be positive" if age < 0 else None
+                "profile",
+                "user?.profile?.email",
+                lambda email: "Invalid email" if "@" not in email else None
             )
 
-            # Check if all fields are valid
-            is_valid = proxy.is_valid()
-            print(is_valid.get())  # Prints: True
-
-            # Set an invalid value
-            proxy.observable(str, "name").set("")
-            print(is_valid.get())  # Prints: False
-
-            # Get validation errors for a specific field
-            name_errors = proxy.validation_for("name")
-            print(name_errors.get())  # Prints: ["Name cannot be empty"]
+            # Check validation
+            print(proxy.validation_for("address_info").get())  # ["City required", "Zip required"]
             ```
         """
-        if attr not in self._validators:
-            self._validators[attr] = []
+        # Parse arguments - support both 2-arg and 3-arg forms
+        if validator is None:
+            # 2-arg form: add_validator(key, validator)
+            if not callable(path_or_validator):
+                raise TypeError("validator must be callable when using 2-argument form")
+            path = key
+            validator_fn = path_or_validator
+        else:
+            # 3-arg form: add_validator(key, path, validator)
+            if not isinstance(path_or_validator, str):
+                raise TypeError("path must be a string when using 3-argument form")
+            path = path_or_validator
+            validator_fn = validator
 
-        self._validators[attr].append(validator)
+        if key not in self._validators:
+            self._validators[key] = []
 
-        # Validate the current value if it exists
-        self._validate_field_if_exists(attr)
+        self._validators[key].append((path, validator_fn))
 
-    def _validate_field_if_exists(self, attr: str) -> None:
+        # Subscribe to path changes if we haven't already
+        self._subscribe_to_path_for_validation(path, key)
+
+        # Validate the current value
+        self._validate_key(key)
+
+    def _subscribe_to_path_for_validation(self, path: str, key: str) -> None:
         """
-        Validate a field if it exists in any of the observable collections.
-
-        This method attempts to find the field in scalars, lists, or dicts collections,
-        and if found, validates it. If the field is not found in any observable collection,
-        it tries to get the value directly from the proxied object.
+        Subscribe to changes on a path to trigger validation for a key.
 
         Args:
-            attr: The field name to validate.
-
-        Note:
-            This method is primarily used internally by the ObservableProxy class.
-            Users typically don't need to call this method directly.
+            path: The observable path (can be simple field or nested path).
+            key: The validation key to revalidate when path changes.
         """
-        # Check in scalars
-        for key in self._scalars:
-            if key.attr == attr:
-                value = self._scalars[key].get()
-                self._validate_field(attr, value)
-                return
+        if path in self._validator_path_subscriptions:
+            # Already subscribed to this path
+            return
 
-        # Check in lists
-        for key in self._lists:
-            if key.attr == attr:
-                value = self._lists[key].copy()
-                self._validate_field(attr, value)
-                return
+        # For simple paths (no dots), we need to check all observable types
+        # For nested paths, use observable_for_path
+        is_nested = "." in path or "?" in path
 
-        # Check in dicts
-        for key in self._dicts:
-            if key.attr == attr:
-                value = self._dicts[key].copy()
-                self._validate_field(attr, value)
-                return
+        if not is_nested:
+            # Simple field - could be scalar, list, dict, or computed
+            obs = self._find_existing_observable_for_field(path)
+            if obs is not None:
+                self._validator_path_subscriptions.add(path)
+                obs.on_change(lambda _: self._revalidate_keys_for_path(path))
+            else:
+                # Observable doesn't exist yet - add to pending
+                self._pending_validator_subscriptions.add(path)
+        else:
+            # Nested path - use observable_for_path
+            try:
+                obs = self.observable_for_path(path)
+                self._validator_path_subscriptions.add(path)
+                obs.on_change(lambda _: self._revalidate_keys_for_path(path))
+            except (AttributeError, TypeError):
+                # Path doesn't exist yet - add to pending
+                self._pending_validator_subscriptions.add(path)
 
-        # If we get here, the field doesn't exist in any observable collection yet
-        # Try to get it directly from the object
-        try:
-            value = getattr(self._obj, attr)
-            self._validate_field(attr, value)
-        except (AttributeError, TypeError):
-            # If we can't get the value, we can't validate it yet
-            pass
-
-    def _validate_field(self, attr: str, value: Any) -> None:
+    def _setup_pending_validator_subscription(self, attr: str, obs: Any) -> None:
         """
-        Validate a field value against all its validators.
+        Set up validation subscription for an observable if it was pending.
+
+        Called when a new observable is created to check if validators are waiting.
 
         Args:
             attr: The field name.
-            value: The value to validate.
+            obs: The observable that was just created.
         """
-        if attr not in self._validators:
-            # No validators for this field, it's always valid
-            if attr in self._validation_errors_dict:
-                del self._validation_errors_dict[attr]
+        if attr in self._pending_validator_subscriptions:
+            self._pending_validator_subscriptions.remove(attr)
+            self._validator_path_subscriptions.add(attr)
+            obs.on_change(lambda _: self._revalidate_keys_for_path(attr))
+
+    def _find_existing_observable_for_field(self, attr: str) -> Any:
+        """
+        Find an existing observable for a simple field name.
+
+        Checks scalars, lists, dicts, and computed properties.
+
+        Args:
+            attr: The field name.
+
+        Returns:
+            The observable if found, or None.
+        """
+        # Check scalars
+        for field_key in self._scalars:
+            if field_key.attr == attr:
+                return self._scalars[field_key]
+
+        # Check lists
+        for field_key in self._lists:
+            if field_key.attr == attr:
+                return self._lists[field_key]
+
+        # Check dicts
+        for field_key in self._dicts:
+            if field_key.attr == attr:
+                return self._dicts[field_key]
+
+        # Check computed
+        if attr in self._computeds:
+            return self._computeds[attr]
+
+        return None
+
+    def _revalidate_keys_for_path(self, path: str) -> None:
+        """
+        Revalidate all keys that have validators using this path.
+
+        Args:
+            path: The path that changed.
+        """
+        for key, validators in self._validators.items():
+            for validator_path, _ in validators:
+                if validator_path == path:
+                    self._validate_key(key)
+                    break  # Only need to validate this key once
+
+    def _get_value_for_path(self, path: str) -> Any:
+        """
+        Get the current value for a path.
+
+        Args:
+            path: The observable path (can be simple field or nested path).
+
+        Returns:
+            The current value at the path, or None if path is broken.
+        """
+        is_nested = "." in path or "?" in path
+
+        if not is_nested:
+            # Simple field - check all observable types first
+            obs = self._find_existing_observable_for_field(path)
+            if obs is not None:
+                # For lists and dicts, get a copy
+                if hasattr(obs, "copy"):
+                    return obs.copy()
+                return obs.get()
+
+            # Fall back to getting from object directly
+            try:
+                return getattr(self._obj, path)
+            except (AttributeError, TypeError):
+                return None
+        else:
+            # Nested path
+            try:
+                obs = self.observable_for_path(path)
+                return obs.get()
+            except (AttributeError, TypeError):
+                return None
+
+    def _validate_key(self, key: str) -> None:
+        """
+        Validate all validators for a key and update validation errors.
+
+        Args:
+            key: The validation key to validate.
+        """
+        if key not in self._validators:
+            # No validators for this key
+            if key in self._validation_errors_dict:
+                del self._validation_errors_dict[key]
+            self._is_valid_obs.set(len(self._validation_errors_dict) == 0)
             return
 
         errors: list[str] = []
 
-        for validator in self._validators[attr]:
+        for path, validator in self._validators[key]:
+            value = self._get_value_for_path(path)
             try:
                 result = validator(value)
                 if result is not None:
                     errors.append(result)
             except Exception as e:
-                errors.append(f"Validation error: {str(e)}")
+                errors.append(str(e))
 
         if errors:
-            self._validation_errors_dict[attr] = errors
-        elif attr in self._validation_errors_dict:
-            del self._validation_errors_dict[attr]
+            self._validation_errors_dict[key] = errors
+        elif key in self._validation_errors_dict:
+            del self._validation_errors_dict[key]
 
         # Update the is_valid observable
         self._is_valid_obs.set(len(self._validation_errors_dict) == 0)
@@ -1030,18 +1143,18 @@ class ObservableProxy(Generic[T], IObservableProxy[T]):
 
             # Re-run all validators if requested
             if revalidate:
-                for field_name in self._validators.keys():
-                    self._validate_field_if_exists(field_name)
+                for key in self._validators.keys():
+                    self._validate_key(key)
         else:
-            # Reset validation errors for a specific field
+            # Reset validation errors for a specific key
             if attr in self._validation_errors_dict:
                 del self._validation_errors_dict[attr]
                 # Update the is_valid observable
                 self._is_valid_obs.set(len(self._validation_errors_dict) == 0)
 
-            # Re-run validator for this field if requested
+            # Re-run validator for this key if requested
             if revalidate:
-                self._validate_field_if_exists(attr)
+                self._validate_key(attr)
 
     @override
     def set_undo_config(

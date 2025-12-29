@@ -380,3 +380,156 @@ class TestObservableProxyValidation:
         pref_errors = proxy.validation_for("preferences").get()
         assert_that(pref_errors).is_length(1)
         assert_that(pref_errors[0]).is_equal_to("Invalid preferences: {'error': 'Invalid'}")
+
+    def test_validator_with_separate_key_and_path(self) -> None:
+        """Test that validators can have a separate key from the path."""
+        # Arrange
+        profile = UserProfile(username="alice", preferences={}, age=30)
+        proxy = ObservableProxy(profile, sync=False)
+
+        # Add validators with separate key from path
+        proxy.add_validator("user_info", "username", lambda v: "Username too short" if len(v) < 5 else None)
+        proxy.add_validator("user_info", "age", lambda v: "Must be adult" if v < 18 else None)
+
+        # Assert - initially valid
+        assert_that(proxy.is_valid()).is_true()
+        assert_that(proxy.validation_for("user_info").get()).is_empty()
+
+        # Act - make username invalid
+        proxy.observable(str, "username").set("bob")
+
+        # Assert - error under "user_info" key
+        assert_that(proxy.is_valid()).is_false()
+        assert_that(proxy.validation_errors()).contains_key("user_info")
+        assert_that(proxy.validation_for("user_info").get()).contains("Username too short")
+
+        # Act - also make age invalid
+        proxy.observable(int, "age").set(10)
+
+        # Assert - both errors under same key
+        errors = proxy.validation_for("user_info").get()
+        assert_that(errors).is_length(2)
+        assert_that(errors).contains("Username too short")
+        assert_that(errors).contains("Must be adult")
+
+        # Act - fix both
+        proxy.observable(str, "username").set("alice")
+        proxy.observable(int, "age").set(25)
+
+        # Assert - valid again
+        assert_that(proxy.is_valid()).is_true()
+        assert_that(proxy.validation_for("user_info").get()).is_empty()
+
+    def test_validator_with_nested_path(self) -> None:
+        """Test that validators work with nested paths."""
+        from dataclasses import dataclass
+
+        @dataclass
+        class Address:
+            city: str
+            zip_code: str
+
+        @dataclass
+        class Person:
+            name: str
+            address: Address
+
+        # Arrange
+        person = Person(name="Alice", address=Address(city="NYC", zip_code="10001"))
+        proxy = ObservableProxy(person, sync=True)
+
+        # Add validator for nested path
+        proxy.add_validator("address.city", lambda v: "City required" if not v else None)
+        proxy.add_validator("location", "address.zip_code", lambda v: "Invalid zip" if len(v) != 5 else None)
+
+        # Assert - initially valid
+        assert_that(proxy.is_valid()).is_true()
+
+        # Act - make city invalid via nested path
+        city_obs = proxy.observable_for_path("address.city")
+        city_obs.set("")
+
+        # Assert - validation error
+        assert_that(proxy.is_valid()).is_false()
+        assert_that(proxy.validation_for("address.city").get()).contains("City required")
+
+        # Act - fix city
+        city_obs.set("Boston")
+
+        # Assert - valid again
+        assert_that(proxy.is_valid()).is_true()
+
+        # Act - make zip invalid
+        zip_obs = proxy.observable_for_path("address.zip_code")
+        zip_obs.set("123")
+
+        # Assert - validation error under "location" key
+        assert_that(proxy.is_valid()).is_false()
+        assert_that(proxy.validation_for("location").get()).contains("Invalid zip")
+
+    def test_validator_with_optional_nested_path(self) -> None:
+        """Test that validators work with optional chaining in nested paths."""
+        from dataclasses import dataclass
+
+        @dataclass
+        class Address:
+            city: str
+
+        @dataclass
+        class Person:
+            name: str
+            address: Address | None = None
+
+        # Arrange - person without address
+        person = Person(name="Alice", address=None)
+        proxy = ObservableProxy(person, sync=True)
+
+        # Add validator for optional nested path
+        proxy.add_validator("city_info", "address?.city", lambda v: "City required" if v is None else None)
+
+        # Assert - invalid because address is None, so city is None
+        assert_that(proxy.is_valid()).is_false()
+        assert_that(proxy.validation_for("city_info").get()).contains("City required")
+
+        # Act - set address
+        person.address = Address(city="NYC")
+        proxy.observable(object, "address").set(person.address)
+
+        # Assert - now valid
+        assert_that(proxy.is_valid()).is_true()
+        assert_that(proxy.validation_for("city_info").get()).is_empty()
+
+    def test_backward_compatible_validator_api(self) -> None:
+        """Test that the old 2-argument validator API still works."""
+        # Arrange
+        profile = UserProfile(username="short", preferences={}, age=30)
+        proxy = ObservableProxy(profile, sync=False)
+
+        # Old API: add_validator(field, validator)
+        proxy.add_validator("username", lambda v: "Too short" if len(v) < 5 else None)
+
+        # Assert - works as before
+        assert_that(proxy.is_valid()).is_true()  # "short" is exactly 5 chars
+
+        proxy.observable(str, "username").set("abc")
+        assert_that(proxy.is_valid()).is_false()
+        assert_that(proxy.validation_for("username").get()).contains("Too short")
+
+    def test_validator_type_errors(self) -> None:
+        """Test that add_validator raises TypeError for invalid arguments."""
+        profile = UserProfile(username="test", preferences={}, age=30)
+        proxy = ObservableProxy(profile, sync=False)
+
+        # 2-arg form with non-callable should raise
+        try:
+            proxy.add_validator("username", "not a callable")  # type: ignore
+            assert False, "Should have raised TypeError"
+        except TypeError as e:
+            assert_that(str(e)).contains("callable")
+
+        # 3-arg form with non-string path should raise
+        try:
+            proxy.add_validator("key", 123, lambda v: None)  # type: ignore
+            assert False, "Should have raised TypeError"
+        except TypeError as e:
+            assert_that(str(e)).contains("string")

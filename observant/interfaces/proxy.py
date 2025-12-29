@@ -149,16 +149,29 @@ class IObservableProxy(Generic[T], ABC):
     @abstractmethod
     def add_validator(
         self,
-        attr: str,
-        validator: Callable[[Any], str | None],
+        key: str,
+        path_or_validator: str | Callable[[Any], str | None],
+        validator: Callable[[Any], str | None] | None = None,
     ) -> None:
         """
-        Add a validator function for a field.
+        Add a validator function for a field or nested path.
+
+        Can be called in two ways:
+        - add_validator(key, validator) - key is both the error key and the field name
+        - add_validator(key, path, validator) - key is the error key, path is the observable path
+
+        The path can be a simple field name or a nested path with optional chaining:
+        - "name" - simple field
+        - "address.city" - nested path
+        - "address?.city" - optional chaining (returns None if address is None)
 
         Args:
-            attr: The field name to validate.
-            validator: A function that takes the field value and returns an error message
-                       if invalid, or None if valid.
+            key: The key under which validation errors are collected.
+            path_or_validator: Either the observable path (str) or the validator function
+                              if using the 2-argument form.
+            validator: The validator function when using the 3-argument form.
+                      A function that takes the field value and returns an error message
+                      if invalid, or None if valid.
         """
         ...
 
